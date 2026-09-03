@@ -35,7 +35,7 @@ app.options('/api/ftp/media-info', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,HEAD,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range, Authorization');
-  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges, Content-Disposition, X-StreamVault-Canonical-Id, X-StreamVault-Source-Kind, X-StreamVault-Source-Fingerprint');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges, Content-Disposition, X-StreamVault-Canonical-Id, X-StreamVault-Source-Kind, X-StreamVault-Source-Fingerprint, X-StreamVault-Download-Trace-Id');
   return res.status(204).end();
 });
 /* EMERGENCY_HOSTINGER_CORS */
@@ -43,7 +43,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,HEAD,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range, Authorization");
-  res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges, Content-Disposition, X-StreamVault-Canonical-Id, X-StreamVault-Source-Kind, X-StreamVault-Source-Fingerprint");
+  res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges, Content-Disposition, X-StreamVault-Canonical-Id, X-StreamVault-Source-Kind, X-StreamVault-Source-Fingerprint, X-StreamVault-Download-Trace-Id");
   if (req.method === "OPTIONS") return res.status(204).end();
   next();
 });
@@ -132,6 +132,7 @@ const SV_DETAIL_VERBOSE = process.env.SV_DETAIL_VERBOSE === '1';
 let activeMediaFfmpegStreams = 0;
 let activeOriginalDownloads = 0;
 let svPlaybackFaststartManager = null;
+const svDownloadTransferEvents = [];
 
 const COMPAT_VIDEO_PTS_FILTER = 'setpts=PTS-STARTPTS';
 const COMPAT_AUDIO_PTS_FILTER = 'asetpts=PTS-STARTPTS,aresample=async=1';
@@ -5649,7 +5650,6 @@ function svStartLiveRelay(channelId, reason = 'start', candidateIndex = 0) {
 function svEnsureLiveRelay(channelId) {
   let session = svLiveRelaySessions.get(channelId);
   if (!session) return svStartLiveRelay(channelId, 'start', 0);
-  session.lastAccess = Date.now();
   const state = svLiveRelayPlaylistState(session);
   const processDead = !session.process || session.process.exitCode !== null || session.process.killed;
   const stale = state.stat && Date.now() - state.stat.mtimeMs > SV_LIVE_RELAY_STALE_MS;
@@ -8780,7 +8780,7 @@ function svDownloadTransferLog(req, res, resolved, event, details = {}) {
   }
   const importantCapacityEvent = event === 'start' || event === 'retry' || event === 'source_error' ||
     event === 'source_connection_error' || event === 'terminal_error' || event === 'client_abort' || event === 'complete';
-  console.log('[DownloadTransfer]', JSON.stringify({
+  const payload = {
     timestamp: new Date().toISOString(),
     event,
     traceId: res.locals?.downloadTraceId || '',
@@ -8793,7 +8793,10 @@ function svDownloadTransferLog(req, res, resolved, event, details = {}) {
     cloudflareRequest: !!(req.headers['cf-ray'] || req.headers['cf-connecting-ip']),
     ...details,
     ...(importantCapacityEvent ? { capacity: svDownloadCapacitySnapshot() } : {}),
-  }));
+  };
+  svDownloadTransferEvents.push(payload);
+  if (svDownloadTransferEvents.length > 500) svDownloadTransferEvents.splice(0, svDownloadTransferEvents.length - 500);
+  console.log('[DownloadTransfer]', JSON.stringify(payload));
 }
 
 function svDownloadMime(filename, upstreamType = '') {
@@ -8970,6 +8973,7 @@ function svHandleMediaDownload(req, res, resolve) {
     res.setHeader('X-StreamVault-Source-Kind', resolved.kind);
     res.setHeader('X-StreamVault-Source-Fingerprint', sourceFingerprint);
     res.locals.downloadTraceId = crypto.randomBytes(8).toString('hex');
+    res.setHeader('X-StreamVault-Download-Trace-Id', res.locals.downloadTraceId);
     res.locals.downloadMediaId = String(canonicalId || res.locals.downloadMediaId || '');
     activeOriginalDownloads += 1;
     let released = false;
@@ -12285,6 +12289,11 @@ app.get('/api/infra/events', requireInfraAccess, (req, res) => {
   res.json(infraTelemetry.events().slice(-limit));
 });
 app.get('/api/infra/nodes', requireInfraAccess, (req, res) => res.json(infraTelemetry.nodes()));
+app.get('/api/infra/download-transfers', requireInfraAccess, (req, res) => {
+  const limit = Math.min(500, Math.max(1, parseInt(req.query.limit || '100', 10) || 100));
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(svDownloadTransferEvents.slice(-limit));
+});
 
 
 /* StreamVault playback capability v2: direct first, stable alternate-audio HLS,
@@ -12617,7 +12626,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 });
 infraTelemetry.attachWebSocket(server);
 /* SV_INSTANT_LIVE_PREWARM_PATCH */
-if (process.env.SV_DISABLE_LIVE_PREWARM !== '1') {
+if (process.env.SV_ENABLE_LIVE_PREWARM === '1') {
   setTimeout(() => {
     try {
       if (typeof svEnsureLiveRelay === 'function') {

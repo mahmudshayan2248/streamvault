@@ -3,10 +3,14 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
+  installPlaybackCapability,
   playbackDecision,
   normalizedAudioTrack,
   normalizedSubtitleTrack,
 } = require('../lib/playback-capability');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 const chrome = {
   h264: true,
@@ -90,4 +94,58 @@ test('track metadata always has useful labels and bitmap subtitles are explicit'
   assert.equal(bitmap.supported, false);
   assert.equal(bitmap.url, null);
   assert.match(bitmap.unsupportedReason, /Image subtitles/);
+});
+
+test('canonical ID capability preserves a remote source returned by the authoritative resolver', async () => {
+  const routes = new Map();
+  const app = {
+    get(route, handler) { routes.set(`GET ${route}`, handler); },
+    post(route, handler) { routes.set(`POST ${route}`, handler); },
+  };
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'streamvault-playback-'));
+  let receivedRequest = null;
+  const installed = installPlaybackCapability({
+    app,
+    cacheDir,
+    getMediaInfo: async () => ({
+      container: 'mov,mp4,m4a,3gp,3g2,mj2',
+      videoCodec: 'h264',
+      duration: 120,
+      audioTracks: [{ index: 1, codec: 'aac', channels: 2 }],
+    }),
+    resolveLocal(id, req) {
+      receivedRequest = req;
+      return {
+        id,
+        canonicalId: id,
+        remote: true,
+        input: 'http://catalog.example/Movie%20One.mp4',
+        filename: 'Movie One.mp4',
+        directUrl: '/api/ftp/proxy?url=movie',
+        fingerprint: 'authoritative-source',
+      };
+    },
+    resolveRemote: () => null,
+  });
+  let status = 200;
+  let payload = null;
+  const req = { params: { id: 'ftp_1' }, query: { title: 'Movie One' } };
+  const res = {
+    setHeader() {},
+    status(value) { status = value; return this; },
+    json(value) { payload = value; return value; },
+  };
+  await routes.get('GET /api/playback/:id')(req, res);
+  installed.stopWorkers();
+  fs.rmSync(cacheDir, { recursive: true, force: true });
+
+  assert.equal(status, 200);
+  assert.equal(receivedRequest, req);
+  assert.equal(payload.mode, 'direct');
+  assert.equal(payload.directUrl, '/api/ftp/proxy?url=movie');
+  assert.deepEqual(payload.source, {
+    canonicalId: 'ftp_1',
+    kind: 'remote',
+    fingerprint: 'authoritative-source',
+  });
 });

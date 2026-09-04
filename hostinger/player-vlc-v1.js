@@ -37,6 +37,7 @@
     hls:null,
     metrics:null,
     seekSequence:0,
+    releasePromise:Promise.resolve(),
   };
 
   function transition(next,detail){
@@ -79,7 +80,8 @@
   }
 
   function resetSession(reason='reset'){
-    releaseCompatibilitySession(session.capability);
+    const release=releaseCompatibilitySession(session.capability);
+    session.releasePromise=Promise.allSettled([session.releasePromise,release]).then(()=>undefined);
     session.sequence+=1;
     session.seekSequence+=1;
     session.active=false;
@@ -93,6 +95,7 @@
     session.hls=null;
     session.metrics=null;
     transition(STATES.IDLE,{reason});
+    return session.releasePromise;
   }
 
   function capabilityParams(){
@@ -129,6 +132,8 @@
     const params=capabilityParams();
     params.set('sidecars',options.sidecars?'1':'0');
     if(Number(options.start)>0)params.set('start',String(Number(options.start)));
+    if(source.name)params.set('title',String(source.name));
+    if(source.year)params.set('year',String(source.year));
     let pathname;
     if(source.kind==='remote'){
       params.set('url',source.url);
@@ -361,6 +366,12 @@
       clearTimeout(session.bufferTimer);
       session.bufferTimer=setTimeout(()=>{if(current()){transition(STATES.BUFFERING);spinner(true);}},200);
     });
+    listen(video,'stalled',()=>{
+      if(!current())return;
+      if(session.metrics && !session.metrics.activeBufferStart)session.metrics.activeBufferStart=performance.now();
+      clearTimeout(session.bufferTimer);
+      session.bufferTimer=setTimeout(()=>{if(current()){transition(STATES.BUFFERING);spinner(true);}},200);
+    });
     listen(video,'seeking',()=>{
       if(!current())return;
       clearTimeout(session.bufferTimer);
@@ -490,7 +501,7 @@
   }
 
   async function start(source){
-    resetSession('new media');
+    await resetSession('new media');
     session.active=true;
     session.sequence+=1;
     const sequence=session.sequence;
@@ -762,11 +773,22 @@
         seekHlsWindow(Number(seconds)||0).catch(error=>failPlayback(userError(error)));
         return;
       }
+      if(session.active && session.capability?.mode==='direct'){
+        const requested=Number(seconds)||0;
+        const duration=Number(video.duration);
+        const target=Number.isFinite(duration) && duration>0
+          ? Math.max(0,Math.min(requested,Math.max(0,duration-.05)))
+          : Math.max(0,requested);
+        video.currentTime=target;
+        return;
+      }
       return seekToTimeLegacy(seconds);
     };
   }catch(_){ }
   try{video.disablePictureInPicture=false;}catch(_){ }
   video.removeAttribute('disablepictureinpicture');
-  window.StreamVaultVlcPlayerV1={STATES,session,start,reset:resetSession};
-  console.log('[Playback v2] VLC-like capability player active');
+  window.STREAMVAULT_PLAYER_BUILD='20260904-player-v7.1';
+  window.STREAMVAULT_PLAYER_VERSION='player-v7';
+  window.StreamVaultVlcPlayerV1={version:'player-v7',STATES,session,start,reset:resetSession};
+  console.log('[Playback v2] VLC-like capability player-v7 active');
 })();

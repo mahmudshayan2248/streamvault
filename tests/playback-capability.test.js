@@ -105,6 +105,16 @@ test('keyframe origin accounts for B-frame decode reordering', () => {
     {pts_time:'2399.355',duration_time:'.042'},
     {pts_time:'2399.314',dts_time:'2399.230',duration_time:'.041'},
   ],{},2400),2399.147);
+  const roundedMatroskaPackets = [
+    { pts_time: '2399.230', duration_time: '.041' },
+    { pts_time: '2399.355', duration_time: '.041' },
+    { pts_time: '2399.314', dts_time: '2399.230', duration_time: '.041' },
+  ];
+  // Millisecond Matroska durations yield a 1 ms rounding difference from
+  // FFmpeg's reconstructed 2399.147 DTS, independently of stale metadata.
+  assert.equal(normalizedSeekOrigin(roundedMatroskaPackets, {}, 2400), 2399.148);
+  assert.equal(normalizedSeekOrigin(roundedMatroskaPackets, { hasBFrames: 0 }, 2400), 2399.148);
+  assert.equal(normalizedSeekOrigin(roundedMatroskaPackets, { hasBFrames: 2, frameRate: '24000/1001' }, 2400), 2399.148);
 });
 
 test('compatibility output keeps one timestamp epoch and does not force audio to zero', async () => {

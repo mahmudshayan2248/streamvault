@@ -370,11 +370,12 @@ function getDurationOnlyMediaInfo(filePath) {
   });
 }
 
-const SV_REMOTE_MEDIA_INFO_CACHE_DIR = path.join(SV_CACHE_DIR, 'remote-media-info-v2');
+const SV_REMOTE_MEDIA_INFO_CACHE_VERSION = 3;
+const SV_REMOTE_MEDIA_INFO_CACHE_DIR = path.join(SV_CACHE_DIR, 'remote-media-info-v3');
 const SV_REMOTE_MEDIA_INFO_CACHE_TTL_MS = Math.max(60 * 60 * 1000, Number(process.env.SV_REMOTE_MEDIA_INFO_CACHE_TTL_MS || 30 * 24 * 60 * 60 * 1000));
 
 function svRemoteMediaInfoCachePath(sourceUrl) {
-  const key = crypto.createHash('sha1').update(`remote-media-info-v2|${sourceUrl}`).digest('hex');
+  const key = crypto.createHash('sha1').update(`remote-media-info-v${SV_REMOTE_MEDIA_INFO_CACHE_VERSION}|${sourceUrl}`).digest('hex');
   return path.join(SV_REMOTE_MEDIA_INFO_CACHE_DIR, `${key}.json`);
 }
 
@@ -384,7 +385,7 @@ function svReadRemoteMediaInfoCache(sourceUrl) {
     const stat = fs.statSync(filename);
     if (!stat.isFile() || Date.now() - stat.mtimeMs > SV_REMOTE_MEDIA_INFO_CACHE_TTL_MS) return null;
     const cached = JSON.parse(fs.readFileSync(filename, 'utf8'));
-    if (cached?.version !== 2 || cached?.sourceUrl !== sourceUrl || !cached?.info?.videoCodec || !(Number(cached.info.duration) > 0)) return null;
+    if (cached?.version !== SV_REMOTE_MEDIA_INFO_CACHE_VERSION || cached?.sourceUrl !== sourceUrl || !cached?.info?.videoCodec || !(Number(cached.info.duration) > 0) || !Number.isInteger(cached.info.hasBFrames) || cached.info.hasBFrames < 0) return null;
     return cached.info;
   } catch {
     return null;
@@ -396,7 +397,7 @@ function svWriteRemoteMediaInfoCache(sourceUrl, info) {
     fs.mkdirSync(SV_REMOTE_MEDIA_INFO_CACHE_DIR, { recursive: true });
     const filename = svRemoteMediaInfoCachePath(sourceUrl);
     const temp = `${filename}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`;
-    fs.writeFileSync(temp, JSON.stringify({ version: 2, sourceUrl, cachedAt: Date.now(), info }));
+    fs.writeFileSync(temp, JSON.stringify({ version: SV_REMOTE_MEDIA_INFO_CACHE_VERSION, sourceUrl, cachedAt: Date.now(), info }));
     fs.renameSync(temp, filename);
   } catch (error) {
     console.warn('[Media info] persistent cache write failed:', error.message);

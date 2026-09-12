@@ -145,6 +145,21 @@ for (const message of REQUIRED_MESSAGES) {
 }
 
 const activeSource = activeScripts.map(filename => fs.readFileSync(filename, 'utf8')).join('\n');
+if (!index.includes('/player-session.js?v=20260912-player-session-v1') || !index.includes('/player-vlc-v1.js?v=20260912-player-session-v1') || !index.includes('/player-vlc-v1.css?v=20260912-player-session-v1')) {
+  fail('index.html does not reference the PlayerSession release assets');
+}
+const playerView = read('player-vlc-v1.js');
+const playerSession = read('player-session.js');
+if (!playerView.includes("window.STREAMVAULT_PLAYER_VERSION = 'player-session-v1'") || !playerView.includes('new PlayerSession')) {
+  fail('player-vlc-v1.js is not the PlayerSession view adapter');
+}
+if (!playerSession.includes("IDLE:'IDLE'") || !playerSession.includes("BUFFERING:'BUFFERING'") || !playerSession.includes('const owners = new WeakMap()')) {
+  fail('player-session.js is missing the authoritative lifecycle or video ownership guard');
+}
+for (const retired of ['instant-remux-v23', 'vod-buffer-engine-v1', 'playback-stability-hotfix-v2']) {
+  if (index.includes(retired)) fail(`index.html still loads retired playback controller: ${retired}`);
+}
+if (index.includes('/cdn-cgi/challenge-platform/')) fail('index.html contains a response-only Cloudflare challenge bootstrap');
 if (/https:\/\/(?:www\.)?streamvault\.fit\/(?:api|download|live|live-relay|proxy|stream|subtitles)(?:\/|\?|["'`])/.test(activeSource)) {
   fail('an active script still hardcodes a backend request through the frontend apex');
 }

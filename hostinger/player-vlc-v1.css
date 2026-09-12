@@ -119,6 +119,18 @@
   background: #fff;
   border: 2px solid #ff7a1a;
   box-shadow: none;
+  transform: translate(-50%, -50%);
+}
+
+#playerModal button.pd-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  display: flex;
+  justify-content: space-between;
 }
 
 #playerModal .controls-row {

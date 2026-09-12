@@ -263,6 +263,8 @@ function svStalePlaybackError(reason='Stale playback request'){
 }
 
 function svPlayVideo(reason='', options={}){
+  if(window.playerSession?.active) { return window.playerSession.play(); }
+
   const scope=options.scope || null;
   if(scope && !isCurrentPlaybackScope(scope))return Promise.resolve(false);
   if(playerPlayPromise && !options.force)return playerPlayPromise;
@@ -461,6 +463,8 @@ function svResolveActualAudioIndex(tracks, logicalTrack, logicalIndex, preferred
 }
 
 function svApplyActiveAudioAuthority(hls=hlsInstance, video=svPlayerVideo(), caller='active audio authority', options={}){
+  if(window.playerSession && !isLiveMode) return;
+
   if(svActivePlaybackType !== 'media')return false;
   const logicalTracks=Array.isArray(options.logicalTracks) && options.logicalTracks.length
     ? options.logicalTracks
@@ -535,6 +539,8 @@ function svApplyActiveAudioAuthority(hls=hlsInstance, video=svPlayerVideo(), cal
 }
 
 function svForceMediaAudioOutput(video=svPlayerVideo(), reason='audio reset'){
+  if(window.playerSession && !isLiveMode) return;
+
   if(!video)return false;
   let changed=false;
   if(video.muted){
@@ -607,6 +613,8 @@ function svCaptureServerAudioDecision(payload, caller='svCaptureServerAudioDecis
 }
 
 function svApplyServerAudioAuthority(hls=hlsInstance, video=svPlayerVideo(), reason='server audio authority'){
+  if(window.playerSession && !isLiveMode) return;
+
   return svApplyActiveAudioAuthority(hls,video,'svApplyServerAudioAuthority',{reason});
 }
 
@@ -615,6 +623,8 @@ function svSelectDefaultNativeAudioTrack(video=svPlayerVideo(), reason='native a
 }
 
 function svArmNativeAudioResetOnLoad(context, reason='source load'){
+  if(window.playerSession && !isLiveMode) return;
+
   const video=svPlayerVideo();
   if(!video || !context)return;
   const sourceKey=context.sourceKey;
@@ -633,6 +643,8 @@ function svArmNativeAudioResetOnLoad(context, reason='source load'){
 }
 
 function svResetMediaAudioOnSourceSwitch(context, reason='stream switch', options={}){
+  if(window.playerSession && !isLiveMode) return;
+
   const video=svPlayerVideo();
   if(!video || !context)return;
   const authorityRaw=svMediaPlayerState.manualAudioIndex ?? svMediaPlayerState.serverAudioIndex;
@@ -673,6 +685,8 @@ function svReloadMediaForAudio(video, context, reason='audio watchdog'){
 }
 
 function svRunMediaAudioWatchdog(){
+  if(window.playerSession && !isLiveMode) return;
+
   const video=svPlayerVideo();
   const context=video?._svAudioResetContext;
   if(!video || !context)return;
@@ -1017,7 +1031,7 @@ function loadHlsScript(){
   if(_hlsLoader)return _hlsLoader;
   _hlsLoader = new Promise(resolve=>{
     const script=document.createElement('script');
-    script.src='https://cdn.jsdelivr.net/npm/hls.js@latest';
+    script.src='https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js';
     script.async=true;
     script.onload=()=>resolve(typeof Hls !== 'undefined');
     script.onerror=()=>resolve(false);
@@ -1250,6 +1264,8 @@ function appliedAudioIndex(){
 }
 
 function setAppliedAudioIndex(idx, reason=''){
+  if(window.playerSession && !isLiveMode) return;
+
   if(!Number.isInteger(idx))return;
   vid._appliedAudioIdx = idx;
   if(reason)mediaFixLog('applied audio index', {
@@ -1705,6 +1721,8 @@ function resetLocalTrackOptions(){
 }
 
 function ensureLocalTrackOptionsLoaded(){
+  if(window.playerSession && !isLiveMode) return;
+
   if(!currentStreamId || _ftpStreamUrl)return Promise.resolve();
   if(!isMobilePlaybackClient()){
     refreshDesktopNativeAudioTracks();
@@ -4013,12 +4031,18 @@ function ensureCentralPlaybackController(){
   }) || null;
   return playerPlaybackUiController;
 }
-function renderCentralPlaybackState(){return ensureCentralPlaybackController()?.render?.();}
+function renderCentralPlaybackState(){
+  if(window.playerSession?.active) { return window.StreamVaultPlayerView.render(window.playerSession.snapshot()); }
+return ensureCentralPlaybackController()?.render?.();}
 function setCentralPlaybackLoading(loading=true){
+  if(window.playerSession?.active) { return; }
+
   const controller=ensureCentralPlaybackController();
   return loading ? controller?.beginLoading?.() : controller?.clearLoading?.();
 }
 function setCentralPlaybackError(error=true){
+  if(window.playerSession?.active) { return; }
+
   const controller=ensureCentralPlaybackController();
   return error ? controller?.fail?.() : controller?.reset?.();
 }
@@ -4043,6 +4067,8 @@ function selectedTextTrack(){
 }
 
 function updateSubtitleOverlay(){
+  if(window.playerSession && !isLiveMode) return;
+
   if(!subtitleOverlay)return;
   const textTrack = selectedTextTrack();
   const cues = textTrack?.activeCues ? Array.from(textTrack.activeCues) : [];
@@ -4052,6 +4078,8 @@ function updateSubtitleOverlay(){
 }
 
 function scheduleSubtitleOverlayUpdate(){
+  if(window.playerSession && !isLiveMode) return;
+
   if(subtitleOverlayRaf)return;
   subtitleOverlayRaf=requestAnimationFrame(()=>{
     subtitleOverlayRaf=0;
@@ -4179,6 +4207,8 @@ function renderSubtitleTracks(){
 }
 
 function refreshDesktopNativeSubtitleTracks(preserveExternal=false){
+  if(window.playerSession && !isLiveMode) return;
+
   if(isMobilePlaybackClient())return;
   const external = preserveExternal ? availableSubs.filter(track=>!track.native && !track.hls) : [];
   availableSubs=[...external,...desktopNativeSubtitleTracks()].map((track,index)=>({...track,index,label:subtitleTrackLabel(track,index)}));
@@ -4207,6 +4237,8 @@ function desktopNativeAudioTracks(){
 }
 
 function refreshDesktopNativeAudioTracks(){
+  if(window.playerSession && !isLiveMode) return;
+
   if(isMobilePlaybackClient())return;
   const nativeTracks=desktopNativeAudioTracks();
   if(nativeTracks.length > 1 || (nativeTracks.length && availableAudio.length <= 1)){
@@ -4248,6 +4280,8 @@ function validDurationSeconds(value){
 }
 
 function setPlayerDuration(seconds, source='browser'){
+  if(window.playerSession?.active) { return window.playerSession.globalDuration; }
+
   const duration = Number(seconds);
   if(!validDurationSeconds(duration))return 0;
   if(source==='api')vid._apiDuration = duration;
@@ -4316,6 +4350,8 @@ function startupPlaybackOptions(info, sourceUrl=''){
 }
 
 function playerDuration(){
+  if(window.playerSession?.active) { return window.playerSession.globalDuration; }
+
   if(_ftpStreamUrl&&_ftpNeedsTranscode)return validDurationSeconds(_ftpDuration) ? _ftpDuration : 0;
   if(validDurationSeconds(vid._apiDuration))return vid._apiDuration;
   if(validDurationSeconds(vid._stableDuration))return vid._stableDuration;
@@ -4325,6 +4361,8 @@ function playerDuration(){
 }
 
 function playbackTime(){
+  if(window.playerSession?.active) { return window.playerSession.globalCurrentTime; }
+
   const base = Number(vid._sourceOffset || 0);
   const local = Number.isFinite(vid.currentTime) ? vid.currentTime : 0;
   return Math.max(0, base + local);
@@ -4439,6 +4477,8 @@ function flushPlayerProgress(){
 }
 
 function schedulePlayerProgressRender(current=playbackTime(),duration=playerDuration(),options={}){
+  if(window.playerSession && !isLiveMode) return;
+
   if(isLiveMode || (progressDragging && !options.force))return;
   const save=!!options.save || !!playerProgressPending?.save;
   playerProgressPending={current,duration,save};
@@ -4456,6 +4496,8 @@ function flushPlayerBuffered(){
 }
 
 function schedulePlayerBufferedRender(){
+  if(window.playerSession && !isLiveMode) return;
+
   if(isLiveMode)return;
   const d=playerDuration();
   if(!validDurationSeconds(d))return;
@@ -4468,6 +4510,8 @@ function schedulePlayerBufferedRender(){
 }
 
 function startPlayerUiClock(){
+  if(window.playerSession && !isLiveMode) return;
+
   if(playerUiClock || isLiveMode)return;
   playerUiClock=setInterval(()=>{
     if(vid.paused || progressDragging || isLiveMode)return;
@@ -5538,84 +5582,18 @@ async function loadFtpTrackOptions(streamUrl){
 }
 
 async function sourceSeekTo(seconds){
-  if(!currentStreamId)return;
-  const currentMode = _currentPlaybackPlan?.mode || 'direct';
-  if(!isMobilePlaybackClient() && !planNeedsSourceSeek({mode:currentMode})){
-    setCentralPlaybackLoading(false);
-    showToast('Desktop performance mode seeks on the original stream without FFmpeg.');
-    try{vid.currentTime = Math.max(0, seconds);}catch(_){}
-    return;
-  }
-  const target = Math.max(0, seconds);
-  const wasPlaying = !vid.paused;
-  const token = (vid._seekToken || 0) + 1;
-  vid._seekToken = token;
-  const previousOffset = vid._sourceOffset || 0;
-  const previousTime = playbackTime();
-  vid._sourceOffset = target;
-  vid.pause();
-  setCentralPlaybackLoading(true);
-  const seekTimer = setTimeout(()=>{
-    if(token !== vid._seekToken)return;
-    setCentralPlaybackLoading(false);
-    if(wasPlaying)svPlayVideo('local seek timeout').catch(()=>{});
-  }, 12000);
-  try{
-    const fallbackReason='local seek';
-    const plan = currentMode === 'stream'
-      ? { ok:true, mode:'stream', src:localTranscodeSrc(currentStreamId, target, fallbackReason), duration:vid._apiDuration || 0 }
-      : await fetchLocalPlaybackPlan(currentStreamId, target, {...playbackOptionsForStep(currentMode, fallbackReason), signal:playbackRequestController?.signal});
-    if(token !== vid._seekToken)return;
-    validateMediaPlaybackSource(plan.src, fallbackReason, {localId:currentStreamId, mode:plan.mode, fallbackReason});
-    _currentPlaybackPlan = plan;
-    vid._sourceSeekRequired = planNeedsSourceSeek(plan);
-    vid._mediaSourceSeekRequired = vid._sourceSeekRequired;
-    if(validDurationSeconds(Number(plan.duration)))setPlayerDuration(Number(plan.duration),'api');
-    vid.addEventListener('loadedmetadata', function onSourceSeekMeta(){
-      if(token !== vid._seekToken)return;
-      vid.removeEventListener('loadedmetadata', onSourceSeekMeta);
-      clearTimeout(seekTimer);
-      setCentralPlaybackLoading(false);
-      if(wasPlaying)svPlayVideo('local seek metadata').catch(()=>{});
-    }, {once:true});
-    const attached = await attachPlayerSource(plan.src, plan.mode, {playbackType:'media', fallbackReason});
-    if(!attached)throw new Error('HLS not supported');
-    if(wasPlaying)svPlayVideo('local seek attach').catch(()=>{});
-  }catch(e){
-    if(e?.name === 'AbortError')return;
-    if(token !== vid._seekToken)return;
-    clearTimeout(seekTimer);
-    setCentralPlaybackLoading(false);
-    vid._sourceOffset = previousOffset;
-    mediaFixLog('local seek route failed; resumed previous source', {
-      id:currentStreamId,
-      target,
-      previousTime,
-      mode:_currentPlaybackPlan?.mode || '',
-      message:e.message
-    });
-    if(wasPlaying)svPlayVideo('local seek rollback').catch(()=>{});
-    showToast('Seek failed; resumed previous stream');
-  }
+  // SV_PLAYER_SESSION_BOUNDARY: retired VOD pipeline.
+  return window.playerSession?.seekTo(arguments[0]);
 }
 
 function seekToTime(seconds){
-  const duration = playerDuration();
-  const target = duration ? Math.max(0, Math.min(duration, seconds)) : Math.max(0, seconds);
-  if(_ftpStreamUrl){
-    ftpSeekTo(target);
-  }else if(currentStreamId&&vid._sourceSeekRequired){
-    sourceSeekTo(target);
-  }else{
-    try{
-      vid.currentTime = target;
-    }catch(e){
-      if(currentStreamId)sourceSeekTo(target);
-    }
-  }
+  // SV_PLAYER_SESSION_BOUNDARY: retired VOD pipeline.
+  return window.playerSession?.seekTo(seconds);
 }
 
 function maybeResumeProgress(id, duration){
+  if(window.playerSession && !isLiveMode) return;
+
   if(vid._resumeChecked)return;
   const saved = watchProgress[id];
   if(!saved || saved.progress <= 0.02 || saved.progress >= 0.95){
@@ -5635,6 +5613,8 @@ function maybeResumeProgress(id, duration){
 }
 
 async function loadPlayerDuration(id){
+  if(window.playerSession && !isLiveMode) return;
+
   const token = (vid._durationToken || 0) + 1;
   vid._durationToken = token;
   vid._durationPending = true;
@@ -5661,6 +5641,8 @@ async function loadPlayerDuration(id){
 }
 
 async function loadFtpDuration(streamUrl){
+  if(window.playerSession && !isLiveMode) return;
+
   const token = (vid._durationToken || 0) + 1;
   vid._durationToken = token;
   vid._durationPending = true;
@@ -5997,232 +5979,8 @@ async function tryLocalAdaptiveFallback(id, failedAt=playbackTime()){
 }
 
 async function playMedia(id, name, year, playbackContext=null){
-  console.log('[Playback] play button clicked');
-  console.log('[Playback] Local playback plan');
-  const movie = movies.find(m => m.id === id) || {};
-  const localSourceLabel = movie.file || movie.filename || movie.path || movie.name || name || '';
-  recordWatchHistory(id, movie.name || name, movie.genre || '', 'movie');
-  if (!checkParentalLock(movie.rating || 'PG')) {
-    showToast('Content locked by parental controls');
-    return;
-  }
-  trackView(id);
-  const playbackScope = beginPlaybackRequestScope('local media startup');
-  clearMediaStartupWatchdog();
-  svBeginMediaPlayback('local', id, name || movie.name || '', playbackContext || svPlaybackContextForMovie(movie));
-  isLiveMode = false;
-  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-  closeAllDropdowns();
-  hidePlayerNotice();
-  currentStreamId = id;
-  currentQuality = 'auto';
-  clearSubtitleOverlay();
-  svSetCurrentAudioIndex(0,'playMedia','new local media session');
-  setAppliedAudioIndex(0);
-  availableSubs = [];
-  availableAudio = [];
-  clearInterval(vid._pi);
-  vid.pause();
-  vid.removeAttribute('src');
-  try{vid.load();}catch(_){}
-  vid.querySelectorAll('track').forEach(t => t.remove());
-  clearSubtitleOverlay();
-
-  // Reset transient state
-  _ftpDuration = 0;
-  vid._apiDuration = 0;
-  _ftpStreamUrl = '';
-  _ftpNeedsTranscode = false;
-  vid._resumeChecked = false;
-  vid._durationPending = false;
-  vid._sourceOffset = 0;
-  vid._localFallbackTried = false;
-  vid._localFallbackStepsTried = new Set();
-  _currentPlaybackPlan = null;
-  clearTimeout(vid._localFallbackTimer);
-  vid._localFallbackTimer = null;
-  const mobilePlayback = isMobilePlaybackClient();
-  vid._sourceSeekRequired = false;
-  vid._mediaSourceSeekRequired = false;
-  vid._vlcFallbackUrl = streamUrlFor(id);
-  vid._vlcFallbackTitle = name || '';
-  vid._hlsNoticeOnFatal = true;
-  vid._svPlaybackShouldPlay = true;
-  vid._stableDuration = 0;        // ← new: ensure duration locking for this video
-  vid._audioSwitchPending = false;
-  vid._queuedAudioSwitchIdx = null;
-  vid._audioSwitchToken = (vid._audioSwitchToken || 0) + 1;
-  resetSmoothPlaybackState('local startup');
-  resetSeekPreview();
-
-  // ── Attach the metadata handler BEFORE setting src ──
-  resetLocalTrackOptions();
-
-  vid.addEventListener('loadedmetadata', function onMeta() {
-    vid.removeEventListener('loadedmetadata', onMeta);
-    setCentralPlaybackLoading(false);
-    if (!vid._sourceSeekRequired && !vid._durationPending && validDurationSeconds(vid.duration)) {
-      const duration = setPlayerDuration(vid.duration);
-      maybeResumeProgress(id, duration);
-    }
-    svPlayVideo('local metadata autoplay', {scope:playbackScope}).catch(()=>{});
-  }, { once: true });
-
-  // Now assign the source → the handler will fire reliably
-  // Source is selected through /api/playback/local after the player shell is visible.
-
-  // UI updates
-  document.getElementById('playerTitle').textContent = displayText(name);
-  document.getElementById('playerSubTitle').textContent = year ? `${year}` : '';
-  document.getElementById('playerLiveBadge').classList.remove('show');
-  document.getElementById('progressWrap').classList.remove('live-mode');
-  setDurationTimer('0:00','0:00');
-  document.getElementById('playerModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  if(mobilePlayback)enterMobileLandscapeMode();
-  refreshPlayerControlVisibility();
-  showUI();
-  setCentralPlaybackLoading(true);
-  let startupAudio;
-  try{
-    startupAudio = await prepareLocalStartupAudio(id, movie, playbackScope);
-  }catch(e){
-    if(e?.name === 'AbortError')return;
-    throw e;
-  }
-  if(!isCurrentPlaybackScope(playbackScope) || String(currentStreamId) !== String(id) || _ftpStreamUrl)return;
-  const startupInfo = startupAudio.info;
-  armSmoothPlaybackMonitor('local', startupInfo, localSourceLabel);
-  const startupOptions = startupAudio.options || {};
-  if(!startupOptions.fallbackReason)startupOptions.fallbackReason = startupAudio.reason || 'local startup';
-  if(startupOptions.blockPlayback){
-    delete startupOptions.blockPlayback;
-    startupOptions.forceAudio = true;
-    mediaFixLog('local startup recovered with first playable audio', {id, reason:startupAudio.reason});
-  }
-  setTimeout(()=>{
-    if(String(currentStreamId) === String(id) && !_ftpStreamUrl){
-      ensureLocalTrackOptionsLoaded().then(()=>{
-        if(String(currentStreamId) !== String(id) || _ftpStreamUrl)return;
-        if(audioLockedIndex() === null && !applyPreferredNativeAudioIfSafe('local metadata')){
-          const selected=selectedAudioTrack();
-          if(selected && audioTrackIsAudible(selected) && appliedAudioIndex() !== currentAudioIdx){
-            mediaFixLog('first playable audio default deferred', {
-              id,
-              reason:'stable local source already attached; no safe native audio switch available',
-              selected:audioDebugSummary(selected,currentAudioIdx),
-              applied:appliedAudioIndex(),
-              subtitleCount:availableSubs.length
-            });
-          }
-        }
-      }).catch(e=>playbackDebug('local async track metadata failed',{id,message:e.message}));
-    }
-  }, 0);
-  loadPlayerDuration(id);
-
-  try{
-    // Desktop's direct route is deterministic. Attach it immediately so the
-    // play() call remains inside the card/episode click's user activation.
-    const needsServerStart = !!(startupOptions.forceAudio || startupOptions.forceRemux || startupOptions.forceHls || startupOptions.mode);
-    let plan;
-    if(!mobilePlayback && mediaNeedsBrowserVideoTranscode(startupInfo, localSourceLabel)){
-      const fallbackReason='browser video codec transcode';
-      plan={
-        ok:true,
-        id:String(id),
-        mode:'stream',
-        transport:'stream',
-        src:localTranscodeSrc(id,0,fallbackReason),
-        duration:0,
-        unsupportedVideoHint:true
-      };
-      vid._localFallbackStepsTried.add('transcode');
-      mediaFixLog('local startup using browser-compatible video transcode', {id,codec:startupInfo?.videoCodec || ''});
-    }else if(mobilePlayback || needsServerStart){
-      try{
-        plan = await fetchLocalPlaybackPlan(id,0,{...startupOptions, signal:playbackScope.signal});
-      }catch(e){
-        if(e?.name === 'AbortError')return;
-        if(mobilePlayback)throw e;
-        if(!needsServerStart)throw e;
-        resetToOriginalAudioFallback('local mapped startup fallback');
-        mediaFixLog('local mapped startup plan failed; using original source', {id,message:e.message});
-        plan = {ok:true, id:String(id), mode:'direct', transport:'direct', src:streamUrlFor(id), duration:0};
-        vid._localFallbackStepsTried.add('audio');
-        vid._localFallbackStepsTried.add('remux');
-      }
-    }else{
-      plan = {ok:true, id:String(id), mode:'direct', transport:'direct', src:streamUrlFor(id), duration:0};
-    }
-    if(String(currentStreamId) !== String(id) || _ftpStreamUrl)return;
-    if(!isCurrentPlaybackScope(playbackScope))return;
-    validateMediaPlaybackSource(plan.src, 'local startup', {localId:id, mode:plan.mode || 'direct', fallbackReason:startupOptions.fallbackReason});
-    _currentPlaybackPlan = plan;
-    _currentPlaybackPlan.unsupportedVideoCodec = mediaInfoHasUnsupportedVideo(startupInfo);
-    if(['audio','remux','direct'].includes(String(plan.mode || '')))vid._localFallbackStepsTried.add(plan.mode);
-    vid._sourceSeekRequired = planNeedsSourceSeek(plan);
-    vid._mediaSourceSeekRequired = vid._sourceSeekRequired;
-    if(validDurationSeconds(Number(plan.duration))){
-      setPlayerDuration(Number(plan.duration),'api');
-    }
-    vid.addEventListener('error', async function onLocalPlaybackError(){
-      if(String(currentStreamId) !== String(id) || _ftpStreamUrl || vid._localFallbackTried)return;
-      clearMediaStartupWatchdog();
-      vid._localFallbackTried = true;
-      playbackDebug('local direct video error', {id, error:videoErrorInfo()});
-      tryLocalAdaptiveFallback(id, playbackTime()).catch(()=>showPlayerNotice(DESKTOP_UNSUPPORTED_MESSAGE));
-    }, {once:true});
-    const attachPromise = attachPlayerSource(plan.src, plan.mode, {playbackType:'media', fallbackReason:startupOptions.fallbackReason});
-    mediaFixLog('attach local source',{
-      title:name || movie.name || '',
-      id,
-      route:plan.mode === 'audio' ? 'audio-copy' : plan.mode === 'remux' ? 'remux-copy' : plan.mode,
-      src:plan.src,
-      reason:startupAudio.reason || '',
-      selectedAudio:audioDebugSummary(selectedAudioTrack(),currentAudioIdx)
-    });
-    const initialPlay = !mobilePlayback
-      ? svPlayVideo('local initial play', {scope:playbackScope, force:true, onError:e=>handleInitialPlayRejection(e, ()=>{
-          if(vid._localFallbackTried)return;
-          vid._localFallbackTried = true;
-          tryLocalAdaptiveFallback(id, playbackTime()).catch(()=>{});
-        })})
-      : null;
-    const attached = await attachPromise;
-    if(!isCurrentPlaybackScope(playbackScope))return;
-    if(!attached){
-      await tryLocalAdaptiveFallback(id, playbackTime());
-      return;
-    }
-    armMediaStartupWatchdog(
-      plan.src,
-      'local startup',
-      ()=>String(currentStreamId) === String(id) && !_ftpStreamUrl && isCurrentPlaybackScope(playbackScope),
-      ()=>{
-        vid._localFallbackTried=true;
-        return tryLocalAdaptiveFallback(id, playbackTime());
-      },
-      plan.mode === 'stream' ? SV_MEDIA_TRANSCODE_STARTUP_TIMEOUT_MS : SV_MEDIA_SOURCE_STARTUP_TIMEOUT_MS
-    );
-    if(validDurationSeconds(playerDuration()))maybeResumeProgress(id, playerDuration());
-    if(mobilePlayback){
-      svPlayVideo('local mobile initial play', {scope:playbackScope, force:true, onError:e=>{
-        playbackDebug('local direct play rejected', {id, message:e.message});
-        tryLocalAdaptiveFallback(id, playbackTime()).catch(()=>{});
-        return false;
-      }}).catch(()=>{});
-    }else{
-      await initialPlay;
-    }
-    setTimeout(()=>{
-      if(String(currentStreamId)===String(id) && !_ftpStreamUrl)ensureLocalTrackOptionsLoaded();
-    },500);
-  }catch(e){
-    if(e?.name === 'AbortError')return;
-    setCentralPlaybackLoading(false);
-    showPlayerNotice(DESKTOP_UNSUPPORTED_MESSAGE);
-  }
+  // SV_PLAYER_SESSION_BOUNDARY: retired VOD pipeline.
+  return window.StreamVaultPlayerView.start({kind:'local',id,name,year});
 }
 
 function currentPlaybackSnapshot(){
@@ -6427,6 +6185,8 @@ async function switchAudioWithServer(idx){
 }
 
 function setAudio(idx){
+  if(window.playerSession?.active) { window.playerSession.setAudio(Number(arguments[0])); closeAllDropdowns(); return; }
+
   if(!Number.isInteger(idx) || idx < 0 || !availableAudio[idx])return;
   if(vid._audioSwitchPending){
     vid._queuedAudioSwitchIdx=idx;
@@ -6510,7 +6270,9 @@ function updateProgress(){
   schedulePlayerProgressRender(current,duration,{save:true});
   updateWatchProgress(currentStreamId,current,duration);
 }
-function updatePlayIcons(){renderCentralPlaybackState();}
+function updatePlayIcons(){
+  if(window.playerSession?.active) { return window.StreamVaultPlayerView.render(window.playerSession.snapshot()); }
+renderCentralPlaybackState();}
 function hideUI(){
   if(vid.paused || playerMenusOpen() || progressDragging || playerControlsFocused())return;
   clearTimeout(uiHideTimer);
@@ -6537,7 +6299,9 @@ function scheduleHideUI(){
   if(vid.paused || playerMenusOpen() || progressDragging || playerControlsFocused())return;
   uiHideTimer=setTimeout(hideUI,3500);
 }
-function togglePlay(){if(ensureCentralPlaybackController()?.isLoading?.())return;if(vid.paused){vid._svPlaybackShouldPlay=true;svPlayVideo('manual toggle', {force:true}).catch(()=>{});popCenter('');}else{vid._svPlaybackShouldPlay=false;svAbortPendingPlayRequest('manual pause');vid.pause();popCenter('');clearTimeout(uiHideTimer);}}
+function togglePlay(){
+  if(window.playerSession?.active) { return window.playerSession.togglePlay(); }
+if(ensureCentralPlaybackController()?.isLoading?.())return;if(vid.paused){vid._svPlaybackShouldPlay=true;svPlayVideo('manual toggle', {force:true}).catch(()=>{});popCenter('');}else{vid._svPlaybackShouldPlay=false;svAbortPendingPlayRequest('manual pause');vid.pause();popCenter('');clearTimeout(uiHideTimer);}}
 function seekBy(s){
   if(isLiveMode)return;
   seekToTime(playbackTime()+s);
@@ -6545,8 +6309,12 @@ function seekBy(s){
 }
 function flashSeek(s){const side=s<0?'Left':'Right';const el=document.getElementById('seekFlash'+side);el.classList.add('show');setTimeout(()=>el.classList.remove('show'),700);}
 function popCenter(icon){const el=document.getElementById('centerFlash');el.textContent=icon;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),400);}
-function toggleMute(){vid.muted=!vid.muted;document.getElementById('volSlider').value=vid.muted?0:vid.volume;updateVolIcon();}
-function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;updateVolIcon();}
+function toggleMute(){
+  if(window.playerSession?.active) { return window.playerSession.setMuted(!window.playerSession.muted); }
+vid.muted=!vid.muted;document.getElementById('volSlider').value=vid.muted?0:vid.volume;updateVolIcon();}
+function setVolume(v){
+  if(window.playerSession?.active) { return window.playerSession.setVolume(arguments[0]); }
+vid.volume=parseFloat(v);vid.muted=v==0;updateVolIcon();}
 function updateVolIcon(){
   const muted=vid.muted||vid.volume===0;
   document.getElementById('volIcon').innerHTML=muted
@@ -6745,6 +6513,8 @@ function armSmoothPlaybackMonitor(kind, info={}, sourceUrl=''){
 }
 
 function noteSmoothPlaybackStarted(){
+  if(window.playerSession && !isLiveMode) return;
+
   if(!_smoothPlaybackState.startedAt)_smoothPlaybackState.startedAt=Date.now();
   if(!_smoothPlaybackState.playingAt)_smoothPlaybackState.playingAt=Date.now();
 }
@@ -6764,6 +6534,8 @@ function ftpSmoothTranscodeSrc(url,start=0,fallbackReason='smooth buffering fall
 }
 
 async function switchToSmoothPlaybackProfile(reason='buffering'){
+  if(window.playerSession && !isLiveMode) return;
+
   if(_smoothPlaybackState.switching || _smoothPlaybackState.switched || isLiveMode)return false;
   if(_currentFtpPlaybackPlan?.heavyCompatHls)return false;
   const isFtp=!!_ftpStreamUrl;
@@ -6810,6 +6582,8 @@ async function switchToSmoothPlaybackProfile(reason='buffering'){
 }
 
 function noteSmoothPlaybackBuffering(eventName='waiting'){
+  if(window.playerSession && !isLiveMode) return;
+
   if(isLiveMode || _smoothPlaybackState.switching || _smoothPlaybackState.switched)return;
   if(_currentFtpPlaybackPlan?.heavyCompatHls)return;
   if(vid.seeking || _ftpSeekPending || vid._audioSwitchPending)return;
@@ -6925,6 +6699,8 @@ function scheduleFtpPostStartMetadata(resolvedStreamUrl){
 }
 
 function ensureFtpTrackOptionsLoaded(options={}){
+  if(window.playerSession && !isLiveMode) return;
+
   if(!_ftpStreamUrl)return Promise.resolve();
   const force=!!options.force;
   const hasLoadedTracks=availableAudio.length > 1 || availableSubs.length > 0;
@@ -6949,380 +6725,20 @@ function ensureFtpTrackOptionsLoaded(options={}){
 }
 
 async function playFtpMedia(streamUrl, name, year, playbackContext=null){
-  let requestedStreamUrl = String(svBackendUrl(streamUrl) || '').trim();
-  let startupOptions = {};
-  try {
-    console.log('[Playback] play button clicked');
-    if(!requestedStreamUrl){
-      showToast('Playback error: missing source URL');
-      return;
-    }
-    const playbackScope = beginPlaybackRequestScope('FTP media startup');
-    clearMediaStartupWatchdog();
-    svBeginMediaPlayback('ftp', requestedStreamUrl, name || '', playbackContext || svPlaybackContextForSource(requestedStreamUrl,name));
-    if(!svAssertNoLiveSourceForMedia(requestedStreamUrl, {fallbackReason:'FTP media startup'}))return;
-    const mobilePlayback = isMobilePlaybackClient();
-    mediaFixLog('selected FTP media URL',{url:requestedStreamUrl,name,year,mobilePlayback});
-    console.log('[Playback] FTP proxy URL', ftpProxySrc(requestedStreamUrl));
-
-    isLiveMode = false;
-    closeAllDropdowns(); closeAllSeriesDropdowns(); hideSeriesPlayerBar();
-    hidePlayerNotice();
-    clearInterval(vid._pi);
-    if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-    vid.pause();
-    vid.removeAttribute('src');
-    vid.querySelectorAll('track').forEach(t=>t.remove());
-    clearSubtitleOverlay();
-    vid.load();
-    const playToken = (vid._durationToken || 0) + 1;
-    vid._durationToken = playToken;
-    _ftpStreamUrl = requestedStreamUrl;
-    _ftpDuration = 0;
-    _ftpNeedsTranscode = false;
-    _ftpTrackLoadPromise = null;
-    _ftpTrackLoadFailed = false;
-    resetFtpHeavyPlaybackState();
-    _currentFtpPlaybackPlan = null;
-    _ftpCurrentTime = 0;
-    _ftpSeekPending = false;
-    vid._apiDuration = 0;
-    vid._sourceOffset = 0;
-    vid._sourceSeekRequired = false;
-    vid._mediaSourceSeekRequired = false;
-    vid._ftpProxyFallback = false;
-    vid._ftpPlaybackFallbackTried = false;
-    vid._ftpFallbackStepsTried = new Set();
-    vid._svPlaybackShouldPlay = true;
-    clearTimeout(vid._ftpFallbackTimer);
-    vid._ftpFallbackTimer = null;
-    vid._durationPending = false;
-    vid._resumeChecked = true;
-    vid._stableDuration = 0;               // ← reset duration lock
-    vid._audioSwitchPending = false;
-    vid._queuedAudioSwitchIdx = null;
-    vid._audioSwitchToken = (vid._audioSwitchToken || 0) + 1;
-    resetSmoothPlaybackState('FTP startup');
-    resetSeekPreview();
-
-    // UI
-    document.getElementById('playerModal').classList.add('open');
-    setCentralPlaybackLoading(true);
-    document.getElementById('playerTitle').textContent = displayText(name);
-    document.getElementById('playerSubTitle').textContent = year || '';
-    document.getElementById('playerLiveBadge').classList.remove('show');
-    document.getElementById('progressWrap').classList.remove('live-mode');
-    document.getElementById('progressPlayed').style.width = '0%';
-    document.getElementById('progressThumb').style.left = '0%';
-    document.getElementById('progressBuffered').style.width = '0%';
-    setDurationTimer('0:00','--:--');
-    document.body.style.overflow = 'hidden';
-    if(mobilePlayback)enterMobileLandscapeMode();
-    refreshPlayerControlVisibility();
-    showUI();
-    currentStreamId = null;
-    currentQuality = 'auto';
-    svSetCurrentAudioIndex(0,'playFtpMedia','new FTP media session');
-    setAppliedAudioIndex(0);
-    clearAudioLock();
-    clearSubtitleOverlay();
-    availableAudio = [{index:0,title:'Default Audio'}];
-    availableSubs = [];
-    seedAudioTracksFromFilename(requestedStreamUrl, 'FTP startup filename');
-    renderAudioTracks();
-    const subList = document.getElementById('subList');
-    if(subList)subList.innerHTML = `<div class="pd-item" style="color:#444;pointer-events:none">Loading subtitles...</div>`;
-    updateSubBtn();
-    const startupAudio = await prepareFtpStartupAudio(requestedStreamUrl, playbackScope);
-    if(!isCurrentPlaybackScope(playbackScope) || _ftpStreamUrl !== requestedStreamUrl)return;
-    const startupInfo = startupAudio.info;
-    armSmoothPlaybackMonitor('ftp', startupInfo, requestedStreamUrl);
-    _ftpHeavyMedia=classifyHeavyMedia(startupInfo,requestedStreamUrl).heavy;
-    if(validDurationSeconds(Number(startupInfo?.duration))){
-      _ftpDuration=Number(startupInfo.duration);
-      setPlayerDuration(_ftpDuration,'api');
-    }
-    startupOptions = startupAudio.options || {};
-    if(!startupOptions.fallbackReason)startupOptions.fallbackReason = startupAudio.reason || 'FTP startup';
-    if(startupOptions.blockPlayback){
-      delete startupOptions.blockPlayback;
-      startupOptions.forceAudio = true;
-      mediaFixLog('FTP startup recovered with first playable audio', {url:requestedStreamUrl, reason:startupAudio.reason});
-    }
-
-    let playInfo;
-    mediaFixLog('FTP startup playback options',{
-      url:requestedStreamUrl,
-      options:startupOptions,
-      selectedAudio:audioDebugSummary(selectedAudioTrack(),currentAudioIdx),
-      metadataLoaded:!!startupInfo
-    });
-    const needsServerStart = !!(startupOptions.forceAudio || startupOptions.forceRemux || startupOptions.forceHls || startupOptions.mode);
-    if(!mobilePlayback && mediaNeedsBrowserVideoTranscode(startupInfo, requestedStreamUrl)){
-      const fallbackReason='browser video codec transcode';
-      if(shouldUseHeavyCompatHlsCache(startupInfo, requestedStreamUrl)){
-        playInfo=ftpHeavyCompatHlsPlaybackPlan(requestedStreamUrl,0,'heavy 4K compatibility cache');
-        vid._ftpFallbackStepsTried.add('hls');
-        mediaFixLog('FTP startup using heavy 4K compatibility cache', {
-          url:requestedStreamUrl,
-          codec:startupInfo?.videoCodec || '',
-          heavy:classifyHeavyMedia(startupInfo,requestedStreamUrl)
-        });
-      }else{
-        playInfo=ftpStreamPlaybackPlan(requestedStreamUrl,0,fallbackReason);
-        vid._ftpFallbackStepsTried.add('transcode');
-        mediaFixLog('FTP startup using browser-compatible video transcode', {url:requestedStreamUrl,codec:startupInfo?.videoCodec || ''});
-      }
-    }else if(!mobilePlayback && !needsServerStart){
-      // Never redirect an HTTPS desktop page to the private/HTTP media origin.
-      // The same-origin proxy preserves Range/206 responses and encoded names.
-      playInfo = localFtpPlaybackPlan(requestedStreamUrl, {forceProxy:true, fallbackReason:startupOptions.fallbackReason});
-    }else{
-      try{
-        playInfo = await fetchFtpPlaybackPlan(requestedStreamUrl,0,{...startupOptions, signal:playbackScope.signal});
-      }catch(e){
-        if(e?.name === 'AbortError')return;
-        if(mobilePlayback)throw e;
-        if(needsServerStart){
-          resetToOriginalAudioFallback('FTP mapped startup fallback');
-          mediaFixLog('FTP mapped startup plan failed; using original proxy', {url:requestedStreamUrl,message:e.message});
-          playInfo = localFtpPlaybackPlan(requestedStreamUrl, {forceProxy:true, fallbackReason:'FTP mapped startup fallback'});
-          vid._ftpFallbackStepsTried.add('audio');
-          vid._ftpFallbackStepsTried.add('remux');
-        }else{
-          if(playToken !== vid._durationToken)return;
-          console.warn('[Playback] FTP plan failed, trying direct route:', e.message);
-          playInfo = localFtpPlaybackPlan(requestedStreamUrl, {fallbackReason:'FTP direct startup fallback'});
-        }
-      }
-      if(!playInfo){
-        if(playToken !== vid._durationToken)return;
-        playInfo = localFtpPlaybackPlan(requestedStreamUrl, {fallbackReason:'FTP empty plan fallback'});
-      }
-    }
-    if(playToken !== vid._durationToken)return;
-    if(!isCurrentPlaybackScope(playbackScope))return;
-
-    const resolvedStreamUrl = playInfo.decodedUrl || requestedStreamUrl;
-    const playbackMode = playInfo.mode || (playInfo.directPlayable ? 'direct' : 'remux');
-    const directPlayable = playbackMode === 'direct';
-    const finalPlayUrl = playInfo.src || playInfo.finalPlayUrl || playInfo.playUrl || (directPlayable ? ftpProxySrc(resolvedStreamUrl) : ftpTranscodeSrc(resolvedStreamUrl, 0, startupOptions.fallbackReason));
-    const transcodeUrl = '';
-    if(!finalPlayUrl){
-      setCentralPlaybackLoading(false);
-      showToast('Playback error: no source URL returned');
-      return;
-    }
-    validateMediaPlaybackSource(finalPlayUrl, 'FTP startup', {ftpUrl:resolvedStreamUrl, mode:playbackMode, fallbackReason:startupOptions.fallbackReason});
-
-    _ftpStreamUrl = resolvedStreamUrl;
-    _currentFtpPlaybackPlan = playInfo;
-    _currentFtpPlaybackPlan.unsupportedVideoCodec = mediaInfoHasUnsupportedVideo(startupInfo);
-    _ftpNeedsTranscode = planNeedsSourceSeek({mode: playbackMode});
-    if(['proxy','audio','remux','direct'].includes(String(playbackMode || '')))vid._ftpFallbackStepsTried.add(playbackMode);
-    vid._sourceSeekRequired = _ftpNeedsTranscode;
-    vid._mediaSourceSeekRequired = _ftpNeedsTranscode;
-    vid._vlcFallbackUrl = resolvedStreamUrl;
-    vid._vlcFallbackTitle = name || '';
-    vid._hlsNoticeOnFatal = true;
-    if(validDurationSeconds(Number(playInfo.duration))){
-      _ftpDuration = Number(playInfo.duration);
-      setPlayerDuration(_ftpDuration, 'api');
-    }
-
-    // ── Attach spinner‑hiding & play listener BEFORE setting src ──
-    vid.addEventListener('canplay', function onFtpCanPlay() {
-      vid.removeEventListener('canplay', onFtpCanPlay);
-      applyPreferredNativeAudioIfSafe('FTP canplay');
-      setCentralPlaybackLoading(false);
-    }, { once: true });
-
-    vid.addEventListener('error', function onFtpPlaybackError() {
-      if (_ftpStreamUrl !== resolvedStreamUrl) return;
-      if (vid._ftpPlaybackFallbackTried) return;
-      clearMediaStartupWatchdog();
-      vid._ftpPlaybackFallbackTried = true;
-      playbackDebug('ftp initial video error', {mode:playbackMode, error:videoErrorInfo()});
-      tryFtpAdaptiveFallback(resolvedStreamUrl, name, playbackTime()).catch(()=>showVlcPlaybackNotice(resolvedStreamUrl, name));
-    }, {once:true});
-
-    console.log(`[Playback] FTP ${playbackMode}`);
-    mediaFixLog('attach FTP source',{
-      title:name || '',
-      url:resolvedStreamUrl,
-      route:playbackMode === 'audio' ? 'audio-copy' : playbackMode === 'remux' ? 'remux-copy' : playbackMode,
-      src:finalPlayUrl,
-      reason:startupAudio.reason || '',
-      selectedAudio:audioDebugSummary(selectedAudioTrack(),currentAudioIdx)
-    });
-    const attachPromise = attachPlayerSource(finalPlayUrl, playbackMode, {playbackType:'media', fallbackReason:startupOptions.fallbackReason});
-    const initialPlay = !mobilePlayback
-      ? svPlayVideo('FTP initial play', {scope:playbackScope, force:true, onError:e=>handleInitialPlayRejection(e, ()=>{
-          playbackDebug('ftp initial play rejected', {message:e.message});
-          tryFtpAdaptiveFallback(resolvedStreamUrl, name, playbackTime()).catch(()=>showVlcPlaybackNotice(resolvedStreamUrl, name));
-        })})
-      : null;
-    const attached = await attachPromise;
-    if(!isCurrentPlaybackScope(playbackScope))return;
-    if(!attached){
-      await tryFtpAdaptiveFallback(resolvedStreamUrl, name, playbackTime());
-      return;
-    }
-    armMediaStartupWatchdog(
-      finalPlayUrl,
-      'FTP startup',
-      ()=>_ftpStreamUrl === resolvedStreamUrl && isCurrentPlaybackScope(playbackScope),
-      ()=>{
-        vid._ftpPlaybackFallbackTried=true;
-        return tryFtpAdaptiveFallback(resolvedStreamUrl, name, playbackTime());
-      },
-      playbackMode === 'stream' ? SV_MEDIA_TRANSCODE_STARTUP_TIMEOUT_MS : SV_MEDIA_SOURCE_STARTUP_TIMEOUT_MS
-    );
-
-    scheduleFtpPostStartMetadata(resolvedStreamUrl);
-
-    if(mobilePlayback){
-      svPlayVideo('FTP mobile initial play', {scope:playbackScope, force:true, onError:e => {
-        playbackDebug('ftp initial play rejected', {message:e.message});
-        tryFtpAdaptiveFallback(resolvedStreamUrl, name, playbackTime()).catch(()=>showVlcPlaybackNotice(resolvedStreamUrl, name));
-        return false;
-      }}).catch(()=>{});
-    }else{
-      await initialPlay;
-    }
-  } catch (e) {
-    if(e?.name === 'AbortError')return;
-    setCentralPlaybackLoading(false);
-    mediaFixLog('FTP playback startup failed', {
-      url:requestedStreamUrl,
-      selected:audioDebugSummary(selectedAudioTrack(),currentAudioIdx),
-      options:startupOptions,
-      message:e.message
-    });
-    if(isMobilePlaybackClient()){
-      showPlayerNotice('Mobile compatibility stream could not start. ' + e.message);
-      return;
-    }
-    if(requestedStreamUrl){
-      try{
-        resetToOriginalAudioFallback('FTP startup error proxy fallback');
-        const fallback = localFtpPlaybackPlan(requestedStreamUrl, {forceProxy:true, fallbackReason:'FTP startup error proxy fallback'});
-        const fallbackUrl = fallback.src || fallback.finalPlayUrl || fallback.playUrl;
-        validateMediaPlaybackSource(fallbackUrl, 'proxy', {ftpUrl:requestedStreamUrl, mode:fallback.mode || 'proxy', fallbackReason:'FTP startup error proxy fallback'});
-        _ftpStreamUrl = fallback.decodedUrl || requestedStreamUrl;
-        _currentFtpPlaybackPlan = fallback;
-        _ftpNeedsTranscode = false;
-        vid._sourceSeekRequired = false;
-        vid._mediaSourceSeekRequired = false;
-        vid._sourceOffset = 0;
-        vid.addEventListener('canplay', function onStartupProxyFallback(){
-          if(_ftpStreamUrl !== (fallback.decodedUrl || requestedStreamUrl))return;
-          setCentralPlaybackLoading(false);
-        }, {once:true});
-        vid.addEventListener('error', function onStartupProxyFallbackError(){
-          if(_ftpStreamUrl !== (fallback.decodedUrl || requestedStreamUrl))return;
-          clearMediaStartupWatchdog();
-          showVlcPlaybackNotice(requestedStreamUrl, name);
-        }, {once:true});
-        setCentralPlaybackLoading(true);
-        if(await attachPlayerSource(fallbackUrl, fallback.mode || 'proxy', {playbackType:'media', fallbackReason:'FTP startup error proxy fallback'})){
-          armMediaStartupWatchdog(
-            fallbackUrl,
-            'FTP startup proxy fallback',
-            ()=>_ftpStreamUrl === (fallback.decodedUrl || requestedStreamUrl),
-            ()=>showVlcPlaybackNotice(requestedStreamUrl, name)
-          );
-          svPlayVideo('FTP startup proxy fallback', {force:true, onError:err=>handleInitialPlayRejection(err,()=>showVlcPlaybackNotice(requestedStreamUrl,name))}).catch(()=>{});
-          return;
-        }
-      }catch(fallbackError){
-        console.warn('[Playback] FTP original proxy fallback failed:', fallbackError.message);
-      }
-    }
-    try{
-      vid.pause();
-      vid.removeAttribute('src');
-      vid.load();
-    }catch(_){}
-    showPlayerNotice('Playback could not start with a playable audio stream. ' + e.message);
-  }
+  // SV_PLAYER_SESSION_BOUNDARY: retired VOD pipeline.
+  return window.StreamVaultPlayerView.start({kind:'remote',url:streamUrl,name,year});
 }
 
 async function ftpSeekTo(seconds){
-  if(!_ftpStreamUrl) return;
-  if(_ftpSeekPending){
-    mediaFixLog('FTP seek superseded', {target:seconds, previous:_ftpCurrentTime || playbackTime()});
-  }
-  _ftpSeekPending = true;
-  const wasPlaying = !vid.paused;
-  const token = (vid._seekToken || 0) + 1;
-  vid._seekToken = token;
-  const previousOffset = vid._sourceOffset || 0;
-  const previousFtpTime = _ftpCurrentTime || playbackTime();
-  vid.pause();
-  setCentralPlaybackLoading(true);
-  const target = Math.max(0, seconds);
-  _ftpCurrentTime = target;
-  vid._sourceOffset = target;
-  const seekTimer = setTimeout(()=>{
-    if(token !== vid._seekToken)return;
-    _ftpSeekPending = false;
-    setCentralPlaybackLoading(false);
-    if(wasPlaying)svPlayVideo('FTP seek timeout').catch(()=>{});
-  }, 12000);
-  vid.addEventListener('canplay', function onCp(){
-    if(token !== vid._seekToken)return;
-    vid.removeEventListener('canplay', onCp);
-    clearTimeout(seekTimer);
-    _ftpSeekPending = false;
-    setCentralPlaybackLoading(false);
-    if(wasPlaying) svPlayVideo('FTP seek canplay').catch(()=>{});
-  }, {once: true});
-  try{
-    const currentMode = _currentFtpPlaybackPlan?.mode || 'direct';
-    const fallbackReason='FTP seek';
-    const plan = _currentFtpPlaybackPlan?.heavyCompatHls
-      ? ftpHeavyCompatHlsPlaybackPlan(_ftpStreamUrl, target, 'heavy 4K compatibility seek')
-      : currentMode === 'stream'
-      ? { ok:true, mode:'stream', src:ftpTranscodeSrc(_ftpStreamUrl, target, fallbackReason), duration:_ftpDuration || 0 }
-      : ['direct','redirect','proxy'].includes(String(currentMode||'').toLowerCase())
-      ? ftpStreamPlaybackPlan(_ftpStreamUrl, target, 'FTP seek compatibility route')
-      : await fetchFtpPlaybackPlan(_ftpStreamUrl, target, {...playbackOptionsForStep(currentMode, fallbackReason), signal:playbackRequestController?.signal});
-    if(token !== vid._seekToken)return;
-    validateMediaPlaybackSource(plan.src, fallbackReason, {ftpUrl:_ftpStreamUrl, mode:plan.mode, fallbackReason});
-    _currentFtpPlaybackPlan = plan;
-    _ftpNeedsTranscode = planNeedsSourceSeek(plan);
-    vid._sourceSeekRequired = _ftpNeedsTranscode;
-    vid._mediaSourceSeekRequired = _ftpNeedsTranscode;
-    if(validDurationSeconds(Number(plan.duration))){
-      _ftpDuration = Number(plan.duration);
-      setPlayerDuration(_ftpDuration,'api');
-    }
-    const attached = await attachPlayerSource(plan.src, plan.mode, {playbackType:'media', fallbackReason});
-    if(!attached)throw new Error('HLS not supported');
-    if(wasPlaying)svPlayVideo('FTP seek attach').catch(()=>{});
-  }catch(e){
-    if(e?.name === 'AbortError')return;
-    _ftpSeekPending = false;
-    clearTimeout(seekTimer);
-    setCentralPlaybackLoading(false);
-    _ftpCurrentTime = previousFtpTime;
-    vid._sourceOffset = previousOffset;
-    mediaFixLog('FTP seek route failed; resumed previous source', {
-      url:_ftpStreamUrl,
-      target,
-      previousTime:previousFtpTime,
-      mode:_currentFtpPlaybackPlan?.mode || '',
-      message:e.message
-    });
-    if(wasPlaying)svPlayVideo('FTP seek rollback').catch(()=>{});
-    showToast('Seek failed; resumed previous stream');
-  }
+  // SV_PLAYER_SESSION_BOUNDARY: retired VOD pipeline.
+  return window.playerSession?.seekTo(arguments[0]);
 }
 
 
 
 function closePlayer(options={}){
+  if(window.playerSession?.active) window.playerSession.close();
+
   const fromHistory=!!options.fromHistory;
   if(!fromHistory && !svDetailHistoryLock && history.state?.view === 'player'){
     if(svPlayerClosePending)return;
@@ -7458,6 +6874,8 @@ async function loadQualityOptions(id){
   if(document.getElementById('qualLabel'))document.getElementById('qualLabel').textContent=currentQuality==='auto'?'Auto':currentQuality;
 }
 function setQuality(q){
+  if(window.playerSession && !isLiveMode) return;
+
   if(q===currentQuality){closeAllDropdowns();return;}
   if(!isMobilePlaybackClient() && q !== 'auto'){
     closeAllDropdowns();
@@ -7585,6 +7003,8 @@ function setFtpSubtitle(idx){
 }
 
 function setSub(idx){
+  if(window.playerSession?.active) { window.playerSession.setSubtitle(Number(arguments[0])); closeAllDropdowns(); return; }
+
   if(_ftpStreamUrl){
     setFtpSubtitle(idx);
     return;
@@ -7649,6 +7069,8 @@ function buildSpeedList(){
   document.getElementById('speedList').innerHTML=SPEEDS.map(s=>`<div class="pd-item${s===1?' active':''}" onclick="setSpeed(${s})"><span>${s===1?'Normal':s+'×'}</span><span class="check">✓</span></div>`).join('');
 }
 function setSpeed(s){
+  if(window.playerSession?.active) { window.playerSession.setSpeed(Number(arguments[0])); closeAllDropdowns(); return; }
+
   currentSpeed=s;vid.playbackRate=s;
   updateSpeedBtn();
   refreshPlayerControlVisibility();
@@ -9732,6 +9154,11 @@ vid._mdH = () => {
     setTimeout(scheduleSubtitleOverlayUpdate,60);
     requestAnimationFrame(()=>svApplyServerAudioAuthority(hlsInstance,vid,'video seek completed'));
   };
+  // Legacy media event handlers are exclusively for Live TV.
+  for(const name of ['_tuH','_prH','_mdH','_enH','_waH','_stH','_sgH','_plH','_cpH','_paH','_puH','_skH']) {
+    const handler = vid[name];
+    vid[name] = (...args) => { if(!window.playerSession || isLiveMode) return handler(...args); };
+  }
   vid.addEventListener('timeupdate',    vid._tuH);
   vid.addEventListener('progress',      vid._prH);
   vid.addEventListener('loadedmetadata',vid._mdH);
@@ -9791,7 +9218,7 @@ vid._mdH = () => {
     }
     function commit(){
       flushQueuedVisual();
-      progressDragging=false; pw.classList.remove('dragging');
+      suppressProgressClickUntil=Date.now()+450; progressDragging=false; pw.classList.remove('dragging');
       const d=dur(); if(!d){hideSeekPreview();return;}
       const t=Math.max(0,Math.min(d,dragT));
       seekToTime(t);

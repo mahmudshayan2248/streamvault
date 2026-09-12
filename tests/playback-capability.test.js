@@ -100,6 +100,11 @@ test('track metadata always has useful labels and bitmap subtitles are explicit'
 test('keyframe origin accounts for B-frame decode reordering', () => {
   assert.equal(normalizedSeekOrigin({ pts_time: '2399.230000' }, { hasBFrames: 2, frameRate: '24000/1001' }, 2400), 2399.147);
   assert.equal(normalizedSeekOrigin({ pts_time: '10', dts_time: '9.5' }, {}, 12), 9.5);
+  assert.equal(normalizedSeekOrigin([
+    {pts_time:'2399.230',duration_time:'.041'},
+    {pts_time:'2399.355',duration_time:'.042'},
+    {pts_time:'2399.314',dts_time:'2399.230',duration_time:'.041'},
+  ],{},2400),2399.147);
 });
 
 test('compatibility output keeps one timestamp epoch and does not force audio to zero', async () => {

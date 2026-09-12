@@ -135,11 +135,11 @@
     if(icon) icon.innerHTML = `<path d="${path}"/>`;
     setDurationTimer(fmtTime(state.globalCurrentTime), state.globalDuration ? fmtTime(state.globalDuration) : '--:--');
     if(!progressDragging && state.globalDuration) {
-      const percent = `${100*state.globalCurrentTime/state.globalDuration}%`;
+      const percent = window.SeekGeometry.percent(state.globalCurrentTime,state.globalDuration);
       document.getElementById('progressPlayed').style.width = percent;
       document.getElementById('progressThumb').style.left = percent;
     }
-    document.getElementById('progressBuffered').style.width = state.globalDuration ? `${100*(state.health.bufferedEnd || 0)/state.globalDuration}%` : '0%';
+    document.getElementById('progressBuffered').style.width = window.SeekGeometry.percent(state.health.bufferedEnd || 0,state.globalDuration);
     const progress = document.getElementById('progressWrap');
     progress.setAttribute('role','slider');
     progress.setAttribute('aria-label','Playback position');
@@ -256,8 +256,8 @@
     svActivePlaybackType = 'idle';
   }
   window.StreamVaultPlayerView = {start, close, render};
-  window.STREAMVAULT_PLAYER_VERSION = 'player-session-v1';
-  window.STREAMVAULT_PLAYER_BUILD = '20260912-player-session-v1';
+  window.STREAMVAULT_PLAYER_VERSION = 'media-engine-v2';
+  window.STREAMVAULT_PLAYER_BUILD = '20260912-media-engine-v2';
   video.disablePictureInPicture = false;
   video.removeAttribute('disablepictureinpicture');
 })();

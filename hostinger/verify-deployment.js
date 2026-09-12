@@ -145,15 +145,15 @@ for (const message of REQUIRED_MESSAGES) {
 }
 
 const activeSource = activeScripts.map(filename => fs.readFileSync(filename, 'utf8')).join('\n');
-if (!index.includes('/player-session.js?v=20260912-player-session-v1') || !index.includes('/player-vlc-v1.js?v=20260912-player-session-v1') || !index.includes('/player-vlc-v1.css?v=20260912-player-session-v1')) {
+if (!index.includes('/player-session.js?v=20260912-media-engine-v2') || !index.includes('/player-vlc-v1.js?v=20260912-media-engine-v2') || !index.includes('/player-vlc-v1.css?v=20260912-media-engine-v2')) {
   fail('index.html does not reference the PlayerSession release assets');
 }
 const playerView = read('player-vlc-v1.js');
 const playerSession = read('player-session.js');
-if (!playerView.includes("window.STREAMVAULT_PLAYER_VERSION = 'player-session-v1'") || !playerView.includes('new PlayerSession')) {
+if (!playerView.includes("window.STREAMVAULT_PLAYER_VERSION = 'media-engine-v2'") || !playerView.includes('new PlayerSession')) {
   fail('player-vlc-v1.js is not the PlayerSession view adapter');
 }
-if (!playerSession.includes("IDLE:'IDLE'") || !playerSession.includes("BUFFERING:'BUFFERING'") || !playerSession.includes('const owners = new WeakMap()')) {
+if (!playerSession.includes("IDLE:'IDLE'") || !playerSession.includes("BUFFERING:'BUFFERING'") || !playerSession.includes('const owners = new WeakMap()') || !playerSession.includes('class MasterClock') || !playerSession.includes('class AVSynchronizer')) {
   fail('player-session.js is missing the authoritative lifecycle or video ownership guard');
 }
 for (const retired of ['instant-remux-v23', 'vod-buffer-engine-v1', 'playback-stability-hotfix-v2']) {

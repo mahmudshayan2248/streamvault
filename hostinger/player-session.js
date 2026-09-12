@@ -10,6 +10,127 @@
   const aborted = () => new DOMException('Playback operation superseded', 'AbortError');
   const boundedPush = (list, value) => { list.push(value); if(list.length > 1000) list.shift(); };
 
+  const SeekGeometry = Object.freeze({
+    ratio(value, duration) {
+      const d = number(duration);
+      return d > 0 ? Math.max(0, Math.min(1, number(value) / d)) : 0;
+    },
+    ratioFromClientX(track, clientX) {
+      const rect = track.getBoundingClientRect();
+      const width = Math.max(number(rect.width), 1);
+      return Math.max(0, Math.min(1, (number(clientX) - number(rect.left)) / width));
+    },
+    ratioFromEvent(track, event) {
+      const point = event?.touches?.[0] || event?.changedTouches?.[0] || event;
+      return this.ratioFromClientX(track, point?.clientX);
+    },
+    time(ratio, duration) { return Math.max(0, Math.min(number(duration), number(ratio) * number(duration))); },
+    percent(value, duration) { return `${(100 * this.ratio(value, duration)).toFixed(3)}%`; },
+  });
+
+  class MasterClock {
+    constructor() { this.reset(); }
+    reset(duration = 0, current = 0, windowStart = 0) {
+      this.canonicalDuration = Math.max(0, number(duration));
+      this.globalCurrentTime = this.clamp(current);
+      this.windowStart = Math.max(0, number(windowStart));
+      this.presentationClock = this.globalCurrentTime;
+      this.frozen = false;
+      this.epoch = (this.epoch || 0) + 1;
+    }
+    clamp(value) { return Math.max(0, Math.min(number(value), Math.max(0, this.canonicalDuration - 0.05))); }
+    globalToLocal(value) { return Math.max(0, this.clamp(value) - this.windowStart); }
+    localToGlobal(value) { return Math.min(this.canonicalDuration, Math.max(0, this.windowStart + number(value))); }
+    freezeAt(value) { this.globalCurrentTime = this.clamp(value); this.presentationClock = this.globalCurrentTime; this.frozen = true; return ++this.epoch; }
+    commitWindow(windowStart, localTime) {
+      this.windowStart = Math.max(0, number(windowStart));
+      this.globalCurrentTime = this.localToGlobal(localTime);
+      this.presentationClock = this.globalCurrentTime;
+      this.frozen = false;
+    }
+    update(localTime) {
+      if(!this.frozen) this.globalCurrentTime = this.localToGlobal(localTime);
+      this.presentationClock = this.globalCurrentTime;
+      return this.globalCurrentTime;
+    }
+  }
+
+  class AVSynchronizer {
+    constructor(clock) { this.clock = clock; this.reset(); }
+    reset() { this.epoch = (this.epoch || 0) + 1; this.videoOrigin = null; this.audioOrigin = null; this.videoBufferedPTS = null; this.audioBufferedPTS = null; this.avOffsetMs = null; }
+    observe(kind, localPTS) {
+      if(!Number.isFinite(Number(localPTS))) return;
+      const globalPTS = this.clock.localToGlobal(localPTS);
+      if(kind === 'video') { this.videoBufferedPTS=globalPTS; this.videoOrigin=this.videoOrigin===null?globalPTS:Math.min(this.videoOrigin,globalPTS); }
+      if(kind === 'audio') { this.audioBufferedPTS=globalPTS; this.audioOrigin=this.audioOrigin===null?globalPTS:Math.min(this.audioOrigin,globalPTS); }
+      if(this.videoOrigin !== null && this.audioOrigin !== null) this.avOffsetMs = Math.round((this.audioOrigin-this.videoOrigin)*1000);
+    }
+    observeFragment(frag) {
+      const streams = frag?.elementaryStreams || {};
+      this.observe('video', streams.video?.startPTS ?? (frag?.type === 'main' ? frag?.start : NaN));
+      this.observe('audio', streams.audio?.startPTS ?? (frag?.type === 'audio' ? frag?.start : NaN));
+    }
+    inferNative() {
+      const value = this.clock.globalCurrentTime;
+      this.videoOrigin = value; this.audioOrigin = value; this.avOffsetMs = 0;
+    }
+    snapshot() {
+      const expected=this.clock.presentationClock;
+      const offset=this.avOffsetMs===null?null:this.avOffsetMs/1000;
+      return {videoPTS:this.videoOrigin===null?null:expected,audioPTS:this.audioOrigin===null?null:expected+offset,expectedPTS:expected,avOffsetMs:this.avOffsetMs,videoBufferedPTS:this.videoBufferedPTS,audioBufferedPTS:this.audioBufferedPTS,syncEpoch:this.epoch};
+    }
+  }
+
+  class BufferManager {
+    constructor(clock) { this.clock = clock; this.reset(); }
+    reset() { Object.assign(this,{bufferedStart:0,bufferedEnd:0,secondsAhead:0,secondsBehind:0,targetBuffer:90,minimumSafeBuffer:6,networkThroughput:null,sourceThroughput:null,generationSpeed:null}); }
+    sample(video, mode) {
+      const local = number(video.currentTime);
+      let start = local, end = local;
+      for(let i=0;i<video.buffered.length;i++) if(video.buffered.start(i) <= local+.05 && video.buffered.end(i) >= local-.05) { start=video.buffered.start(i); end=video.buffered.end(i); break; }
+      this.bufferedStart=this.clock.localToGlobal(start); this.bufferedEnd=this.clock.localToGlobal(end);
+      this.secondsAhead=Math.max(0,end-local); this.secondsBehind=Math.max(0,local-start);
+      this.targetBuffer=mode === 'DIRECT' ? 120 : 90;
+      this.minimumSafeBuffer=mode === 'DIRECT' ? 2 : 6;
+      return this.snapshot();
+    }
+    startupThreshold(mode) {
+      if(mode === 'DIRECT') return .25;
+      if(this.generationSpeed && this.generationSpeed < 1.5) return 8;
+      return 3;
+    }
+    snapshot() { return {bufferedStart:this.bufferedStart,bufferedEnd:this.bufferedEnd,secondsAhead:this.secondsAhead,secondsBehind:this.secondsBehind,targetBuffer:this.targetBuffer,minimumSafeBuffer:this.minimumSafeBuffer,networkThroughput:this.networkThroughput,sourceThroughput:this.sourceThroughput,generationSpeed:this.generationSpeed}; }
+  }
+
+  class RecoveryController {
+    constructor(session) { this.session=session; this.reset(); }
+    reset() { this.networkAttempts=0; this.mediaAttempts=0; }
+    recoverHls(data, hls) {
+      if(!data?.fatal) return true;
+      const type=String(data.type||'').toLowerCase();
+      if(type.includes('network') && this.networkAttempts++ < 2) { hls.startLoad?.(this.session.masterClock.globalToLocal(this.session.getCurrentTime())); return true; }
+      if(type.includes('media') && this.mediaAttempts++ < 2) { hls.recoverMediaError?.(); return true; }
+      return false;
+    }
+    recoverStall(hls) {
+      if(!hls || this.networkAttempts++ >= 2) return false;
+      hls.startLoad?.(this.session.masterClock.globalToLocal(this.session.getCurrentTime()));
+      return true;
+    }
+  }
+
+  class SeekController {
+    constructor(session) { this.session=session; }
+    begin(globalSeconds) {
+      const target=this.session.masterClock.clamp(globalSeconds);
+      const operation=this.session.operation();
+      this.session.masterClock.freezeAt(target);
+      this.session.avSynchronizer.reset();
+      this.session.recoveryController.reset();
+      return {operation,target};
+    }
+  }
+
   // WebVTT is cached in full-media time. Only the browser track representation
   // is shifted when an adapter uses a local timeline; media is never reloaded.
   function windowVtt(text, offset) {
@@ -82,9 +203,11 @@
         const stats = data.stats || data.frag?.stats;
         const ms = Math.max(0, number(stats?.loading?.end)-number(stats?.loading?.start));
         s.health.fragmentLoadMs = ms;
-        s.health.networkBitsPerSecond = ms ? number(stats?.loaded)*8000/ms : null;
+        s.bufferManager.networkThroughput = ms ? number(stats?.loaded)*8000/ms : null;
+        s.health.networkBitsPerSecond = s.bufferManager.networkThroughput;
         s.sampleHealth();
       });
+      if(Hls.Events.FRAG_PARSED) hls.on(Hls.Events.FRAG_PARSED, (_event, data) => { if(valid()) s.avSynchronizer.observeFragment(data.frag); });
       hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, () => {
         if(valid() && hls.audioTracks[s.audioIndex]) hls.audioTrack = s.audioIndex;
       });
@@ -115,12 +238,14 @@
           if(!valid()) return;
           boundedPush(s.metrics.errors, {at:Date.now(), type:data.type, details:data.details, fatal:!!data.fatal});
           if(!data.fatal) return;
+          if(s.recoveryController.recoverHls(data,hls)) return;
           const error = new Error(`Compatibility playback failed: ${data.details}`);
           if(!settled) finish(error); else s.fail(error);
         });
         hls.attachMedia(s.video);
       });
       s.assertCurrent(operation);
+      s.video.currentTime = localTime;
       // HLS starts at the explicitly requested local position, including zero.
       // No live-edge seek or independent audio timestamp correction is allowed.
     }
@@ -142,9 +267,16 @@
       this.subtitleSequence = 0;
       this.state = STATES.IDLE;
       this.active = false;
-      this.globalDuration = 0;
-      this.globalCurrentTime = 0;
-      this.windowStart = 0;
+      this.masterClock = new MasterClock();
+      Object.defineProperties(this, {
+        globalDuration:{get:()=>this.masterClock.canonicalDuration,set:value=>{this.masterClock.canonicalDuration=Math.max(0,number(value));}},
+        globalCurrentTime:{get:()=>this.masterClock.globalCurrentTime,set:value=>{this.masterClock.globalCurrentTime=this.masterClock.clamp(value);this.masterClock.presentationClock=this.masterClock.globalCurrentTime;}},
+        windowStart:{get:()=>this.masterClock.windowStart,set:value=>{this.masterClock.windowStart=Math.max(0,number(value));}},
+      });
+      this.avSynchronizer = new AVSynchronizer(this.masterClock);
+      this.bufferManager = new BufferManager(this.masterClock);
+      this.recoveryController = new RecoveryController(this);
+      this.seekController = new SeekController(this);
       this.speed = 1;
       this.volume = video.volume;
       this.muted = video.muted;
@@ -167,8 +299,12 @@
         audioTracks:this.audioTracks, subtitleTracks:this.subtitleTracks,
         audioIndex:this.audioIndex, subtitleIndex:this.subtitleIndex,
         speed:this.speed, volume:this.volume, muted:this.muted, wantsPlay:this.wantsPlay,
-        seeking:this.seeking, buffering:this.buffering, health:{...this.health}, error:this.error};
+        seeking:this.seeking, buffering:this.buffering, presentationClock:this.masterClock.presentationClock,
+        sessionGeneration:this.sequence, seekGeneration:this.seekSequence,
+        health:{...this.health,...this.bufferManager.snapshot(),...this.avSynchronizer.snapshot()}, error:this.error};
     }
+    getCurrentTime() { return this.masterClock.globalCurrentTime; }
+    getDuration() { return this.masterClock.canonicalDuration; }
     transition(state) { this.state = state; this.buffering = state === STATES.BUFFERING; this.emit(); }
     controller() { const c = new AbortController(); this.abortControllers.add(c); return c; }
     operation() {
@@ -206,6 +342,22 @@
         Promise.resolve().then(() => { if(op.signal.aborted) cancel(); else if(ready?.()) done(); });
       });
     }
+    waitForPresentation(localTime, op, timeoutMs = 6000) {
+      return new Promise((resolve, reject) => {
+        const started=Date.now();
+        const check=()=>{
+          if(!this.current(op)) return reject(aborted());
+          const buffer=this.bufferManager.sample(this.video,this.mode);
+          const remaining=Math.max(0,this.globalDuration-this.masterClock.localToGlobal(localTime));
+          const threshold=Math.min(this.bufferManager.startupThreshold(this.mode),remaining);
+          const atTarget=Math.abs(number(this.video.currentTime)-localTime)<.35;
+          if(atTarget && (buffer.secondsAhead>=threshold || remaining<.5)) return resolve();
+          if(Date.now()-started>=timeoutMs) return resolve();
+          setTimeout(check,75);
+        };
+        check();
+      });
+    }
     releaseCapability(capability) {
       if(!capability?.cacheKey) return Promise.resolve();
       const key = capability.cacheKey;
@@ -226,6 +378,7 @@
       this.abortControllers.clear();
       this.listeners.splice(0).forEach(remove => remove());
       clearInterval(this.healthTimer);
+      clearTimeout(this.stallRecoveryTimer);
       this.adapter?.destroy();
       this.adapter = null;
       this.hls = null;
@@ -240,6 +393,10 @@
       this.sourceIdentity = null;
       this.mode = null;
       this.globalDuration = this.globalCurrentTime = this.windowStart = 0;
+      this.masterClock.reset();
+      this.bufferManager.reset();
+      this.avSynchronizer.reset();
+      this.recoveryController.reset();
       this.audioTracks = this.subtitleTracks = [];
       this.audioIndex = 0;
       this.subtitleIndex = -1;
@@ -260,7 +417,7 @@
         const capability = await this.resolve(this.source, {signal:op.signal});
         this.assertCurrent(op);
         if(number(capability.duration) <= 0) throw new Error('Full media duration is unavailable');
-        this.globalDuration = number(capability.duration);
+        this.masterClock.reset(number(capability.duration),0,0);
         this.canonicalMediaId = capability.source?.canonicalId || capability.id;
         this.sourceIdentity = capability.source?.fingerprint || this.canonicalMediaId;
         this.audioTracks = capability.audioTracks || [];
@@ -301,8 +458,13 @@
       const adapter = this.adapter = capability.mode === 'direct' ? new DirectTransport(this) : new CompatibilityTransport(this);
       await adapter.attach(capability, Math.max(0,target-this.windowStart), op);
       this.assertCurrent(op);
+      const localTarget=Math.max(0,target-this.windowStart);
+      await this.waitForPresentation(localTarget,op);
+      this.assertCurrent(op);
+      this.masterClock.commitWindow(this.windowStart, localTarget);
       this.seeking = false;
       this.applyPreferences();
+      this.metrics.readyAt=Date.now();
       this.transition(STATES.READY);
       if(this.subtitleIndex >= 0) this.setSubtitle(this.subtitleIndex);
       if(this.wantsPlay) await this.play();
@@ -310,8 +472,7 @@
     async seekTo(globalSeconds) {
       if(!this.active || !this.capability || !this.globalDuration) return false;
       // Even an in-buffer seek cancels the previous deep-seek fetch/attachment.
-      const op = this.operation();
-      const target = this.clamp(globalSeconds);
+      const {operation:op,target} = this.seekController.begin(globalSeconds);
       const startedAt = Date.now();
       const local = target-this.windowStart;
       this.seeking = true;
@@ -320,6 +481,9 @@
       try {
         if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
           this.adapter.seek(local);
+          await this.waitForPresentation(local,op);
+          this.assertCurrent(op);
+          this.masterClock.commitWindow(this.windowStart, local);
           this.seeking = false;
           this.emit();
         } else {
@@ -328,6 +492,7 @@
             capability = await this.resolve(this.source, {signal:op.signal, start:target});
             this.assertCurrent(op);
             if(capability.mode !== 'hls' || (capability.source?.fingerprint && capability.source.fingerprint !== this.sourceIdentity)) throw new Error('Media identity changed while seeking');
+            this.subtitleTracks=capability.subtitleTracks || this.subtitleTracks;
           }
           const previous = this.capability;
           this.adapter?.destroy();
@@ -354,6 +519,7 @@
       this.listen('progress', () => this.sampleHealth());
       this.listen('playing', () => {
         if(this.state === STATES.PREPARING || !this.wantsPlay) return;
+        clearTimeout(this.stallRecoveryTimer);
         if(!this.metrics.firstFrameAt) this.metrics.firstFrameAt = Date.now();
         const stall = this.metrics.stalls.at(-1);
         if(stall && !stall.endedAt) stall.endedAt = Date.now();
@@ -364,6 +530,11 @@
         if(this.metrics.firstFrameAt && !this.buffering) boundedPush(this.metrics.stalls, {startedAt:Date.now(), globalTime:this.globalCurrentTime});
         this.transition(STATES.BUFFERING);
         this.sampleHealth();
+        clearTimeout(this.stallRecoveryTimer);
+        const sequence=this.sequence,seek=this.seekSequence;
+        this.stallRecoveryTimer=setTimeout(()=>{
+          if(this.active && sequence===this.sequence && seek===this.seekSequence && this.state===STATES.BUFFERING) this.recoveryController.recoverStall(this.hls);
+        },3000);
       });
       this.listen('stalled', () => this.sampleHealth());
       this.listen('seeked', () => { if(this.state !== STATES.PREPARING) { this.seeking = false; this.updateTime(); } });
@@ -380,7 +551,7 @@
       });
     }
     updateTime() {
-      if(!this.seeking && this.adapter) this.globalCurrentTime = Math.min(this.globalDuration, Math.max(0,this.windowStart+number(this.video.currentTime)));
+      if(!this.seeking && this.adapter) this.masterClock.update(this.video.currentTime);
       this.emit();
     }
     applyPreferences() { this.video.playbackRate = this.speed; this.video.volume = this.volume; this.video.muted = this.muted; }
@@ -445,7 +616,7 @@
         element.kind = 'subtitles';
         element.label = track.title || track.language || 'Subtitles';
         element.srclang = track.language || 'und';
-        this.subtitleBlob = URL.createObjectURL(new Blob([windowVtt(text, offset)], {type:'text/vtt'}));
+        this.subtitleBlob = URL.createObjectURL(new Blob([windowVtt(text, track.timeline === 'local' ? 0 : offset)], {type:'text/vtt'}));
         element.src = this.subtitleBlob;
         element.default = true;
         this.subtitleElement = element;
@@ -473,11 +644,9 @@
     sampleHealth() {
       if(!this.active) return;
       const local = number(this.video.currentTime);
-      let end = local;
-      for(let i=0;i<this.video.buffered.length;i++) {
-        if(this.video.buffered.start(i) <= local+0.05 && this.video.buffered.end(i) >= local) { end = this.video.buffered.end(i); break; }
-      }
-      Object.assign(this.health, {globalCurrentTime:this.globalCurrentTime, bufferedEnd:Math.min(this.globalDuration,this.windowStart+end), secondsAhead:Math.max(0,end-local)});
+      const buffer = this.bufferManager.sample(this.video,this.mode);
+      if(this.mode === 'DIRECT') this.avSynchronizer.inferNative();
+      Object.assign(this.health, {globalCurrentTime:this.globalCurrentTime,localCurrentTime:local,...buffer,...this.avSynchronizer.snapshot()});
       if(!this.lastSampleAt || Date.now()-this.lastSampleAt >= 1000) {
         this.lastSampleAt = Date.now();
         boundedPush(this.metrics.samples, {at:Date.now(), ...this.health});
@@ -490,7 +659,12 @@
       this.statusPending = controller;
       try {
         const status = await this.status(key, controller.signal);
-        if(this.active && sequence === this.sequence && key === this.capability?.cacheKey) { this.health.ffmpegSpeed = status?.speed ?? null; this.health.generatedEnd = status ? number(status.windowStart)+number(status.outTimeSeconds) : null; this.emit(); }
+        if(this.active && sequence === this.sequence && key === this.capability?.cacheKey) {
+          this.health.ffmpegSpeed = status?.speed ?? null;
+          this.bufferManager.generationSpeed = this.health.ffmpegSpeed;
+          this.health.generatedEnd = status ? number(status.windowStart)+number(status.outTimeSeconds) : null;
+          this.emit();
+        }
       } catch(_) {} finally {
         if(this.statusPending === controller) this.statusPending = null;
         this.abortControllers.delete(controller);
@@ -498,5 +672,5 @@
     }
     fail(error) { if(!this.active) return; this.error = error.message; this.wantsPlay = false; this.video.pause(); this.transition(STATES.ERROR); }
   }
-  return {PlayerSession, PlayerSessionStates:STATES, DirectTransport, CompatibilityTransport, windowVtt};
+  return {PlayerSession, PlayerSessionStates:STATES, DirectTransport, CompatibilityTransport, MasterClock, SeekController, BufferManager, AVSynchronizer, RecoveryController, SeekGeometry, windowVtt};
 });

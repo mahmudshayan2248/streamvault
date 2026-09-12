@@ -4398,10 +4398,7 @@ function playerLocalPoint(e, el){
 }
 
 function progressRatioFromEvent(e, el){
-  const point=activePointerPoint(e);
-  const rect=el.getBoundingClientRect();
-  const width=Math.max(rect.width || 0,1);
-  return Math.max(0,Math.min(1,(point.x-rect.left)/width));
+  return window.SeekGeometry.ratioFromEvent(el,e);
 }
 
 function playerMenusOpen(){
@@ -4856,7 +4853,7 @@ function seekPreviewDuration(){
 function updateSeekPreviewFromPointer(e,pw){
   if(!pw || isLiveMode || (e.pointerType && e.pointerType!=='mouse'))return;
   const rect=pw.getBoundingClientRect();
-  const ratio=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  const ratio=window.SeekGeometry.ratioFromEvent(pw,e);
   const controlsWereHidden=playerEls().ui?.classList.contains('hidden');
   showUI();
   const anchor={clientX:e.clientX,top:rect.top};
@@ -9188,7 +9185,7 @@ vid._mdH = () => {
     }
     function visual(p,d){
       dragT=p*d;
-      const pctText=(p*100).toFixed(3)+'%';
+      const pctText=window.SeekGeometry.percent(p,1);
       const els=playerEls();
       setStyleIfChanged(els.progressPlayed,'width',pctText);
       setStyleIfChanged(els.progressThumb,'left',pctText);

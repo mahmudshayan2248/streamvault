@@ -103,13 +103,21 @@ for (const message of REQUIRED_MESSAGES) {
 }
 
 const activeSource = activeScripts.map(filename => fs.readFileSync(filename, 'utf8')).join('\n');
-if (!index.includes('/player-vlc-v1.js?v=20260825-player-v7') || !index.includes('/player-vlc-v1.css?v=20260825-player-v7')) {
-  fail('index.html does not reference the player-v7 JS and CSS cache keys');
+if (!index.includes('/player-session.js?v=20260912-media-engine-v2') || !index.includes('/player-vlc-v1.js?v=20260912-media-engine-v2') || !index.includes('/player-vlc-v1.css?v=20260912-media-engine-v2')) {
+  fail('index.html does not reference the PlayerSession release assets');
 }
 const playerV7 = read('player-vlc-v1.js');
-if (!playerV7.includes("window.STREAMVAULT_PLAYER_VERSION='player-v7'") || !playerV7.includes("version:'player-v7'")) {
-  fail('player-vlc-v1.js is missing the player-v7 runtime marker');
+const playerSession = read('player-session.js');
+if (!playerV7.includes("window.STREAMVAULT_PLAYER_VERSION = 'media-engine-v2'") || !playerV7.includes('new PlayerSession')) {
+  fail('player-vlc-v1.js is not the PlayerSession view adapter');
 }
+if (!playerSession.includes("IDLE:'IDLE'") || !playerSession.includes("BUFFERING:'BUFFERING'") || !playerSession.includes('const owners = new WeakMap()') || !playerSession.includes('class MasterClock') || !playerSession.includes('class AVSynchronizer')) {
+  fail('player-session.js is missing the authoritative lifecycle or video ownership guard');
+}
+for (const retired of ['instant-remux-v23', 'vod-buffer-engine-v1', 'playback-stability-hotfix-v2']) {
+  if (index.includes(retired)) fail(`index.html still loads retired playback controller: ${retired}`);
+}
+if (index.includes('/cdn-cgi/challenge-platform/')) fail('index.html contains a response-only Cloudflare challenge bootstrap');
 if (/https:\/\/(?:www\.)?streamvault\.fit\/(?:api|download|live|live-relay|proxy|stream|subtitles)(?:\/|\?|["'`])/.test(activeSource)) {
   fail('an active script still hardcodes a backend request through the frontend apex');
 }

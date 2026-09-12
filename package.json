@@ -10,6 +10,9 @@
     "test:media-download": "node --test tests/media-download.test.js",
     "test:download-reliability": "node --test tests/media-download.test.js tests/resilient-download.test.js",
     "test:playback-faststart": "node --test tests/playback-faststart.test.js",
+    "test:player-session": "node --test tests/player-session.test.js tests/playback-capability.test.js tests/playback-faststart.test.js",
+    "preview:player-session": "node scripts/preview-player-session.js",
+    "deploy:player-session": "node scripts/deploy-player-session.js --deploy",
     "details:shadow:audit": "node tools/details-parity-v1/audit-details-fixtures.js",
     "details:shadow:schema": "node tools/details-parity-v1/validate-details-fixture-schema.js",
     "details:shadow:schema:negative": "node tools/details-parity-v1/test-details-fixture-schema-negative.js",
@@ -30,6 +33,7 @@
   },
   "devDependencies": {
     "@types/k6": "^1.7.0",
+    "acorn": "^8.18.0",
     "basic-ftp": "^6.0.1",
     "dotenv": "^17.4.2"
   }

@@ -227,6 +227,7 @@ function getMediaInfo(filePath) {
           width: Number(videoStream?.width) || 0,
           height: Number(videoStream?.height) || 0,
           frameRate: videoStream?.avg_frame_rate || videoStream?.r_frame_rate || '',
+          hasBFrames: Number(videoStream?.has_b_frames) || 0,
           bitrate: Number(videoStream?.bit_rate) || Number(info.format?.bit_rate) || 0,
           fileSize: Number(info.format?.size) || 0,
           duration: parseFloat(info.format?.duration) || 0,
@@ -12346,9 +12347,13 @@ function svPlaybackCapabilitySource(resolved, requestedId) {
 const SV_PLAYBACK_SOURCE_CACHE_MS = Math.max(30000, Number(process.env.SV_PLAYBACK_SOURCE_CACHE_MS || 10 * 60 * 1000));
 const svPlaybackSourceResolutionCache = new Map();
 
-function svResolveAuthoritativePlaybackSource(id, query = {}) {
+function svResolveAuthoritativePlaybackSource(id, query = {}, options = {}) {
   const mediaId = String(id ?? '').trim();
   const cacheKey = `${mediaId}|${String(query.title || '')}|${String(query.year || '')}`;
+  if (options.refresh) {
+    svPlaybackSourceResolutionCache.delete(cacheKey);
+    svPlaybackSourceResolutionCache.delete(`${mediaId}||`);
+  }
   const cached = svPlaybackSourceResolutionCache.get(cacheKey) || svPlaybackSourceResolutionCache.get(`${mediaId}||`);
   if (cached && Date.now() - cached.resolvedAt <= SV_PLAYBACK_SOURCE_CACHE_MS) {
     if (cached.source.remote || fs.existsSync(cached.source.input)) return cached.source;
@@ -12473,9 +12478,10 @@ try {
     app,
     cacheDir: path.join(SV_CACHE_DIR, 'playback-v2'),
     ffmpegBin: FFMPEG_BIN,
+    ffprobeBin: FFPROBE_BIN,
     getMediaInfo: getCachedMediaInfo,
-    resolveLocal(id, req) {
-      const source = svResolveAuthoritativePlaybackSource(id, req?.query || {});
+    resolveLocal(id, req, options) {
+      const source = svResolveAuthoritativePlaybackSource(id, req?.query || {}, options);
       if (source) {
         console.log(`[Playback v2] canonicalId=${source.canonicalId} sourceType=${source.remote ? 'remote' : 'local'} sourceFingerprint=${source.fingerprint}`);
       }

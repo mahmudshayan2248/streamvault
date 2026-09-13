@@ -352,7 +352,7 @@
           const threshold=Math.min(this.bufferManager.startupThreshold(this.mode),remaining);
           const atTarget=Math.abs(number(this.video.currentTime)-localTime)<.35;
           if(atTarget && (buffer.secondsAhead>=threshold || remaining<.5)) return resolve();
-          if(Date.now()-started>=timeoutMs) return resolve();
+          if(Date.now()-started>=timeoutMs) return reject(new Error('Seek target did not become ready'));
           setTimeout(check,75);
         };
         check();
@@ -480,12 +480,14 @@
       this.emit();
       try {
         if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
+          this.video.pause();
           this.adapter.seek(local);
           await this.waitForPresentation(local,op);
           this.assertCurrent(op);
           this.masterClock.commitWindow(this.windowStart, local);
           this.seeking = false;
           this.emit();
+          if(this.wantsPlay) await this.play();
         } else {
           let capability = this.capability;
           if(capability.mode === 'hls') {

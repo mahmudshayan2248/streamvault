@@ -75,9 +75,11 @@
       this.videoOrigin = value; this.audioOrigin = value; this.avOffsetMs = 0;
     }
     snapshot() {
-      const expected=this.clock.presentationClock;
-      const offset=this.avOffsetMs===null?null:this.avOffsetMs/1000;
-      return {videoPTS:this.videoOrigin===null?null:expected,audioPTS:this.audioOrigin===null?null:expected+offset,expectedPTS:expected,avOffsetMs:this.avOffsetMs,videoBufferedPTS:this.videoBufferedPTS,audioBufferedPTS:this.audioBufferedPTS,syncEpoch:this.epoch};
+      // Fragment arrival/frontier timestamps are not simultaneous audio/video
+      // presentation measurements. Never label their difference as lip sync.
+      return {videoPTS:null,audioPTS:null,expectedPTS:this.clock.presentationClock,avOffsetMs:null,
+        fragmentOriginOffsetMs:this.avOffsetMs,avMeasurement:'unavailable',
+        videoBufferedPTS:this.videoBufferedPTS,audioBufferedPTS:this.audioBufferedPTS,syncEpoch:this.epoch};
     }
   }
 
@@ -451,6 +453,7 @@
       this.clearSubtitle();
       this.capability = capability;
       this.windowStart = capability.mode === 'direct' ? 0 : number(capability.windowStart);
+      this.avSynchronizer.reset();
       this.mode = capability.mode === 'direct' ? 'DIRECT' : 'COMPATIBILITY';
       if(!['direct','hls'].includes(capability.mode)) throw new Error('Unknown playback transport');
       await this.releases.get(capability.cacheKey);

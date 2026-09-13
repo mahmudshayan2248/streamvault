@@ -349,7 +349,7 @@
         Promise.resolve().then(() => { if(op.signal.aborted) cancel(); else if(ready?.()) done(); });
       });
     }
-    waitForPresentation(localTime, op, timeoutMs = 6000) {
+    waitForPresentation(localTime, op, timeoutMs = 15000) {
       return new Promise((resolve, reject) => {
         const started=Date.now();
         const check=()=>{

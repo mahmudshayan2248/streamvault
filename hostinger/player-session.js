@@ -503,6 +503,9 @@
           this.emit();
           if(this.wantsPlay) await this.play();
         } else {
+          this.video.pause();
+          if(this.wantsPlay) this.transition(STATES.BUFFERING);
+          else this.emit();
           let capability = this.capability;
           if(capability.mode === 'hls') {
             capability = await this.resolve(this.source, {signal:op.signal, start:target});

@@ -489,6 +489,8 @@
       try {
         if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
           this.video.pause();
+          if(this.wantsPlay) this.transition(STATES.BUFFERING);
+          else this.emit();
           this.adapter.seek(local);
           await this.waitForPresentation(local,op);
           this.assertCurrent(op);

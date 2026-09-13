@@ -101,6 +101,9 @@
       if(this.generationSpeed && this.generationSpeed < 1.5) return 8;
       return 3;
     }
+    seekResumeThreshold(mode) {
+      return mode === 'DIRECT' ? .25 : .75;
+    }
     snapshot() { return {bufferedStart:this.bufferedStart,bufferedEnd:this.bufferedEnd,secondsAhead:this.secondsAhead,secondsBehind:this.secondsBehind,targetBuffer:this.targetBuffer,minimumSafeBuffer:this.minimumSafeBuffer,networkThroughput:this.networkThroughput,sourceThroughput:this.sourceThroughput,generationSpeed:this.generationSpeed}; }
   }
 
@@ -349,14 +352,15 @@
         Promise.resolve().then(() => { if(op.signal.aborted) cancel(); else if(ready?.()) done(); });
       });
     }
-    waitForPresentation(localTime, op, timeoutMs = 15000) {
+    waitForPresentation(localTime, op, timeoutMs = 15000, thresholdSeconds = null) {
       return new Promise((resolve, reject) => {
         const started=Date.now();
         const check=()=>{
           if(!this.current(op)) return reject(aborted());
           const buffer=this.bufferManager.sample(this.video,this.mode);
           const remaining=Math.max(0,this.globalDuration-this.masterClock.localToGlobal(localTime));
-          const threshold=Math.min(this.bufferManager.startupThreshold(this.mode),remaining);
+          const desiredThreshold=Number.isFinite(Number(thresholdSeconds)) ? Number(thresholdSeconds) : this.bufferManager.startupThreshold(this.mode);
+          const threshold=Math.min(desiredThreshold,remaining);
           const atTarget=Math.abs(number(this.video.currentTime)-localTime)<.35;
           if(atTarget && (buffer.secondsAhead>=threshold || remaining<.5)) return resolve();
           if(Date.now()-started>=timeoutMs) return reject(new Error('Seek target did not become ready'));
@@ -492,7 +496,7 @@
           if(this.wantsPlay) this.transition(STATES.BUFFERING);
           else this.emit();
           this.adapter.seek(local);
-          await this.waitForPresentation(local,op);
+          await this.waitForPresentation(local,op,15000,this.bufferManager.seekResumeThreshold(this.mode));
           this.assertCurrent(op);
           this.masterClock.commitWindow(this.windowStart, local);
           this.seeking = false;

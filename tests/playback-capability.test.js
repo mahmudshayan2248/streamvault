@@ -115,6 +115,11 @@ test('keyframe origin accounts for B-frame decode reordering', () => {
   assert.equal(normalizedSeekOrigin(roundedMatroskaPackets, {}, 2400), 2399.148);
   assert.equal(normalizedSeekOrigin(roundedMatroskaPackets, { hasBFrames: 0 }, 2400), 2399.148);
   assert.equal(normalizedSeekOrigin(roundedMatroskaPackets, { hasBFrames: 2, frameRate: '24000/1001' }, 2400), 2399.148);
+  assert.equal(normalizedSeekOrigin([
+    { pts_time: '2953.826', duration_time: '.041' },
+    { pts_time: '2953.742', duration_time: '.041' },
+    { pts_time: '2953.659', dts_time: '2953.659', duration_time: '.041' },
+  ], {}, 2960), 2953.744);
 });
 
 test('compatibility output keeps one timestamp epoch and does not force audio to zero', async () => {

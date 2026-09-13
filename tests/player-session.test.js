@@ -47,6 +47,28 @@ test('master clock owns global-local mapping and freezes during seek',()=>{
   assert.equal(clock.globalCurrentTime,1200);
   assert.equal(clock.canonicalDuration,3009.877);
 });
+test('in-buffer seek holds media while readiness is checked and resumes existing intent',async t=>{
+  const s=session(t);
+  await s.start({id:'media'});
+  await s.play();
+  const wait=s.waitForPresentation.bind(s);
+  s.waitForPresentation=async (...args)=>{
+    assert.equal(s.video.paused,true);
+    return wait(...args);
+  };
+  assert.equal(await s.seekTo(10),true);
+  assert.equal(s.video.currentTime,10);
+  assert.equal(s.getCurrentTime(),10);
+  assert.equal(s.video.paused,false);
+});
+test('readiness timeout fails instead of committing an unready seek',async t=>{
+  const s=session(t);
+  await s.start({id:'media'});
+  const {operation}=s.seekController.begin(10);
+  s.video.buffered=ranges(0,0);
+  await assert.rejects(s.waitForPresentation(10,operation,0),/did not become ready/);
+  assert.equal(s.masterClock.frozen,true);
+});
 test('shared seek geometry uses the rendered rectangle for input and output',()=>{
   const track={getBoundingClientRect:()=>({left:100,width:800})};
   for(const ratio of [0,.1,.25,.5,.75,.9,1]) {

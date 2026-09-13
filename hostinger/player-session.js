@@ -198,10 +198,14 @@
         // Growing EVENT manifests describe VOD preparation, never a live edge.
         liveSyncDuration:1e9, liveMaxLatencyDuration:Infinity, maxLiveSyncPlaybackRate:1,
         manifestLoadingTimeOut:30000, levelLoadingTimeOut:30000, fragLoadingTimeOut:30000,
+        manifestLoadingMaxRetry:6, levelLoadingMaxRetry:6, fragLoadingMaxRetry:8,
+        manifestLoadingRetryDelay:1000, levelLoadingRetryDelay:1000, fragLoadingRetryDelay:1000,
+        manifestLoadingMaxRetryTimeout:15000, levelLoadingMaxRetryTimeout:15000, fragLoadingMaxRetryTimeout:15000,
       });
       const valid = () => s.active && s.adapter === this && this.hls === hls;
       hls.on(Hls.Events.FRAG_LOADED, (_event, data) => {
         if(!valid()) return;
+        s.recoveryController.networkAttempts = 0;
         const stats = data.stats || data.frag?.stats;
         const ms = Math.max(0, number(stats?.loading?.end)-number(stats?.loading?.start));
         s.health.fragmentLoadMs = ms;
@@ -238,7 +242,8 @@
         hls.on(Hls.Events.FRAG_BUFFERED, () => { if(valid()) finish(); });
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if(!valid()) return;
-          boundedPush(s.metrics.errors, {at:Date.now(), type:data.type, details:data.details, fatal:!!data.fatal});
+          boundedPush(s.metrics.errors, {at:Date.now(), type:data.type, details:data.details, fatal:!!data.fatal,
+            sn:data.frag?.sn, url:data.frag?.url, response:data.response?.code});
           if(!data.fatal) return;
           if(s.recoveryController.recoverHls(data,hls)) return;
           const error = new Error(`Compatibility playback failed: ${data.details}`);

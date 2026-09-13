@@ -257,13 +257,33 @@
   }
 
   async function fetchDirect(info){
-    if(/^series_[a-f0-9]+$/i.test(String(info?.item?.id || '')) && typeof window.prefetchSeriesDetail==='function'){
+    if(typeof window.prefetchSeriesDetail==='function'){
       try{
         const canonical=await window.prefetchSeriesDetail(info.item,{priority:true});
         if(canonical && episodeCount(canonical)>0)return canonical;
       }catch(error){
         console.warn('[Series episodes] Canonical detail unavailable, using direct fallback:',error?.message || error);
       }
+    }
+    try{
+      const item=info?.item||{};
+      const params=new URLSearchParams();
+      if(item.id)params.set('id',item.id);
+      if(item.tmdbId)params.set('tmdbId',item.tmdbId);
+      const name=info?.clean||info?.raw||item.name||item.title||'';
+      if(name)params.set('name',name);
+      if(info?.year)params.set('year',info.year);
+      if(params.has('name')||params.has('id')||params.has('tmdbId')){
+        const path='/api/series/detail?'+params.toString();
+        const fn=window.StreamVaultConfig?.fetchWithTimeout;
+        const response=fn
+          ? await fn(path,{cache:'no-store',headers:{Accept:'application/json'}},6500)
+          : await fetch(path,{cache:'no-store',headers:{Accept:'application/json'}});
+        const canonical=await responseShow(response);
+        if(canonical&&episodeCount(canonical)>0)return canonical;
+      }
+    }catch(error){
+      console.warn('[Series episodes] Canonical series detail unavailable, using direct fallback:',error?.message||error);
     }
     const titles=[...new Set([info.clean,info.raw].filter(Boolean))];
     let lastError=null;

@@ -103,6 +103,13 @@ for (const message of REQUIRED_MESSAGES) {
 }
 
 const activeSource = activeScripts.map(filename => fs.readFileSync(filename, 'utf8')).join('\n');
+if (!index.includes('/player-vlc-v1.js?v=20260825-player-v7') || !index.includes('/player-vlc-v1.css?v=20260825-player-v7')) {
+  fail('index.html does not reference the player-v7 JS and CSS cache keys');
+}
+const playerV7 = read('player-vlc-v1.js');
+if (!playerV7.includes("window.STREAMVAULT_PLAYER_VERSION='player-v7'") || !playerV7.includes("version:'player-v7'")) {
+  fail('player-vlc-v1.js is missing the player-v7 runtime marker');
+}
 if (/https:\/\/(?:www\.)?streamvault\.fit\/(?:api|download|live|live-relay|proxy|stream|subtitles)(?:\/|\?|["'`])/.test(activeSource)) {
   fail('an active script still hardcodes a backend request through the frontend apex');
 }

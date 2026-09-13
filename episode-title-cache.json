@@ -4068,5 +4068,56 @@
       "rating": "7.5",
       "airDate": "2019-12-01"
     }
+  ],
+  "__tmdb_id__Zero Day": 216082,
+  "Zero Day__S1": [
+    {
+      "episode": 1,
+      "title": "Episode 1",
+      "overview": "Former President George Mullen's comfortable retirement is upended after he's asked to lead an investigation into a horrific cyberattack.",
+      "thumb": "https://image.tmdb.org/t/p/21g2S1IetHHgNiDnFLfmMskat9I.jpg",
+      "rating": "6.8",
+      "airDate": "2025-02-20"
+    },
+    {
+      "episode": 2,
+      "title": "Episode 2",
+      "overview": "Mullen's commission investigates a hacking ring. President Mitchell weighs retaliation. A powerful figure has demands for Roger.",
+      "thumb": "https://image.tmdb.org/t/p/mqWDwTtNYVPYRKnb0RmMu9XtRcu.jpg",
+      "rating": "6.6",
+      "airDate": "2025-02-20"
+    },
+    {
+      "episode": 3,
+      "title": "Episode 3",
+      "overview": "Mullen's initial arrests draw blowback from the public — especially TV pundit Evan Green. Alex faces pressure to investigate her father.",
+      "thumb": "https://image.tmdb.org/t/p/3skvIi6EKl86Ftybyih7KftgL8i.jpg",
+      "rating": "6.6",
+      "airDate": "2025-02-20"
+    },
+    {
+      "episode": 4,
+      "title": "Episode 4",
+      "overview": "A shock to the financial system increases scrutiny on Mullen's commission. Valerie investigates Proteus. Roger must make a difficult choice.",
+      "thumb": "https://image.tmdb.org/t/p/wefzP0WGXGSWfHHexWWHrmb3r2l.jpg",
+      "rating": "6.6",
+      "airDate": "2025-02-20"
+    },
+    {
+      "episode": 5,
+      "title": "Episode 5",
+      "overview": "A personal tragedy reopens old wounds for the Mullen family. Speaker Dreyer pushes for a change in leadership. Sheila testifies before Congress.",
+      "thumb": "https://image.tmdb.org/t/p/ge0hY7Me2ivvSz4dfBwT7dEwt8I.jpg",
+      "rating": "6.8",
+      "airDate": "2025-02-20"
+    },
+    {
+      "episode": 6,
+      "title": "Episode 6",
+      "overview": "A new threat creates further unrest across the nation. As he narrows in on the culprit, Mullen is faced with an agonizing decision.",
+      "thumb": "https://image.tmdb.org/t/p/m1bQkshHQU9WhSxY29xTiqIZYQx.jpg",
+      "rating": "6.5",
+      "airDate": "2025-02-20"
+    }
   ]
 }

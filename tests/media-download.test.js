@@ -36,7 +36,7 @@ function fixture(options = {}) {
   const shows = options.shows || [
     {
       id: 'series_breakingbad', name: 'Breaking Bad', seasons: {
-        '1': [{ season: 1, episode: 1, epTitle: 'Pilot', streamUrl: 'https://tv.example.test/Breaking.Bad.S01E01.1080p.mkv', sources: [
+        '1': [{ id: 'episode_breakingbad_s01e01', season: 1, episode: 1, epTitle: 'Pilot', streamUrl: 'https://tv.example.test/Breaking.Bad.S01E01.1080p.mkv', sources: [
           { streamUrl: 'https://tv.example.test/Breaking.Bad.S01E01.1080p.mkv', quality: 4 },
           { streamUrl: 'https://tv.example.test/Breaking.Bad.S01E01.720p.mp4', quality: 3 },
         ] }]
@@ -50,6 +50,7 @@ function fixture(options = {}) {
   ];
   const aliases = new Map([['legacy_breaking_bad', shows[0]]]);
   const state = {
+    shows,
     find({ id, name, year }) {
       const direct = shows.find(show => show.id === id) || aliases.get(String(id));
       if (direct) return direct;
@@ -123,6 +124,15 @@ test('Breaking Bad S01E01 resolves the exact canonical episode and ranked origin
   assert.equal(result.episode.epTitle, 'Pilot');
   assert.equal(result.url, 'https://tv.example.test/Breaking.Bad.S01E01.1080p.mkv');
   assert.equal(result.filename, 'Breaking Bad - S01E01 - Pilot.mkv');
+});
+
+test('canonical episode ID reuses the same episode resolver used by downloads', t => {
+  const { root, resolver } = fixture();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const result = resolver.resolveEpisodeById({ id: 'episode_breakingbad_s01e01' });
+  assert.equal(result.show.id, 'series_breakingbad');
+  assert.equal(result.episode.epTitle, 'Pilot');
+  assert.equal(result.url, 'https://tv.example.test/Breaking.Bad.S01E01.1080p.mkv');
 });
 
 test('Game of Thrones S01E01 resolves the exact local episode', t => {

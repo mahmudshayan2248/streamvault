@@ -33,7 +33,7 @@ const ROUTE_NODES = [
   [/^\/api\/ftp\/(?:media-info|info)(?:\/|$)/, 'ftp-media-info'],
   [/^\/poster-cache(?:\/|$)/, 'poster-cache'],
   [/^\/api\/channels(?:\/|$)/, 'channel-catalog'],
-  [/^\/api\/downloads(?:\/|$)/, 'downloads-service'],
+  [/^\/api\/downloads?(?:\/|$)/, 'downloads-service'],
   [/^\/(?:api\/)?uploads?(?:\/|$)/, 'upload-pipeline'],
   [/^\/api\/trending(?:\/|$)/, 'tmdb-trending-service'],
   [/^\/party(?:\/|$)/, 'watch-party-service'],

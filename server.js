@@ -22,7 +22,9 @@ const {
   contentDisposition,
   createMediaDownloadResolver,
 } = require('./lib/media-download');
+const { streamOriginalDownload } = require('./lib/resilient-download');
 const { installPlaybackFaststart } = require('./lib/playback-faststart');
+const { CatalogManager } = require('./lib/catalog/catalog-manager');
 
 const tracker         = require('./middleware/tracker');
 const dashboardRoutes = require('./routes/dashboard');
@@ -33,7 +35,7 @@ app.options('/api/ftp/media-info', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,HEAD,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range, Authorization');
-  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges, Content-Disposition, X-StreamVault-Canonical-Id, X-StreamVault-Source-Kind, X-StreamVault-Source-Fingerprint, X-StreamVault-Download-Trace-Id');
   return res.status(204).end();
 });
 /* EMERGENCY_HOSTINGER_CORS */
@@ -41,7 +43,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,HEAD,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range, Authorization");
-  res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges");
+  res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges, Content-Disposition, X-StreamVault-Canonical-Id, X-StreamVault-Source-Kind, X-StreamVault-Source-Fingerprint, X-StreamVault-Download-Trace-Id");
   if (req.method === "OPTIONS") return res.status(204).end();
   next();
 });
@@ -77,7 +79,7 @@ const MOVIES_DIR   = process.env.MOVIES_DIR || path.join(MEDIA_ROOT, 'movies');
 const SERIES_DIR   = process.env.SERIES_DIR || path.join(MEDIA_ROOT, 'series');
 const CACHE_FILE   = path.join(__dirname, 'poster-cache.json');
 const HISTORY_FILE = path.join(__dirname, 'watch-history.json');
-const INDEX_FILE   = path.join(__dirname, 'file-index.json');
+const INDEX_FILE   = process.env.CATALOG_INDEX_FILE || path.join(__dirname, 'file-index.json');
 const CHANNELS_FILE = path.join(__dirname, 'channels.json');
 const FTP_CATALOG_FILE = process.env.FTP_CATALOG_FILE || path.join(__dirname, 'catalog.json');
 const MASSIVE_CATALOG_FILE = process.env.MASSIVE_CATALOG_FILE || path.join(__dirname, 'scan-output', 'clean-catalog.json');
@@ -121,11 +123,16 @@ const MEDIA_AUDIO_OFFSET_THRESHOLD_SEC = Number(process.env.MEDIA_AUDIO_OFFSET_T
 const MEDIA_PACKET_PROBE_WINDOW_SEC = Number(process.env.MEDIA_PACKET_PROBE_WINDOW_SEC || 20);
 const MEDIA_PACKET_PROBE_TIMEOUT_MS = Number(process.env.MEDIA_PACKET_PROBE_TIMEOUT_MS || 12000);
 const MEDIA_PACKET_SYNC_BACKGROUND = process.env.MEDIA_PACKET_SYNC_BACKGROUND !== '0';
+const SV_DOWNLOAD_MAX_RETRIES = Math.max(0, Math.min(5, Number(process.env.SV_DOWNLOAD_MAX_RETRIES || 3) || 0));
+const SV_DOWNLOAD_CONNECT_TIMEOUT_MS = Math.max(5000, Number(process.env.SV_DOWNLOAD_CONNECT_TIMEOUT_MS || 20000) || 20000);
+const SV_DOWNLOAD_SOURCE_IDLE_MS = Math.max(15000, Number(process.env.SV_DOWNLOAD_SOURCE_IDLE_MS || 45000) || 45000);
 const COMPAT_STREAM_SEEK_PREROLL_SEC = Math.max(0, Math.min(8, Number(process.env.COMPAT_STREAM_SEEK_PREROLL_SEC || 4) || 0));
 const SV_PLAYBACK_VERBOSE = process.env.SV_PLAYBACK_VERBOSE === '1';
 const SV_DETAIL_VERBOSE = process.env.SV_DETAIL_VERBOSE === '1';
 let activeMediaFfmpegStreams = 0;
+let activeOriginalDownloads = 0;
 let svPlaybackFaststartManager = null;
+const svDownloadTransferEvents = [];
 
 const COMPAT_VIDEO_PTS_FILTER = 'setpts=PTS-STARTPTS';
 const COMPAT_AUDIO_PTS_FILTER = 'asetpts=PTS-STARTPTS,aresample=async=1';
@@ -220,6 +227,7 @@ function getMediaInfo(filePath) {
           width: Number(videoStream?.width) || 0,
           height: Number(videoStream?.height) || 0,
           frameRate: videoStream?.avg_frame_rate || videoStream?.r_frame_rate || '',
+          hasBFrames: Number(videoStream?.has_b_frames) || 0,
           bitrate: Number(videoStream?.bit_rate) || Number(info.format?.bit_rate) || 0,
           fileSize: Number(info.format?.size) || 0,
           duration: parseFloat(info.format?.duration) || 0,
@@ -362,11 +370,12 @@ function getDurationOnlyMediaInfo(filePath) {
   });
 }
 
-const SV_REMOTE_MEDIA_INFO_CACHE_DIR = path.join(SV_CACHE_DIR, 'remote-media-info-v2');
+const SV_REMOTE_MEDIA_INFO_CACHE_VERSION = 3;
+const SV_REMOTE_MEDIA_INFO_CACHE_DIR = path.join(SV_CACHE_DIR, 'remote-media-info-v3');
 const SV_REMOTE_MEDIA_INFO_CACHE_TTL_MS = Math.max(60 * 60 * 1000, Number(process.env.SV_REMOTE_MEDIA_INFO_CACHE_TTL_MS || 30 * 24 * 60 * 60 * 1000));
 
 function svRemoteMediaInfoCachePath(sourceUrl) {
-  const key = crypto.createHash('sha1').update(`remote-media-info-v2|${sourceUrl}`).digest('hex');
+  const key = crypto.createHash('sha1').update(`remote-media-info-v${SV_REMOTE_MEDIA_INFO_CACHE_VERSION}|${sourceUrl}`).digest('hex');
   return path.join(SV_REMOTE_MEDIA_INFO_CACHE_DIR, `${key}.json`);
 }
 
@@ -376,7 +385,7 @@ function svReadRemoteMediaInfoCache(sourceUrl) {
     const stat = fs.statSync(filename);
     if (!stat.isFile() || Date.now() - stat.mtimeMs > SV_REMOTE_MEDIA_INFO_CACHE_TTL_MS) return null;
     const cached = JSON.parse(fs.readFileSync(filename, 'utf8'));
-    if (cached?.version !== 2 || cached?.sourceUrl !== sourceUrl || !cached?.info?.videoCodec || !(Number(cached.info.duration) > 0)) return null;
+    if (cached?.version !== SV_REMOTE_MEDIA_INFO_CACHE_VERSION || cached?.sourceUrl !== sourceUrl || !cached?.info?.videoCodec || !(Number(cached.info.duration) > 0) || !Number.isInteger(cached.info.hasBFrames) || cached.info.hasBFrames < 0) return null;
     return cached.info;
   } catch {
     return null;
@@ -388,7 +397,7 @@ function svWriteRemoteMediaInfoCache(sourceUrl, info) {
     fs.mkdirSync(SV_REMOTE_MEDIA_INFO_CACHE_DIR, { recursive: true });
     const filename = svRemoteMediaInfoCachePath(sourceUrl);
     const temp = `${filename}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`;
-    fs.writeFileSync(temp, JSON.stringify({ version: 2, sourceUrl, cachedAt: Date.now(), info }));
+    fs.writeFileSync(temp, JSON.stringify({ version: SV_REMOTE_MEDIA_INFO_CACHE_VERSION, sourceUrl, cachedAt: Date.now(), info }));
     fs.renameSync(temp, filename);
   } catch (error) {
     console.warn('[Media info] persistent cache write failed:', error.message);
@@ -606,6 +615,9 @@ const QUALITY_TIERS = {
 let posterCache  = {};
 let watchHistory = {};
 let fileIndex    = [];
+let mediaById    = new Map();
+let catalogManager = null;
+let catalogGeneration = '';
 let channels     = [];
 
 // â”€â”€ Pre-built in-memory lists (instant API responses) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -727,6 +739,7 @@ let _canonicalSeriesStamp = '';
 
 function svCanonicalSeriesSourceStamp() {
   return [
+    catalogGeneration,
     (_seriesList || []).length,
     (ftpCatalog.series || []).length,
     (_massiveSeries || []).length,
@@ -3112,41 +3125,47 @@ function findSubtitleTracks(dir, videoFile) {
 
 // â”€â”€ Build file index â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildFileIndex() {
-  fileIndex = [];
-  let movieFiles = [];
-  try { movieFiles = fs.readdirSync(MOVIES_DIR).filter(f => VIDEO_EXTS.includes(path.extname(f).toLowerCase())); } catch (e) { console.warn('âš  Cannot read MOVIES_DIR:', e.message); }
-  movieFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-  for (const f of movieFiles) fileIndex.push({ dir: MOVIES_DIR, file: f, type: 'movie' });
-  console.log(`ðŸ“ Indexed ${movieFiles.length} movie files`);
+  throw new Error('Direct catalog scans are disabled; use CatalogManager.rescan()');
+}
 
-  const seriesScan = walkVideoFiles(SERIES_DIR, VIDEO_EXTS);
-  for (const entry of seriesScan.files) fileIndex.push(entry);
+function svApplyActiveCatalog(catalog) {
+  const nextIndex = Object.values(catalog?.media || {});
+  fileIndex = nextIndex;
+  mediaById = new Map(nextIndex.map(entry => [String(entry.id), entry]));
+  _movieList = Array.isArray(catalog?.movies) ? catalog.movies : [];
+  _seriesList = Array.isArray(catalog?.series) ? catalog.series : [];
   _seriesDiagnostics = {
     ..._seriesDiagnostics,
-    seriesRootAvailable: fs.existsSync(SERIES_DIR),
-    videoFilesDiscovered: seriesScan.files.length,
-    scanErrors: seriesScan.errors.slice(0, 25),
+    ...(catalog?.diagnostics || {}),
+    seriesRootAvailable: catalog?.availability?.seriesRootAvailable ?? _seriesDiagnostics.seriesRootAvailable,
   };
-  if (seriesScan.errors.length) {
-    console.warn(`âš  Series scan encountered ${seriesScan.errors.length} filesystem error(s); continuing`);
-  }
-  console.log(`ðŸ“º Indexed ${seriesScan.files.length} series episode files recursively`);
-  console.log(`âœ… Total stream IDs: ${fileIndex.length}`);
+  catalogGeneration = String(catalog?.generatedAt || Date.now());
+  _canonicalSeriesState = null;
+  _canonicalSeriesStamp = '';
+  filterCartoonsAndAnime();
+  console.log(`[Catalog] Active snapshot swapped: ${_movieList.length} movies / ${_seriesList.length} series / ${catalog?.stats?.episodes || 0} episodes`);
+}
+
+function resolveMediaEntry(id) {
+  const value = String(id ?? '');
+  if (mediaById.has(value)) return mediaById.get(value);
+  if (/^\d+$/.test(value)) return fileIndex[Number(value)] || null;
+  return null;
 }
 function entryPath(entry) { return path.join(entry.dir, entry.file); }
 
 // â”€â”€ Build instant movie list (sync â€” reads only from posterCache) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildMovieListSync() {
   const list = [];
-  for (let id = 0; id < fileIndex.length; id++) {
-    const entry = fileIndex[id];
+  for (let legacyIndex = 0; legacyIndex < fileIndex.length; legacyIndex++) {
+    const entry = fileIndex[legacyIndex];
     if (entry.type !== 'movie') continue;
     const name = cleanTitle(entry.file);
     if (!name) continue;
     const key  = path.basename(entry.file, path.extname(entry.file));
     const info = posterCache[key] || null;
     list.push({
-      id,
+      id: entry.id || legacyIndex,
       name,
       file:     entry.file,
       poster:   info?.poster   || null,
@@ -3274,7 +3293,7 @@ app.options('*', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,HEAD,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range, Authorization');
-  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges, Content-Disposition');
   return res.status(204).end();
 });
 app.use((_, res, next) => {
@@ -3284,7 +3303,7 @@ app.use((_, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
-  res.setHeader('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length, Content-Disposition');
   next();
 });
 app.use(infraTelemetry.requestMiddleware);
@@ -5633,7 +5652,6 @@ function svStartLiveRelay(channelId, reason = 'start', candidateIndex = 0) {
 function svEnsureLiveRelay(channelId) {
   let session = svLiveRelaySessions.get(channelId);
   if (!session) return svStartLiveRelay(channelId, 'start', 0);
-  session.lastAccess = Date.now();
   const state = svLiveRelayPlaylistState(session);
   const processDead = !session.process || session.process.exitCode !== null || session.process.killed;
   const stale = state.stat && Date.now() - state.stat.mtimeMs > SV_LIVE_RELAY_STALE_MS;
@@ -6214,8 +6232,8 @@ app.get('/api/heavy-compat-hls/ftp/index.m3u8', async (req, res) => {
 });
 
 app.get('/api/mobile-hls/local/:id/index.m3u8', async (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.status(404).send('Not found');
   const filePath = entryPath(entry);
   if (!fs.existsSync(filePath)) return res.status(404).send('File missing');
@@ -8632,6 +8650,41 @@ app.get('/api/series-diagnostics', (req, res) => {
   });
 });
 
+app.get('/api/catalog/status', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!catalogManager) return res.status(503).json({ ready: false, error: 'catalog_unavailable' });
+  const local = catalogManager.getStatus();
+  const canonical = _canonicalSeriesState?.diagnostics?.canonical || null;
+  const persistedSeries = Array.isArray(ftpCatalog.series) ? ftpCatalog.series : [];
+  const fallbackSeriesCounts = canonical || {
+    shows: persistedSeries.length,
+    seasons: persistedSeries.reduce((count, show) => count + Object.keys(show.seasons || {}).length, 0),
+    episodes: persistedSeries.reduce((count, show) => count + Object.values(show.seasons || {}).reduce((sum, episodes) => sum + (Array.isArray(episodes) ? episodes.length : 0), 0), 0),
+  };
+  const hasPersistedExternalCatalog = fallbackSeriesCounts.episodes > 0 || (ftpCatalog.movies || []).length > 0;
+  res.json({
+    ...local,
+    ready: local.ready || hasPersistedExternalCatalog,
+    usingPersistedCatalog: local.usingPersistedCatalog || (!local.ready && hasPersistedExternalCatalog),
+    counts: {
+      movies: (_movieList || []).length + (ftpCatalog.movies || []).length + (_massiveMovies || []).length,
+      series: fallbackSeriesCounts.shows ?? fallbackSeriesCounts.series ?? 0,
+      seasons: fallbackSeriesCounts.seasons || 0,
+      episodes: fallbackSeriesCounts.episodes || 0,
+      unparsedEpisodes: local.counts.unparsedEpisodes + Number(_massiveSeriesDiagnostics.unparsed || 0),
+      duplicates: local.counts.duplicates + Number(_canonicalSeriesState?.diagnostics?.duplicatesSuppressed || 0),
+    },
+    localCounts: local.counts,
+  });
+});
+
+app.post('/api/catalog/rescan', (req, res) => {
+  if (!catalogManager) return res.status(503).json({ error: 'catalog_unavailable' });
+  const alreadyRunning = !!catalogManager.scanPromise;
+  catalogManager.rescan('manual').catch(() => {});
+  res.status(202).json({ accepted: true, coalesced: alreadyRunning });
+});
+
 app.get('/api/series-pipeline-diagnostics', (req, res) => {
   const state = svGetCanonicalSeriesState();
   res.setHeader('Cache-Control', 'no-store');
@@ -8664,6 +8717,7 @@ function svMediaDownloadMovieItems() {
 
 const svMediaDownloadResolver = createMediaDownloadResolver({
   getFileIndex: () => fileIndex,
+  getMediaById: id => resolveMediaEntry(id),
   getMovieItems: svMediaDownloadMovieItems,
   getSeriesState: svGetCanonicalSeriesState,
 });
@@ -8671,9 +8725,80 @@ const svMediaDownloadResolver = createMediaDownloadResolver({
 function svDownloadError(res, error) {
   const status = Number(error?.status) || 500;
   const code = error?.code || 'MEDIA_DOWNLOAD_FAILED';
-  const message = status >= 500 ? 'Media download failed' : (error?.message || 'Media download failed');
+  console.warn('[DownloadError]', JSON.stringify({
+    traceId: res.locals?.downloadTraceId || '',
+    mediaId: res.locals?.downloadMediaId || '',
+    resolved: false,
+    status,
+    code,
+    upstreamStatus: Number(error?.upstreamStatus) || null,
+    error: error?.message || String(error),
+    causeCode: error?.cause?.code || null,
+    cause: error?.cause?.message || null,
+    headersSent: !!res.headersSent,
+    destroyed: !!res.destroyed,
+  }));
   if (res.headersSent) return res.destroy();
-  return jsonError(res, status, code, message);
+  const publicError = status === 404
+    ? 'media_not_found'
+    : status === 503
+      ? 'media_source_unavailable'
+      : status >= 500
+        ? 'upstream_download_failed'
+        : 'media_download_failed';
+  return res.status(status).json({
+    error: publicError,
+    code,
+    ...(status === 404 && res.locals?.downloadMediaId ? { mediaId: res.locals.downloadMediaId } : {}),
+  });
+}
+
+function svDownloadCapacitySnapshot() {
+  const metrics = infraTelemetry.metrics();
+  const running = session => !!session?.process && session.process.exitCode === null && !session.process.killed;
+  return {
+    activeDownloads: activeOriginalDownloads,
+    ffmpeg: {
+      directCompatibility: activeMediaFfmpegStreams,
+      mobileHls: [...mobileHlsSessions.values()].filter(running).length,
+      heavyCompatHls: [...heavyCompatHlsSessions.values()].filter(running).length,
+      liveRelay: [...svLiveRelaySessions.values()].filter(running).length,
+      faststartCopy: svPlaybackFaststartManager?.activeJobs?.() || 0,
+    },
+    cpuPercent: metrics.cpu,
+    ramPercent: metrics.ram,
+    processRssBytes: metrics.processRssBytes,
+    processHeapUsedBytes: metrics.processHeapUsedBytes,
+    netInMbps: metrics.netInMbps,
+    netOutMbps: metrics.netOutMbps,
+    activeHttpRequests: metrics.activeHttpRequests,
+  };
+}
+
+function svDownloadTransferLog(req, res, resolved, event, details = {}) {
+  let sourceHost = '';
+  if (resolved.kind === 'remote') {
+    try { sourceHost = new URL(resolved.url).host; } catch {}
+  }
+  const importantCapacityEvent = event === 'start' || event === 'retry' || event === 'source_error' ||
+    event === 'source_connection_error' || event === 'terminal_error' || event === 'client_abort' || event === 'complete';
+  const payload = {
+    timestamp: new Date().toISOString(),
+    event,
+    traceId: res.locals?.downloadTraceId || '',
+    mediaId: res.locals?.downloadMediaId || '',
+    sourceType: resolved.kind,
+    sourceHost,
+    sourceFingerprint: String(res.getHeader('X-StreamVault-Source-Fingerprint') || ''),
+    clientRange: req.headers.range || '',
+    cloudflareRay: req.headers['cf-ray'] || '',
+    cloudflareRequest: !!(req.headers['cf-ray'] || req.headers['cf-connecting-ip']),
+    ...details,
+    ...(importantCapacityEvent ? { capacity: svDownloadCapacitySnapshot() } : {}),
+  };
+  svDownloadTransferEvents.push(payload);
+  if (svDownloadTransferEvents.length > 500) svDownloadTransferEvents.splice(0, svDownloadTransferEvents.length - 500);
+  console.log('[DownloadTransfer]', JSON.stringify(payload));
 }
 
 function svDownloadMime(filename, upstreamType = '') {
@@ -8682,7 +8807,13 @@ function svDownloadMime(filename, upstreamType = '') {
   return localMime || (!remoteType || /octet-stream/i.test(remoteType) ? 'application/octet-stream' : remoteType);
 }
 
-function svDownloadRequestLog(resolved) {
+function svDownloadRequestLog(req, resolved) {
+  const canonicalId = resolved.mediaId || resolved.episode?.mediaId || resolved.episode?.id || resolved.movie?.id || resolved.streamId || '';
+  const sourceIdentity = resolved.kind === 'remote' ? resolved.url : resolved.filePath;
+  const sourceFingerprint = crypto.createHash('sha1').update(String(sourceIdentity || '')).digest('hex').slice(0, 20);
+  console.log(`[Download] mediaId=${canonicalId}`);
+  console.log(`[Download] type=${resolved.mediaType} sourceType=${resolved.kind} resolved=true range=${req.headers.range || ''}`);
+  console.log(`[Download] canonicalId=${canonicalId} sourceFingerprint=${sourceFingerprint}`);
   if (resolved.mediaType === 'episode') {
     if (resolved.show) {
       console.log(`[Download] episode series=${resolved.show.id} season=${resolved.seasonNumber} episode=${resolved.episodeNumber}`);
@@ -8705,8 +8836,8 @@ function svDownloadRequestLog(resolved) {
 function svServeLocalDownload(req, res, resolved) {
   let stat;
   try { stat = fs.statSync(resolved.filePath); }
-  catch { throw new MediaDownloadError(404, 'LOCAL_MEDIA_MISSING', 'Local media file is missing'); }
-  if (!stat.isFile()) throw new MediaDownloadError(404, 'LOCAL_MEDIA_MISSING', 'Local media file is missing');
+  catch { throw new MediaDownloadError(503, 'LOCAL_MEDIA_MISSING', 'Local media file is missing'); }
+  if (!stat.isFile()) throw new MediaDownloadError(503, 'LOCAL_MEDIA_MISSING', 'Local media file is missing');
 
   const rangeHeader = req.headers.range;
   const parsedRange = rangeHeader ? parseSingleByteRange(rangeHeader, stat.size) : null;
@@ -8734,19 +8865,51 @@ function svServeLocalDownload(req, res, resolved) {
     'Cache-Control': 'private, no-store',
   };
   if (parsedRange) headers['Content-Range'] = `bytes ${start}-${end}/${stat.size}`;
+  svDownloadTransferLog(req, res, resolved, 'response_headers', {
+    upstreamStatus: status,
+    contentLength: Number(headers['Content-Length']),
+    contentRange: headers['Content-Range'] || '',
+    entityTotal: stat.size,
+    acceptRanges: true,
+  });
   res.writeHead(status, headers);
   if (req.method === 'HEAD') return res.end();
 
   const source = fs.createReadStream(resolved.filePath, parsedRange ? { start, end } : undefined);
+  let bytesRead = 0;
   let finished = false;
-  res.once('finish', () => { finished = true; });
+  const socketBytesAtStart = Number(res.socket?.bytesWritten || 0);
+  source.on('data', chunk => { bytesRead += chunk.length; });
+  res.once('finish', () => {
+    finished = true;
+    svDownloadTransferLog(req, res, resolved, 'complete', {
+      bytesRead,
+      bytesSent: bytesRead,
+      expectedBytes: end - start + 1,
+      socketBytesWritten: Math.max(0, Number(res.socket?.bytesWritten || 0) - socketBytesAtStart),
+    });
+  });
   res.once('close', () => {
     source.destroy();
-    if (!finished) console.log('[Download] client disconnected');
+    if (!finished) svDownloadTransferLog(req, res, resolved, 'client_abort', {
+      bytesRead,
+      bytesSent: bytesRead,
+      expectedBytes: end - start + 1,
+      requestAborted: !!req.aborted,
+      responseDestroyed: !!res.destroyed,
+      socketDestroyed: !!res.socket?.destroyed,
+      socketBytesWritten: Math.max(0, Number(res.socket?.bytesWritten || 0) - socketBytesAtStart),
+    });
   });
   pipeline(source, res, error => {
     if (error && error.code !== 'ERR_STREAM_PREMATURE_CLOSE' && !res.destroyed) {
-      console.error('[Download] local stream failed:', error.message);
+      svDownloadTransferLog(req, res, resolved, 'source_error', {
+        errorCode: error.code || 'LOCAL_DOWNLOAD_STREAM_FAILED',
+        errorMessage: error.message,
+        bytesRead,
+        bytesSent: bytesRead,
+        expectedBytes: end - start + 1,
+      });
       res.destroy(error);
     }
   });
@@ -8778,101 +8941,53 @@ function svValidateDownloadUrl(url, knownCatalogUrl = false) {
 }
 
 function svStreamRemoteDownload(req, res, resolved, sourceUrl = resolved.url, redirectsLeft = 5, knownCatalogUrl = true) {
-  let parsed;
-  try { parsed = svValidateDownloadUrl(sourceUrl, knownCatalogUrl); }
-  catch (error) { return svDownloadError(res, error); }
-
-  const headers = {
-    'User-Agent': req.headers['user-agent'] || 'StreamVault/1.0',
-    'Accept': '*/*',
-    'Accept-Encoding': 'identity',
-  };
-  if (req.headers.range) headers.Range = req.headers.range;
-  const transport = parsed.protocol === 'https:' ? https : http;
-  const upstream = transport.request(parsed, {
-    method: req.method === 'HEAD' ? 'HEAD' : 'GET',
-    headers,
-  }, upstreamResponse => {
-    upstream.setTimeout(0);
-    const status = upstreamResponse.statusCode || 502;
-    const location = upstreamResponse.headers.location;
-    if ([301, 302, 303, 307, 308].includes(status) && location) {
-      upstreamResponse.resume();
-      if (redirectsLeft <= 0) return svDownloadError(res, new MediaDownloadError(502, 'REMOTE_REDIRECT_LIMIT', 'Remote source redirected too many times'));
-      let nextUrl;
-      try { nextUrl = new URL(location, parsed).href; }
-      catch { return svDownloadError(res, new MediaDownloadError(502, 'REMOTE_REDIRECT_INVALID', 'Remote source returned an invalid redirect')); }
-      return svStreamRemoteDownload(req, res, resolved, nextUrl, redirectsLeft - 1, false);
-    }
-
-    if (status === 416) {
-      const responseHeaders = {
-        'Content-Length': '0',
-        'Accept-Ranges': 'bytes',
-        'Content-Disposition': contentDisposition(resolved.filename),
-        'Content-Type': svDownloadMime(resolved.filename),
-        'Cache-Control': 'private, no-store',
-      };
-      if (upstreamResponse.headers['content-range']) responseHeaders['Content-Range'] = upstreamResponse.headers['content-range'];
-      upstreamResponse.resume();
-      res.writeHead(416, responseHeaders);
-      return res.end();
-    }
-    if (status >= 400) {
-      upstreamResponse.resume();
-      const timeout = status === 408 || status === 504;
-      return svDownloadError(res, new MediaDownloadError(timeout ? 504 : 502, timeout ? 'REMOTE_DOWNLOAD_TIMEOUT' : 'REMOTE_DOWNLOAD_FAILED', 'Remote media source is unavailable'));
-    }
-
-    const responseHeaders = {
-      'Content-Type': svDownloadMime(resolved.filename, upstreamResponse.headers['content-type']),
-      'Content-Disposition': contentDisposition(resolved.filename),
-      'Cache-Control': 'private, no-store',
-    };
-    for (const name of ['content-length', 'content-range', 'last-modified', 'etag']) {
-      if (upstreamResponse.headers[name]) responseHeaders[name.replace(/(^|-)([a-z])/g, (_, prefix, letter) => `${prefix}${letter.toUpperCase()}`)] = upstreamResponse.headers[name];
-    }
-    if (String(upstreamResponse.headers['accept-ranges'] || '').toLowerCase() === 'bytes' || status === 206) {
-      responseHeaders['Accept-Ranges'] = 'bytes';
-    }
-    res.writeHead(status === 206 ? 206 : 200, responseHeaders);
-    if (req.method === 'HEAD') {
-      upstreamResponse.resume();
-      return res.end();
-    }
-
-    let finished = false;
-    res.once('finish', () => { finished = true; });
-    res.once('close', () => {
-      upstreamResponse.destroy();
-      upstream.destroy();
-      if (!finished) console.log('[Download] client disconnected');
-    });
-    pipeline(upstreamResponse, res, error => {
-      if (error && error.code !== 'ERR_STREAM_PREMATURE_CLOSE' && !res.destroyed) {
-        console.error('[Download] remote stream failed:', error.message);
-        res.destroy(error);
-      }
-    });
+  return streamOriginalDownload({
+    req,
+    res,
+    sourceUrl,
+    filename: resolved.filename,
+    contentType: upstreamType => svDownloadMime(resolved.filename, upstreamType),
+    contentDisposition: contentDisposition(resolved.filename),
+    validateUrl: (url, retryKnownCatalogUrl) => svValidateDownloadUrl(url, retryKnownCatalogUrl),
+    maxRedirects: redirectsLeft,
+    maxRetries: SV_DOWNLOAD_MAX_RETRIES,
+    connectTimeoutMs: SV_DOWNLOAD_CONNECT_TIMEOUT_MS,
+    sourceIdleTimeoutMs: SV_DOWNLOAD_SOURCE_IDLE_MS,
+    onEvent: (event, details) => svDownloadTransferLog(req, res, resolved, event, details),
+    onFailure: error => svDownloadError(res, error),
+    knownCatalogUrl,
   });
-
-  upstream.setTimeout(20000, () => {
-    upstream.destroy(Object.assign(new Error('Remote connection timed out'), { code: 'ETIMEDOUT' }));
-  });
-  upstream.on('error', error => {
-    if (res.headersSent || res.destroyed) return;
-    const timedOut = error.code === 'ETIMEDOUT';
-    svDownloadError(res, new MediaDownloadError(timedOut ? 504 : 502, timedOut ? 'REMOTE_DOWNLOAD_TIMEOUT' : 'REMOTE_DOWNLOAD_FAILED', timedOut ? 'Remote media source timed out' : 'Remote media source is unavailable'));
-  });
-  res.once('close', () => upstream.destroy());
-  upstream.end();
 }
 
 function svHandleMediaDownload(req, res, resolve) {
   let resolved;
   try {
+    // Download responses are intentionally navigated through a hidden iframe by
+    // older deployed clients. They are attachments, not embeddable documents.
+    res.removeHeader('X-Frame-Options');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors https://streamvault.fit https://mediumseagreen-butterfly-834518.hostingersite.com");
+    res.locals.downloadMediaId = req.params.id || req.query.mediaId || req.query.streamId || '';
     resolved = resolve();
-    svDownloadRequestLog(resolved);
+    const canonicalId = resolved.mediaId || resolved.episode?.mediaId || resolved.episode?.id || resolved.movie?.id || resolved.streamId || res.locals.downloadMediaId;
+    const sourceIdentity = resolved.kind === 'remote' ? resolved.url : resolved.filePath;
+    const sourceFingerprint = crypto.createHash('sha1').update(String(sourceIdentity || '')).digest('hex').slice(0, 20);
+    res.setHeader('X-StreamVault-Canonical-Id', String(canonicalId || ''));
+    res.setHeader('X-StreamVault-Source-Kind', resolved.kind);
+    res.setHeader('X-StreamVault-Source-Fingerprint', sourceFingerprint);
+    res.locals.downloadTraceId = crypto.randomBytes(8).toString('hex');
+    res.setHeader('X-StreamVault-Download-Trace-Id', res.locals.downloadTraceId);
+    res.locals.downloadMediaId = String(canonicalId || res.locals.downloadMediaId || '');
+    activeOriginalDownloads += 1;
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      activeOriginalDownloads = Math.max(0, activeOriginalDownloads - 1);
+    };
+    res.once('finish', release);
+    res.once('close', release);
+    svDownloadRequestLog(req, resolved);
+    svDownloadTransferLog(req, res, resolved, 'start', { method: req.method });
     if (resolved.kind === 'local') return svServeLocalDownload(req, res, resolved);
     return svStreamRemoteDownload(req, res, resolved);
   } catch (error) {
@@ -8886,6 +9001,10 @@ app.get('/api/download/movie/:id', (req, res) => svHandleMediaDownload(req, res,
 
 app.get('/api/download/media/:id', (req, res) => svHandleMediaDownload(req, res, () =>
   svMediaDownloadResolver.resolveIndexed({ id: req.params.id })
+));
+
+app.get('/api/download/episode/:id', (req, res) => svHandleMediaDownload(req, res, () =>
+  svMediaDownloadResolver.resolveEpisodeById({ id: req.params.id })
 ));
 
 app.get('/api/download/series/:seriesId/:season/:episode', (req, res) => svHandleMediaDownload(req, res, () =>
@@ -8915,6 +9034,22 @@ app.get('/api/series/:seriesId', (req, res) => {
   res.json({ ...show, isSummary: false, detailResolvable: true, hasStream: true, streamAvailable: true });
 });
 
+const svSeriesApiGzipCache = new Map();
+function svSendMemorySeries(res, list, cacheKey) {
+  if (!/\bgzip\b/i.test(String(res.req.headers['accept-encoding'] || ''))) return res.json(list);
+  let body = svSeriesApiGzipCache.get(cacheKey);
+  if (!body) {
+    body = zlib.gzipSync(Buffer.from(JSON.stringify(list)), { level: zlib.constants.Z_BEST_SPEED });
+    svSeriesApiGzipCache.clear();
+    svSeriesApiGzipCache.set(cacheKey, body);
+  }
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Content-Encoding', 'gzip');
+  res.setHeader('Content-Length', body.length);
+  res.setHeader('Vary', 'Accept-Encoding');
+  res.end(body);
+}
+
 app.get('/api/series', (req, res) => {
   try {
     const state = svGetCanonicalSeriesState();
@@ -8933,8 +9068,14 @@ app.get('/api/series', (req, res) => {
       return res.json({ series: paged.items, total: paged.list.length, page: paged.page, pages: paged.pages });
     }
 
-    res.json(limit ? allSeries.slice(0, limit) : allSeries);
-  } catch (e) { console.error('/api/series error:', e.message); res.json([]); }
+    const payload = limit ? allSeries.slice(0, limit) : allSeries;
+    if (!limit) return svSendMemorySeries(res, payload, `${_canonicalSeriesStamp}|summary=${summary ? 1 : 0}|${payload.length}`);
+    res.json(payload);
+  } catch (e) {
+    console.error('/api/series error:', e.message);
+    if (_seriesList?.length) return res.json(_seriesList);
+    res.status(503).json({ error: 'catalog_unavailable' });
+  }
 });
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -9756,8 +9897,8 @@ app.get('/api/episode-titles', async (req, res) => {
 // Probed on demand and cached so seek math can use the real source duration.
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 app.get('/api/media-info/:id', async (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.status(404).json({ error: 'Not found' });
   const filePath = entryPath(entry);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File missing' });
@@ -9817,8 +9958,8 @@ app.get('/api/media-info/:id', async (req, res) => {
 
 // â”€â”€ Duration info â”€â”€â”€â”€
 app.get('/api/duration/:id', async (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.status(404).json({ error: 'Not found' });
   const filePath = entryPath(entry);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File missing' });
@@ -9834,8 +9975,8 @@ app.get('/api/duration/:id', async (req, res) => {
 
 // â”€â”€ Quality info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get('/api/qualities/:id', (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.status(404).json({ error: 'Not found' });
   const filePath = entryPath(entry);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File missing' });
@@ -9852,8 +9993,8 @@ app.get('/api/qualities/:id', (req, res) => {
 
 // â”€â”€ Subtitles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get('/api/subtitles/:id', (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.json([]);
   const tracks = findSubtitleTracks(entry.dir, entry.file).map((t, i) => ({ index: i, label: t.label, lang: t.lang, ext: t.ext, src: `/subtitles/${idx}/${i}`, sidecar: true }));
   res.json(tracks);
@@ -9863,15 +10004,15 @@ app.get('/api/subtitles/:id', (req, res) => {
 app.get('/api/history', (req, res) => res.json(watchHistory));
 app.post('/api/history', (req, res) => {
   const { id, progress, name, poster, duration } = req.body;
-  if (id === undefined || typeof id !== 'number') return res.status(400).json({ error: 'valid id required' });
+  if ((typeof id !== 'number' && typeof id !== 'string') || !String(id).trim()) return res.status(400).json({ error: 'valid id required' });
   if (typeof progress !== 'number' || progress < 0 || progress > 1) return res.status(400).json({ error: 'invalid progress' });
   watchHistory[id] = { progress, name: String(name || '').slice(0, 200), poster: poster || null, duration: duration || 0, updatedAt: Date.now() };
   saveHistory();
   res.json({ ok: true });
 });
 app.delete('/api/history/:id', (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+  const id = String(req.params.id || '').trim();
+  if (!id) return res.status(400).json({ error: 'invalid id' });
   delete watchHistory[id];
   saveHistory();
   res.json({ ok: true });
@@ -9879,8 +10020,8 @@ app.delete('/api/history/:id', (req, res) => {
 
 // â”€â”€ Refresh poster â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.get('/api/refresh-poster/:id', async (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.status(404).json({ error: 'Not found' });
   const key = path.basename(entry.file, path.extname(entry.file));
   delete posterCache[key];
@@ -10316,8 +10457,8 @@ async function serveMobileLocalPipeline(req, res, idx, entry, filePath) {
 }
 
 app.get('/api/playback/local/:id', async (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return jsonError(res, 404, 'LOCAL_MEDIA_NOT_FOUND', 'Local media was not found');
   const filePath = entryPath(entry);
   if (!fs.existsSync(filePath)) return jsonError(res, 404, 'LOCAL_MEDIA_MISSING', 'Local media file is missing');
@@ -10336,8 +10477,8 @@ app.get('/api/playback/local/:id', async (req, res) => {
 });
 
 app.get('/api/playback/local/:id/stream', async (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return jsonError(res, 404, 'LOCAL_MEDIA_NOT_FOUND', 'Local media was not found');
   const filePath = entryPath(entry);
 
@@ -10382,8 +10523,8 @@ app.get('/api/playback/local/:id/stream', async (req, res) => {
 });
 
 app.get('/stream/:id', async (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.status(404).send('Not found');
   
   const filePath = entryPath(entry);
@@ -10422,8 +10563,8 @@ app.get('/stream/:id', async (req, res) => {
 
 // Seekable stream for nonâ€‘MP4 local files
 app.get('/api/stream-seek/:id', async (req, res) => {
-  const idx = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.status(404).send('Not found');
   const filePath = entryPath(entry);
   if (!fs.existsSync(filePath)) return res.status(404).send('File missing');
@@ -10760,9 +10901,9 @@ function transcodeStream(req, res, filePath, mediaInfo, entry) {
 // SUBTITLES
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 app.get('/subtitles/:id/embedded/:streamIdx.vtt', (req, res) => {
-  const idx = parseInt(req.params.id, 10);
+  const idx = String(req.params.id);
   const streamIdx = parseInt(req.params.streamIdx, 10);
-  const entry = fileIndex[idx];
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.status(404).send('No entry');
   if (!Number.isFinite(streamIdx) || streamIdx < 0) return res.status(400).send('Invalid subtitle stream');
   const filePath = entryPath(entry);
@@ -10809,8 +10950,8 @@ app.get('/subtitles/:id/embedded/:streamIdx.vtt', (req, res) => {
 });
 
 app.get('/subtitles/:id/:trackIdx?', (req, res) => {
-  const idx   = parseInt(req.params.id, 10);
-  const entry = fileIndex[idx];
+  const idx   = String(req.params.id);
+  const entry = resolveMediaEntry(idx);
   if (!entry) return res.status(404).send('No entry');
   const tracks = findSubtitleTracks(entry.dir, entry.file);
   if (!tracks.length) return res.status(404).send('No subtitles');
@@ -10914,7 +11055,12 @@ app.post('/party/:room/event', (req, res) => {
   
   if (!['load','play','pause','seek','chat'].includes(type)) return res.status(400).json({ error: 'invalid type' });
   
-  if (type === 'load')  { room.state.streamId = Number(streamId); room.state.time = 0; room.state.playing = false; }
+  if (type === 'load')  {
+    const rawStreamId = String(streamId ?? '').trim();
+    room.state.streamId = /^\d+$/.test(rawStreamId) ? Number(rawStreamId) : rawStreamId;
+    room.state.time = 0;
+    room.state.playing = false;
+  }
   if (type === 'play')  { room.state.playing = true;  room.state.time = Number(time) || room.state.time; }
   if (type === 'pause') { room.state.playing = false; room.state.time = Number(time) || room.state.time; }
   if (type === 'seek')  { room.state.time = Number(time) || 0; }
@@ -12132,13 +12278,24 @@ app.get('/api/infra/health', requireInfraAccess, (req, res) => {
     uptimeSeconds: infraTelemetry.metrics().uptimeSeconds
   });
 });
-app.get('/api/infra/snapshot', requireInfraAccess, (req, res) => res.json(infraTelemetry.snapshot()));
-app.get('/api/infra/metrics', requireInfraAccess, (req, res) => res.json(infraTelemetry.metrics()));
+app.get('/api/infra/snapshot', requireInfraAccess, (req, res) => res.json({
+  ...infraTelemetry.snapshot(),
+  downloadReliability: svDownloadCapacitySnapshot(),
+}));
+app.get('/api/infra/metrics', requireInfraAccess, (req, res) => res.json({
+  ...infraTelemetry.metrics(),
+  downloadReliability: svDownloadCapacitySnapshot(),
+}));
 app.get('/api/infra/events', requireInfraAccess, (req, res) => {
   const limit = Math.min(500, Math.max(1, parseInt(req.query.limit || '100', 10) || 100));
   res.json(infraTelemetry.events().slice(-limit));
 });
 app.get('/api/infra/nodes', requireInfraAccess, (req, res) => res.json(infraTelemetry.nodes()));
+app.get('/api/infra/download-transfers', requireInfraAccess, (req, res) => {
+  const limit = Math.min(500, Math.max(1, parseInt(req.query.limit || '100', 10) || 100));
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(svDownloadTransferEvents.slice(-limit));
+});
 
 
 /* StreamVault playback capability v2: direct first, stable alternate-audio HLS,
@@ -12191,17 +12348,19 @@ function svPlaybackCapabilitySource(resolved, requestedId) {
 const SV_PLAYBACK_SOURCE_CACHE_MS = Math.max(30000, Number(process.env.SV_PLAYBACK_SOURCE_CACHE_MS || 10 * 60 * 1000));
 const svPlaybackSourceResolutionCache = new Map();
 
-function svResolveAuthoritativePlaybackSource(id, query = {}) {
+function svResolveAuthoritativePlaybackSource(id, query = {}, options = {}) {
   const mediaId = String(id ?? '').trim();
   const cacheKey = `${mediaId}|${String(query.title || '')}|${String(query.year || '')}`;
+  if (options.refresh) {
+    svPlaybackSourceResolutionCache.delete(cacheKey);
+    svPlaybackSourceResolutionCache.delete(`${mediaId}||`);
+  }
   const cached = svPlaybackSourceResolutionCache.get(cacheKey) || svPlaybackSourceResolutionCache.get(`${mediaId}||`);
   if (cached && Date.now() - cached.resolvedAt <= SV_PLAYBACK_SOURCE_CACHE_MS) {
     if (cached.source.remote || fs.existsSync(cached.source.input)) return cached.source;
     svPlaybackSourceResolutionCache.delete(cacheKey);
   }
-  const indexed = typeof resolveMediaEntry === 'function'
-    ? resolveMediaEntry(mediaId)
-    : (/^\d+$/.test(mediaId) ? fileIndex[Number(mediaId)] : null);
+  const indexed = resolveMediaEntry(mediaId);
   if (indexed) {
     const indexedSource = svPlaybackCapabilitySource({
       kind: 'local',
@@ -12223,10 +12382,8 @@ function svResolveAuthoritativePlaybackSource(id, query = {}) {
       title: query.title,
       year: query.year,
     }),
+    () => svMediaDownloadResolver.resolveEpisodeById({ id: mediaId }),
   ];
-  if (typeof svMediaDownloadResolver.resolveEpisodeById === 'function') {
-    attempts.push(() => svMediaDownloadResolver.resolveEpisodeById({ id: mediaId }));
-  }
   for (const resolve of attempts) {
     try {
       const source = svPlaybackCapabilitySource(resolve(), mediaId);
@@ -12250,7 +12407,7 @@ svPlaybackFaststartManager = installPlaybackFaststart({
   busySnapshot() {
     const running = session => !!session?.process && session.process.exitCode === null && !session.process.killed;
     const capacity = {
-      activeDownloads: typeof activeOriginalDownloads === 'number' ? activeOriginalDownloads : 0,
+      activeDownloads: activeOriginalDownloads,
       directCompatibility: activeMediaFfmpegStreams,
       mobileHls: [...mobileHlsSessions.values()].filter(running).length,
       heavyCompatHls: [...heavyCompatHlsSessions.values()].filter(running).length,
@@ -12334,9 +12491,10 @@ try {
     app,
     cacheDir: path.join(SV_CACHE_DIR, 'playback-v2'),
     ffmpegBin: FFMPEG_BIN,
+    ffprobeBin: FFPROBE_BIN,
     getMediaInfo: getCachedMediaInfo,
-    resolveLocal(id, req) {
-      const source = svResolveAuthoritativePlaybackSource(id, req?.query || {});
+    resolveLocal(id, req, options) {
+      const source = svResolveAuthoritativePlaybackSource(id, req?.query || {}, options);
       if (source) {
         console.log(`[Playback v2] canonicalId=${source.canonicalId} sourceType=${source.remote ? 'remote' : 'local'} sourceFingerprint=${source.fingerprint}`);
       }
@@ -12428,9 +12586,21 @@ process.on('unhandledRejection', reason => {
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STARTUP
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-buildFileIndex();
-buildInstantLists();                                   // âš¡ instant â€” sync, ~10ms
-filterCartoonsAndAnime();                              // ðŸ§¹ remove cartoons/anime (with logging)
+catalogManager = new CatalogManager({
+  moviesDir: MOVIES_DIR,
+  seriesDir: SERIES_DIR,
+  indexFile: INDEX_FILE,
+  videoExts: VIDEO_EXTS,
+  posterCache,
+  reconcileIntervalMs: Math.max(30000, Number(process.env.CATALOG_RECONCILE_MS || 300000) || 300000),
+});
+catalogManager.on('swap', svApplyActiveCatalog);
+if (!catalogManager.loadPersisted()) {
+  fileIndex = [];
+  mediaById = new Map();
+  _movieList = [];
+  _seriesList = [];
+}
 svGetBootSearchIndex();                                // instant search boot payload, no massive catalog
 try { svDetailCatalogIndex(); }                        // warm playable recommendations before first detail click
 catch (e) { console.warn('Detail recommendation warmup failed:', e.message); }
@@ -12467,6 +12637,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`âœ¨ Seeking, pausing, and all controls work instantly\n`);
   console.log(`ðŸ§¹ Cartoon/Anime filter active â€” only real movies & series are shown`);
   console.log('Ã°Å¸â€œÂ¡ Infra telemetry active at /infra/live');
+  catalogManager.start();
   setTimeout(() => svWarmFifaLiveCache('startup'), 750);
   setTimeout(() => {
     svGetFifaNewsPayload().catch(err => svFifaWarn('startup news warmup failed', err));
@@ -12474,7 +12645,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 });
 infraTelemetry.attachWebSocket(server);
 /* SV_INSTANT_LIVE_PREWARM_PATCH */
-if (process.env.SV_DISABLE_LIVE_PREWARM !== '1') {
+if (process.env.SV_ENABLE_LIVE_PREWARM === '1') {
   setTimeout(() => {
     try {
       if (typeof svEnsureLiveRelay === 'function') {

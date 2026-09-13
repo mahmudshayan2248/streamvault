@@ -40,6 +40,8 @@ assert.strictEqual(show.poster, 'https://image.example/poster.jpg');
 assert.strictEqual(show.overview, 'Metadata survives.');
 assert.strictEqual(show.seasonCount, 1);
 assert.strictEqual(show.episodeCount, 2);
+assert.match(show.seasons['1'][0].id, /^episode_[a-f0-9]{24}$/);
+assert.strictEqual(show.seasons['1'][0].mediaId, show.seasons['1'][0].id);
 assert.match(show.seasons['1'][0].streamUrl, /1080p/);
 assert.strictEqual(show.seasons['1'][0].sources.length, 2, 'alternate source must be preserved');
 assert.strictEqual(index.diagnostics.emptyCardsWithRecoverableEpisodes, 1, 'recoverable empty-card mismatch must be detected');
@@ -57,6 +59,7 @@ const remakes = createCanonicalSeriesIndex({
   ],
 });
 assert.strictEqual(remakes.shows.length, 2, 'same-name remakes with different years must remain separate');
+assert.notStrictEqual(remakes.shows[0].seasons['1'][0].id, remakes.shows[1].seasons['1'][0].id, 'remakes need distinct stable episode IDs');
 
 const translatedTitle = createCanonicalSeriesIndex({
   ftpCatalog: [

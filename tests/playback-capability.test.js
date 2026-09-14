@@ -88,12 +88,34 @@ test('transcodes HEVC only when the requesting browser cannot decode it', () => 
   assert.equal(playbackDecision(media, '/movie.mp4', 'movie.mp4', { ...chrome, hevc: true }).mode, 'direct');
 });
 
-test('track metadata always has useful labels and bitmap subtitles are explicit', () => {
+test('track metadata exposes bitmap subtitle manifests only for renderable image codecs', () => {
   assert.equal(normalizedAudioTrack({}, 0).title, 'Audio Track 1');
-  const bitmap = normalizedSubtitleTrack({ codec: 'hdmv_pgs_subtitle' }, 0, () => '/unused');
-  assert.equal(bitmap.supported, false);
-  assert.equal(bitmap.url, null);
-  assert.match(bitmap.unsupportedReason, /Image subtitles/);
+  const bitmap = normalizedSubtitleTrack(
+    { codec: 'dvd_subtitle', streamIndex: 7, relativeIndex: 2, timeline: 'local' },
+    0,
+    () => '/unused.vtt',
+    streamIndex => `/bitmap/${streamIndex}/manifest.json`
+  );
+  assert.equal(bitmap.supported, true);
+  assert.equal(bitmap.format, 'bitmap');
+  assert.equal(bitmap.renderer, 'bitmap-overlay');
+  assert.equal(bitmap.timeline, 'global');
+  assert.equal(bitmap.url, '/bitmap/7/manifest.json');
+  assert.equal(bitmap.unsupportedReason, '');
+
+  const pgs = normalizedSubtitleTrack(
+    { codec: 'hdmv_pgs_subtitle', streamIndex: 8 },
+    1,
+    () => '/unused.vtt',
+    streamIndex => `/bitmap/${streamIndex}/manifest.json`
+  );
+  assert.equal(pgs.supported, true);
+  assert.equal(pgs.url, '/bitmap/8/manifest.json');
+
+  const unsupported = normalizedSubtitleTrack({ codec: 'xsub', streamIndex: 9 }, 2, () => '/unused.vtt');
+  assert.equal(unsupported.supported, false);
+  assert.equal(unsupported.url, null);
+  assert.match(unsupported.unsupportedReason, /bitmap overlay renderer/);
 });
 
 test('canonical ID capability preserves a remote source returned by the authoritative resolver', async () => {

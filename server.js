@@ -209,6 +209,8 @@ function getMediaInfo(filePath) {
             codec: s.codec_name,
             language: s.tags?.language || 'und',
             title: s.tags?.title || subtitleLabelFromName(sourceName, `Subtitle ${i + 1}`),
+            width: Number(s.width) || 0,
+            height: Number(s.height) || 0,
             default: s.disposition?.default === 1,
             forced: s.disposition?.forced === 1,
           }));

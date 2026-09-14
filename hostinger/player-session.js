@@ -714,7 +714,7 @@
       if(!state?.manifests || state.manifests.has(manifestUrl)) return state?.manifests?.get(manifestUrl) || manifest;
       state.manifests.set(manifestUrl, manifest);
       for(const cue of manifest.cues || []) {
-        const key = `${cue.start.toFixed(3)}|${cue.end.toFixed(3)}|${cue.imageUrl}`;
+        const key = `${cue.start.toFixed(3)}|${cue.end.toFixed(3)}`;
         if(state.cueMap.has(key)) continue;
         state.cueMap.set(key, cue);
       }

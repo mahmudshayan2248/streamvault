@@ -12321,6 +12321,7 @@ function svPlaybackCapabilitySource(resolved, requestedId) {
       filename: resolved.source?.file || resolved.source?.filename || remoteFilename(input),
       label: resolved.movie?.name || resolved.movie?.title || resolved.episode?.title || resolved.episode?.name || remoteFilename(input),
       matched: resolved.movie || resolved.episode || resolved.source,
+      alternateSources: Array.isArray(resolved.alternateSources) ? resolved.alternateSources : [],
       fingerprint: crypto.createHash('sha1').update(input).digest('hex').slice(0, 20),
       directUrl: `/api/playback-source/${encodeURIComponent(canonicalId)}?playbackType=media`,
     };

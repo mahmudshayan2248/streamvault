@@ -113,10 +113,23 @@
   const escape = value => String(value || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let menuKey = '';
   let lastSaved = 0;
+  let lastAutoHidePlaybackState = '';
+  function syncAutoHideForPlaybackState(state) {
+    const playbackState = String(state?.state || '');
+    if(playbackState === lastAutoHidePlaybackState) return;
+    lastAutoHidePlaybackState = playbackState;
+    if(!state?.active) return;
+    if(['RESOLVING','PREPARING','BUFFERING','SEEKING'].includes(playbackState) || !state.wantsPlay || ['ENDED','ERROR'].includes(playbackState)) {
+      if(typeof showUI === 'function') showUI();
+      return;
+    }
+    if(playbackState === 'PLAYING' && typeof scheduleHideUI === 'function') scheduleHideUI();
+  }
   function render(state) {
     modal.dataset.playbackState = state.state;
     if(!state.active) return;
     const busy = ['RESOLVING','PREPARING','BUFFERING'].includes(state.state);
+    syncAutoHideForPlaybackState(state);
     document.getElementById('playerSpinner')?.classList.toggle('on', busy);
     const paused = !state.wantsPlay || ['ENDED','ERROR'].includes(state.state);
     const path = paused ? 'M8 5v14l11-7z' : 'M6 19h4V5H6v14zm8-14v14h4V5h-4z';
@@ -230,6 +243,7 @@
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
     menuKey = '';
+    lastAutoHidePlaybackState = '';
     showUI();
     if(isMobilePlaybackClient()) enterMobileLandscapeMode();
     return session.start(source,{resume:current => {
@@ -240,7 +254,9 @@
   function close() {
     if(session.canonicalMediaId && session.globalDuration) updateWatchProgress(session.canonicalMediaId,session.globalCurrentTime,session.globalDuration);
     session.close();
-    clearTimeout(uiHideTimer);
+    lastAutoHidePlaybackState = '';
+    if(typeof clearUiHideTimer === 'function') clearUiHideTimer();
+    else clearTimeout(uiHideTimer);
     stopPlayerUiClock();
     resetSeekPreview();
     progressDragging = false;
@@ -256,8 +272,8 @@
     svActivePlaybackType = 'idle';
   }
   window.StreamVaultPlayerView = {start, close, render};
-  window.STREAMVAULT_PLAYER_VERSION = 'media-engine-v2';
-  window.STREAMVAULT_PLAYER_BUILD = '20260912-media-engine-v2';
+  window.STREAMVAULT_PLAYER_VERSION = 'controls-autohide-v1';
+  window.STREAMVAULT_PLAYER_BUILD = '20260914-controls-autohide-v1';
   video.disablePictureInPicture = false;
   video.removeAttribute('disablepictureinpicture');
 })();

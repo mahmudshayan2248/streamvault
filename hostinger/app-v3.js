@@ -123,6 +123,7 @@ let _localTrackLoadPromise=null;
 let currentShow=null,currentSeason=1;
 let _playerShow=null,_playerSeason=null,_playerEpIdx=null;
 let uiHideTimer=null,uiVisible=true;
+const PLAYER_UI_HIDE_DELAY_MS=5000;
 let isDragging=false,lastTapTime=0,lastTapX=0;
 let progressDragging=false,progressDragTime=0;
 let playerHovering=false;
@@ -3930,6 +3931,7 @@ function openSeriesDropdown(id, btn){
   const dd=document.getElementById(id);
   if(!dd)return;
   showUI();
+  clearUiHideTimer();
   const rect=btn.getBoundingClientRect();
   const spaceBelow=window.innerHeight-rect.bottom;
   const ddH=Math.min(window.innerHeight*0.6,320);
@@ -4526,16 +4528,23 @@ function stopPlayerUiClock(){
   playerUiHeavyRenderAt=0;
 }
 
-function notePlayerPointerActivity(wrap=document.getElementById('playerWrap')){
+function notePlayerPointerActivity(eventOrWrap=document.getElementById('playerWrap')){
+  const event=eventOrWrap && typeof eventOrWrap === 'object' && ('type' in eventOrWrap || 'isTrusted' in eventOrWrap) ? eventOrWrap : null;
+  if(event && event.isTrusted === false)return;
+  const wrap=event?.currentTarget?.closest?.('#playerWrap') || eventOrWrap?.closest?.('#playerWrap') || eventOrWrap || document.getElementById('playerWrap');
   if(!wrap)return;
   playerHovering=true;
   if(playerPointerRaf)return;
   playerPointerRaf=requestAnimationFrame(()=>{
     playerPointerRaf=0;
     if(!wrap.isConnected)return;
-    wrap.classList.add('show-cursor');
-    showUI();
+    notePlayerUserActivity(event);
   });
+}
+
+function notePlayerUserActivity(event){
+  if(event && event.isTrusted === false)return;
+  showUI({activity:true});
 }
 
 function setTimeSeparatorVisible(visible){
@@ -6270,9 +6279,31 @@ function updateProgress(){
 function updatePlayIcons(){
   if(window.playerSession?.active) { return window.StreamVaultPlayerView.render(window.playerSession.snapshot()); }
 renderCentralPlaybackState();}
-function hideUI(){
-  if(vid.paused || playerMenusOpen() || progressDragging || playerControlsFocused())return;
-  clearTimeout(uiHideTimer);
+function clearUiHideTimer(){
+  if(uiHideTimer){
+    clearTimeout(uiHideTimer);
+    uiHideTimer=null;
+  }
+}
+function playerAutoHideHoldReason(){
+  const els=playerEls();
+  if(!els.modal?.classList.contains('open'))return 'closed';
+  if(playerMenusOpen())return 'menu';
+  if(progressDragging)return 'dragging';
+  const sessionState=String(els.modal?.dataset?.playbackState || '').toUpperCase();
+  if(['RESOLVING','PREPARING','BUFFERING','SEEKING'].includes(sessionState))return 'busy';
+  if(window.playerSession?.active){
+    if(sessionState === 'PLAYING')return '';
+    if(sessionState)return 'paused';
+  }
+  const legacyLoading=typeof playerPlaybackUiController !== 'undefined' && playerPlaybackUiController?.isLoading?.();
+  if(legacyLoading)return 'busy';
+  if(vid.paused)return 'paused';
+  return '';
+}
+function hideUI(options={}){
+  if(!options.force && playerAutoHideHoldReason())return;
+  clearUiHideTimer();
   const els=playerEls();
   els.ui?.classList.add('hidden');
   els.wrap?.classList.remove('show-cursor');
@@ -6280,7 +6311,8 @@ function hideUI(){
   hideSeekPreview();
   uiVisible=false;
 }
-function showUI(){
+function showUI(options={}){
+  if(options === true)options={activity:true};
   const els=playerEls();
   els.ui?.classList.remove('hidden');
   const wrap=els.wrap;
@@ -6288,21 +6320,25 @@ function showUI(){
   wrap.classList.remove('subtitles-low');
   wrap.classList.add('show-cursor');
   uiVisible=true;
-  clearTimeout(uiHideTimer);
-  scheduleHideUI();
+  const holdReason=playerAutoHideHoldReason();
+  if(holdReason){
+    clearUiHideTimer();
+    return;
+  }
+  if(options.activity || !uiHideTimer)scheduleHideUI();
 }
 function scheduleHideUI(){
-  clearTimeout(uiHideTimer);
-  if(vid.paused || playerMenusOpen() || progressDragging || playerControlsFocused())return;
-  uiHideTimer=setTimeout(hideUI,3500);
+  clearUiHideTimer();
+  if(playerAutoHideHoldReason())return;
+  uiHideTimer=setTimeout(()=>hideUI(),PLAYER_UI_HIDE_DELAY_MS);
 }
 function togglePlay(){
-  if(window.playerSession?.active) { return window.playerSession.togglePlay(); }
-if(ensureCentralPlaybackController()?.isLoading?.())return;if(vid.paused){vid._svPlaybackShouldPlay=true;svPlayVideo('manual toggle', {force:true}).catch(()=>{});popCenter('');}else{vid._svPlaybackShouldPlay=false;svAbortPendingPlayRequest('manual pause');vid.pause();popCenter('');clearTimeout(uiHideTimer);}}
+  if(window.playerSession?.active) { notePlayerUserActivity(); return window.playerSession.togglePlay(); }
+if(ensureCentralPlaybackController()?.isLoading?.())return;if(vid.paused){vid._svPlaybackShouldPlay=true;svPlayVideo('manual toggle', {force:true}).catch(()=>{});popCenter('');}else{vid._svPlaybackShouldPlay=false;svAbortPendingPlayRequest('manual pause');vid.pause();popCenter('');clearUiHideTimer();showUI();}}
 function seekBy(s){
   if(isLiveMode)return;
   seekToTime(playbackTime()+s);
-  flashSeek(s);showUI();
+  flashSeek(s);notePlayerUserActivity();
 }
 function flashSeek(s){const side=s<0?'Left':'Right';const el=document.getElementById('seekFlash'+side);el.classList.add('show');setTimeout(()=>el.classList.remove('show'),700);}
 function popCenter(icon){const el=document.getElementById('centerFlash');el.textContent=icon;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),400);}
@@ -6768,7 +6804,7 @@ function closePlayer(options={}){
   svMediaPlayerState.selectedSourceUrl='';
   svMediaPlayerState.recoverySourceUrl='';
   svMediaPlayerState.fallbackReason='';
-  clearInterval(vid._pi);clearTimeout(uiHideTimer);
+  clearInterval(vid._pi);clearUiHideTimer();
   stopPlayerUiClock();
   if(playerProgressRaf){
     cancelAnimationFrame(playerProgressRaf);
@@ -7085,6 +7121,7 @@ function openDropdown(id,btn){
   closeAllDropdowns();
   if(wasOpen)return;
   showUI();
+  clearUiHideTimer();
   menu.style.visibility='hidden';menu.style.display='block';menu.style.maxHeight='';
   const mh=menu.offsetHeight,mw=menu.offsetWidth;
   const fixedParent=menu.offsetParent;
@@ -7138,7 +7175,7 @@ document.addEventListener('keydown',e=>{
     if(e.key==='ArrowDown'){vid.volume=Math.max(0,vid.volume-.1);document.getElementById('volSlider').value=vid.volume;updateVolIcon();}
     if(e.key==='f'||e.key==='F')toggleFullscreen();
     if(e.key==='m'||e.key==='M')toggleMute();
-    showUI();
+    notePlayerUserActivity(e);
   }
 });
 
@@ -9220,10 +9257,11 @@ vid._mdH = () => {
       const t=Math.max(0,Math.min(d,dragT));
       seekToTime(t);
       hideSeekPreview(160);
+      scheduleHideUI();
     }
     pw.addEventListener('mousedown',e=>{
       if(isLiveMode)return; const d=dur(); if(!d)return;
-      e.preventDefault(); seekPreviewMetrics=null; progressDragging=true; pw.classList.add('dragging'); visual(getP(e),d);
+      e.preventDefault(); seekPreviewMetrics=null; progressDragging=true; clearUiHideTimer(); pw.classList.add('dragging'); visual(getP(e),d);
     });
     pw.addEventListener('mousemove',e=>{
       if(!progressDragging)return;
@@ -9234,7 +9272,7 @@ vid._mdH = () => {
     document.addEventListener('mouseup',()=>{if(progressDragging)commit();});
     pw.addEventListener('touchstart',e=>{
       if(isLiveMode)return; const d=dur(); if(!d)return;
-      e.preventDefault(); seekPreviewMetrics=null; progressDragging=true; pw.classList.add('dragging'); visual(getP(e),d);
+      e.preventDefault(); seekPreviewMetrics=null; progressDragging=true; clearUiHideTimer(); pw.classList.add('dragging'); visual(getP(e),d);
     },{passive:false});
     pw.addEventListener('touchmove',e=>{
       if(!progressDragging)return; e.preventDefault();
@@ -9247,7 +9285,7 @@ vid._mdH = () => {
         hideSeekPreview();
       }
     });
-    pw.addEventListener('touchcancel',()=>{progressDragging=false;pw.classList.remove('dragging');dragVisualPending=null;if(dragVisualRaf){cancelAnimationFrame(dragVisualRaf);dragVisualRaf=0;}hideSeekPreview();});
+    pw.addEventListener('touchcancel',()=>{progressDragging=false;pw.classList.remove('dragging');dragVisualPending=null;if(dragVisualRaf){cancelAnimationFrame(dragVisualRaf);dragVisualRaf=0;}hideSeekPreview();scheduleHideUI();});
     pw.addEventListener('click',e=>{
       if(Date.now()<suppressProgressClickUntil)return;
       if(isLiveMode||progressDragging)return;
@@ -9255,6 +9293,7 @@ vid._mdH = () => {
       const t=getP(e)*d;
       seekToTime(t);
       hideSeekPreview(120);
+      notePlayerUserActivity(e);
     });
   }
 
@@ -9262,10 +9301,9 @@ vid._mdH = () => {
   const wrap=document.getElementById('playerWrap');
   if(!wrap._bound){
     wrap._bound=true;
-    wrap.addEventListener('mouseenter',()=>notePlayerPointerActivity(wrap));
-    wrap.addEventListener('mousemove',()=>notePlayerPointerActivity(wrap),{passive:true});
+    ['pointermove','mousemove','pointerdown','click','touchstart','touchmove','wheel'].forEach(type=>wrap.addEventListener(type,notePlayerPointerActivity,{passive:type !== 'touchmove'}));
     wrap.addEventListener('mouseleave',()=>{playerHovering=false;hideSeekPreview();scheduleHideUI();});
-    wrap.addEventListener('focusin',showUI);
+    wrap.addEventListener('focusin',notePlayerUserActivity);
     wrap.addEventListener('focusout',()=>setTimeout(scheduleHideUI,0));
   }
   const tapZone=document.getElementById('tapZone');
@@ -9281,8 +9319,8 @@ vid._mdH = () => {
       if(now-lastTapTime<300){
         if(!isLiveMode){if(lastTapX<w*0.35)seekBy(-10);else if(lastTapX>w*0.65)seekBy(10);else togglePlay();}
         else togglePlay();
-        showUI();
-      }else{if(uiVisible)hideUI();else showUI();}
+        notePlayerUserActivity(e);
+      }else{if(uiVisible)hideUI({force:true});else notePlayerUserActivity(e);}
       lastTapTime=now;lastTapX=x;
     },{passive:false});
     tapZone.addEventListener('click',e=>{
@@ -9292,7 +9330,7 @@ vid._mdH = () => {
       if(now-lastTapTime<300){
         if(!isLiveMode){if(lastTapX<w*0.35)seekBy(-10);else if(lastTapX>w*0.65)seekBy(10);else togglePlay();}
         else togglePlay();
-      }else{if(uiVisible)scheduleHideUI();else showUI();}
+      }else{if(uiVisible)scheduleHideUI();else notePlayerUserActivity(e);}
       lastTapTime=now;lastTapX=x;
     });
     document.addEventListener('fullscreenchange',updateFsIcon);

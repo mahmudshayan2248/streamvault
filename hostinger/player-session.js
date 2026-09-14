@@ -9,6 +9,17 @@
   const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
   const aborted = () => new DOMException('Playback operation superseded', 'AbortError');
   const boundedPush = (list, value) => { list.push(value); if(list.length > 1000) list.shift(); };
+  const BITMAP_SUBTITLE_WINDOW_STEP_SECONDS = 60;
+  const BITMAP_SUBTITLE_WINDOW_LOOKBEHIND_SECONDS = 15;
+  const frameHost = video => video?.ownerDocument?.defaultView || (typeof window !== 'undefined' ? window : globalThis);
+  const requestFrame = (video, callback) => {
+    const host = frameHost(video);
+    return typeof host.requestAnimationFrame === 'function' ? host.requestAnimationFrame(callback) : setTimeout(callback, 100);
+  };
+  const cancelFrame = (video, handle) => {
+    const host = frameHost(video);
+    return typeof host.cancelAnimationFrame === 'function' ? host.cancelAnimationFrame(handle) : clearTimeout(handle);
+  };
 
   const SeekGeometry = Object.freeze({
     ratio(value, duration) {
@@ -154,6 +165,28 @@
     }).filter(Boolean).join('\n\n');
   }
 
+  function bitmapSubtitleTrack(track) {
+    return track?.format === 'bitmap' || track?.renderer === 'bitmap-overlay' || track?.subtitleKind === 'bitmap';
+  }
+
+  function subtitleAssetUrl(url, base) {
+    try { return new URL(String(url || ''), base || (globalThis.location?.href || '')).href; }
+    catch { return String(url || ''); }
+  }
+
+  function cueForSubtitleTime(cues, time) {
+    if (!Array.isArray(cues) || !cues.length || !Number.isFinite(Number(time))) return null;
+    let low = 0, high = cues.length - 1, match = -1;
+    while (low <= high) {
+      const mid = (low + high) >> 1;
+      if (number(cues[mid]?.start) <= time + 0.035) { match = mid; low = mid + 1; }
+      else high = mid - 1;
+    }
+    if (match < 0) return null;
+    const cue = cues[match];
+    return time < number(cue.end) - 0.025 ? cue : null;
+  }
+
   class DirectTransport {
     constructor(session) { this.session = session; this.mode = 'DIRECT'; }
     async attach(capability, localTime, operation) {
@@ -268,10 +301,15 @@
   }
 
   class PlayerSession {
-    constructor({video, resolve, release = async()=>{}, loadHls, status, fetchText, onChange = ()=>{}}) {
+    constructor({video, resolve, release = async()=>{}, loadHls, status, fetchText, fetchJson = null, onChange = ()=>{}}) {
       if(owners.has(video)) throw new Error('This video already has a PlayerSession');
       owners.set(video, this);
-      Object.assign(this, {video, resolve, release, loadHls, status, fetchText, onChange});
+      Object.assign(this, {video, resolve, release, loadHls, status, fetchText, fetchJson, onChange});
+      this.fetchJson = fetchJson || (async (url, signal) => {
+        const response = await fetch(url, {signal, cache:'force-cache'});
+        if(!response.ok) throw new Error('Subtitle manifest unavailable');
+        return response.json();
+      });
       this.sequence = 0;
       this.seekSequence = 0;
       this.subtitleSequence = 0;
@@ -297,6 +335,7 @@
       this.abortControllers = new Set();
       this.listeners = [];
       this.subtitleCache = new Map();
+      this.bitmapSubtitleManifestCache = new Map();
       this.releases = new Map();
       this.health = {};
       this.metrics = {errors:[], stalls:[], seeks:[], samples:[]};
@@ -489,6 +528,7 @@
       const local = target-this.windowStart;
       this.seeking = true;
       this.globalCurrentTime = target;
+      if(bitmapSubtitleTrack(this.subtitleTracks[this.subtitleIndex])) this.clearSubtitle();
       this.emit();
       try {
         if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
@@ -501,6 +541,7 @@
           this.masterClock.commitWindow(this.windowStart, local);
           this.seeking = false;
           this.emit();
+          if(bitmapSubtitleTrack(this.subtitleTracks[this.subtitleIndex])) this.setSubtitle(this.subtitleIndex);
           if(this.wantsPlay) await this.play();
         } else {
           this.video.pause();
@@ -604,6 +645,32 @@
       this.emit();
       return true;
     }
+    ensureBitmapSubtitleOverlay() {
+      const document = this.video.ownerDocument;
+      const parent = this.video.parentElement || this.video.parentNode;
+      if(!document || !parent) throw new Error('Subtitle overlay unavailable');
+      if(!this.bitmapSubtitleOverlay || !this.bitmapSubtitleOverlay.isConnected) {
+        this.bitmapSubtitleOverlay = parent.querySelector?.('.bitmap-subtitle-overlay') || document.createElement('div');
+        this.bitmapSubtitleOverlay.className = 'bitmap-subtitle-overlay';
+        this.bitmapSubtitleOverlay.setAttribute('aria-hidden', 'true');
+        if(!this.bitmapSubtitleOverlay.parentNode) parent.appendChild(this.bitmapSubtitleOverlay);
+      }
+      return this.bitmapSubtitleOverlay;
+    }
+    clearBitmapSubtitle() {
+      if(this.bitmapSubtitleFrame) {
+        cancelFrame(this.video, this.bitmapSubtitleFrame);
+        this.bitmapSubtitleFrame = 0;
+      }
+      this.bitmapSubtitleState = null;
+      this.bitmapSubtitleCueId = null;
+      this.bitmapSubtitlePrefetched = new Set();
+      if(this.bitmapSubtitleOverlay) {
+        this.bitmapSubtitleOverlay.replaceChildren?.();
+        if(!this.bitmapSubtitleOverlay.replaceChildren) this.bitmapSubtitleOverlay.innerHTML = '';
+        this.bitmapSubtitleOverlay.classList.remove('show','loading','error');
+      }
+    }
     clearSubtitle() {
       this.subtitleSequence++;
       this.subtitleController?.abort();
@@ -612,6 +679,132 @@
       this.subtitleElement = null;
       if(this.subtitleBlob) URL.revokeObjectURL(this.subtitleBlob);
       this.subtitleBlob = null;
+      this.clearBitmapSubtitle();
+    }
+    subtitleClockForManifest(manifest) {
+      const global = this.masterClock.presentationClock || this.globalCurrentTime;
+      return manifest?.timeline === 'local' ? this.masterClock.globalToLocal(global) : global;
+    }
+    prefetchBitmapSubtitleCues(state, fromIndex) {
+      if(!state || typeof Image === 'undefined') return;
+      const cues = state.manifest?.cues || [];
+      for(let offset=1; offset<=2; offset++) {
+        const cue = cues[fromIndex + offset];
+        const rawUrl = cue?.imageUrl;
+        if(!rawUrl || state.prefetched.has(cue.id)) continue;
+        state.prefetched.add(cue.id);
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = subtitleAssetUrl(rawUrl, state.track.url);
+      }
+    }
+    renderBitmapSubtitleCue(state, cue) {
+      const overlay = this.ensureBitmapSubtitleOverlay();
+      if(!cue) {
+        this.bitmapSubtitleCueId = null;
+        overlay.replaceChildren?.();
+        if(!overlay.replaceChildren) overlay.innerHTML = '';
+        overlay.classList.remove('show','loading','error');
+        return;
+      }
+      if(this.bitmapSubtitleCueId === cue.id) return;
+      this.bitmapSubtitleCueId = cue.id;
+      overlay.replaceChildren?.();
+      if(!overlay.replaceChildren) overlay.innerHTML = '';
+      overlay.classList.remove('show','error');
+      overlay.classList.add('loading');
+      const document = this.video.ownerDocument;
+      const image = document.createElement('img');
+      image.alt = '';
+      image.decoding = 'async';
+      image.draggable = false;
+      image.onload = () => {
+        if(this.bitmapSubtitleState !== state || this.bitmapSubtitleCueId !== cue.id) return;
+        overlay.classList.remove('loading','error');
+        overlay.classList.add('show');
+      };
+      image.onerror = () => {
+        if(this.bitmapSubtitleState !== state || this.bitmapSubtitleCueId !== cue.id) return;
+        overlay.replaceChildren?.();
+        if(!overlay.replaceChildren) overlay.innerHTML = '';
+        overlay.classList.remove('show','loading');
+        overlay.classList.add('error');
+        boundedPush(this.metrics.errors, {at:Date.now(), subtitle:true, bitmap:true, cue:cue.id, message:'Bitmap subtitle cue image unavailable'});
+      };
+      image.src = subtitleAssetUrl(cue.imageUrl, state.track.url);
+      overlay.appendChild(image);
+      this.prefetchBitmapSubtitleCues(state, cue.index);
+    }
+    updateBitmapSubtitle() {
+      const state = this.bitmapSubtitleState;
+      if(!state || !this.active || state.sequence !== this.sequence || state.token !== this.subtitleSequence) {
+        this.clearBitmapSubtitle();
+        return;
+      }
+      if(this.bitmapSubtitleWindowExpired(state)) {
+        this.renderBitmapSubtitleCue(state, null);
+        this.refreshBitmapSubtitleWindow(state);
+        return;
+      }
+      const cue = cueForSubtitleTime(state.manifest.cues, this.subtitleClockForManifest(state.manifest));
+      this.renderBitmapSubtitleCue(state, cue);
+    }
+    scheduleBitmapSubtitleLoop() {
+      if(this.bitmapSubtitleFrame || !this.bitmapSubtitleState) return;
+      const tick = () => {
+        this.bitmapSubtitleFrame = 0;
+        if(!this.bitmapSubtitleState) return;
+        this.updateBitmapSubtitle();
+        if(this.bitmapSubtitleState) this.bitmapSubtitleFrame = requestFrame(this.video, tick);
+      };
+      this.bitmapSubtitleFrame = requestFrame(this.video, tick);
+    }
+    bitmapSubtitleManifestUrl(track, time = this.masterClock.presentationClock || this.globalCurrentTime) {
+      const current = Math.max(0, number(time));
+      const bucket = Math.floor(Math.max(0, current - BITMAP_SUBTITLE_WINDOW_LOOKBEHIND_SECONDS) / BITMAP_SUBTITLE_WINDOW_STEP_SECONDS) * BITMAP_SUBTITLE_WINDOW_STEP_SECONDS;
+      try {
+        const url = new URL(track.url, globalThis.location?.href || 'http://streamvault.local/');
+        url.searchParams.set('start', bucket.toFixed(3));
+        return url.href;
+      } catch(_) {
+        const separator = String(track.url || '').includes('?') ? '&' : '?';
+        return `${track.url}${separator}start=${bucket.toFixed(3)}`;
+      }
+    }
+    bitmapSubtitleWindowExpired(state) {
+      if(!state?.manifest) return false;
+      const now = this.subtitleClockForManifest(state.manifest);
+      const start = number(state.manifest.windowStart);
+      const end = number(state.manifest.windowEnd);
+      if(!end || end <= start) return false;
+      return now < start - 0.25 || now >= end - 5;
+    }
+    refreshBitmapSubtitleWindow(state) {
+      if(!state || state.refreshing || this.subtitleIndex < 0) return;
+      state.refreshing = true;
+      this.clearSubtitle();
+      this.setSubtitle(this.subtitleIndex);
+    }
+    async loadBitmapSubtitle(track, controller, token, sequence) {
+      const manifestUrl = this.bitmapSubtitleManifestUrl(track);
+      let manifest = this.bitmapSubtitleManifestCache.get(manifestUrl);
+      if(!manifest) {
+        manifest = await this.fetchJson(manifestUrl, controller.signal);
+        if(!manifest?.ok || !Array.isArray(manifest.cues)) throw new Error('Invalid bitmap subtitle manifest');
+        manifest.cues = manifest.cues
+          .map((cue, index) => ({...cue,index:Number.isInteger(cue.index)?cue.index:index,start:number(cue.start),end:number(cue.end)}))
+          .filter(cue => cue.imageUrl && cue.end > cue.start)
+          .sort((a,b)=>a.start-b.start);
+        this.bitmapSubtitleManifestCache.set(manifestUrl, manifest);
+        if(this.bitmapSubtitleManifestCache.size > 8) this.bitmapSubtitleManifestCache.delete(this.bitmapSubtitleManifestCache.keys().next().value);
+      }
+      if(controller.signal.aborted || !this.active || sequence !== this.sequence || token !== this.subtitleSequence) return false;
+      this.bitmapSubtitleState = {track:{...track,url:manifestUrl}, manifest, sequence, token, prefetched:new Set(), refreshing:false};
+      this.ensureBitmapSubtitleOverlay();
+      this.prefetchBitmapSubtitleCues(this.bitmapSubtitleState, -1);
+      this.updateBitmapSubtitle();
+      this.scheduleBitmapSubtitleLoop();
+      return true;
     }
     async setSubtitle(index) {
       this.clearSubtitle();
@@ -623,6 +816,7 @@
       const token = this.subtitleSequence, sequence = this.sequence, offset = this.windowStart;
       const controller = this.subtitleController = this.controller();
       try {
+        if(bitmapSubtitleTrack(track)) return await this.loadBitmapSubtitle(track, controller, token, sequence);
         let text = this.subtitleCache.get(track.url);
         if(!text) {
           text = await this.fetchText(track.url, controller.signal);
@@ -646,6 +840,7 @@
       } catch(error) {
         if(error.name !== 'AbortError' && token === this.subtitleSequence && sequence === this.sequence) {
           this.subtitleIndex = -1;
+          this.clearBitmapSubtitle();
           boundedPush(this.metrics.errors, {at:Date.now(), subtitle:true, message:error.message});
           this.emit();
         }

@@ -225,6 +225,33 @@
   border-top-color: #ff7a1a;
 }
 
+
+#playerModal .bitmap-subtitle-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 19;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout paint;
+}
+
+#playerModal .bitmap-subtitle-overlay.show {
+  display: flex;
+}
+
+#playerModal .bitmap-subtitle-overlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
 #playerModal .subtitle-overlay {
   max-width: min(88vw, 1100px);
   margin-inline: auto;

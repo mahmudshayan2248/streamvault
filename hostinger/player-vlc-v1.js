@@ -100,11 +100,25 @@
     return [base,detailTitle,technical].filter(Boolean).join(' — ');
   }
 
+  function usefulSubtitleTitle(title, language){
+    let value=String(title||'').trim();
+    if(!value)return '';
+    try{value=decodeURIComponent(value.replace(/\+/g,' ')).trim();}catch(_){ }
+    if(!value || /^(subtitle(?: track)? \d+|track \d+|unknown)$/i.test(value))return '';
+    const lang=String(language||'').toLowerCase();
+    if(lang && value.toLowerCase()===lang)return '';
+    if(/\.(?:mkv|mp4|m4v|avi|webm)$/i.test(value))return '';
+    if(/\b(?:1080p|720p|2160p|bluray|blu-ray|web-?dl|x26[45]|hevc|aac|dts|msubs?|multi[ ._-]*subs?|tigole|yts|rarbg)\b/i.test(value))return '';
+    if(value.length>42 && /[._%-]/.test(value))return '';
+    return value;
+  }
+
   function subtitleLabel(track,index){
     const language=languageName(track.language);
-    const title=String(track.title||'').trim();
-    let base=title && !/^subtitle(?: track)? \d+$/i.test(title)?title:(language||`Subtitle Track ${index+1}`);
-    if(language && title && !title.toLowerCase().includes(language.toLowerCase()))base=`${language} — ${title}`;
+    const title=usefulSubtitleTitle(track.title, language);
+    let base=language||title||`Subtitle Track ${index+1}`;
+    if(title && title.toLowerCase()!==base.toLowerCase())base=`${base} — ${title}`;
+    if(track.forced && !/\bforced\b/i.test(base))base+= ' — Forced';
     if(track.sourceType==='external')base+= ' — External';
     if(!track.supported)base+= ' — Unsupported';
     return base;
@@ -208,6 +222,11 @@
       if(!response.ok) throw new Error('Subtitle track unavailable');
       return response.text();
     },
+    fetchJson:async (url,signal) => {
+      const response = await fetch(url,{signal,cache:'force-cache'});
+      if(!response.ok) throw new Error('Subtitle manifest unavailable');
+      return svNormalizeBackendUrls(await response.json());
+    },
     onChange:render,
   });
 
@@ -272,8 +291,8 @@
     svActivePlaybackType = 'idle';
   }
   window.StreamVaultPlayerView = {start, close, render};
-  window.STREAMVAULT_PLAYER_VERSION = 'controls-autohide-v1';
-  window.STREAMVAULT_PLAYER_BUILD = '20260914-controls-autohide-v1';
+  window.STREAMVAULT_PLAYER_VERSION = 'bitmap-subtitles-v1';
+  window.STREAMVAULT_PLAYER_BUILD = '20260914-bitmap-subtitles-v1';
   video.disablePictureInPicture = false;
   video.removeAttribute('disablepictureinpicture');
 })();

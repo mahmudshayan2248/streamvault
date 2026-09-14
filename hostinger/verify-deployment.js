@@ -145,12 +145,12 @@ for (const message of REQUIRED_MESSAGES) {
 }
 
 const activeSource = activeScripts.map(filename => fs.readFileSync(filename, 'utf8')).join('\n');
-if (!index.includes('/player-session.js?v=20260913-seek-immediate-stop-v1') || !index.includes('/player-vlc-v1.js?v=20260914-controls-autohide-v1') || !index.includes('/player-vlc-v1.css?v=20260912-media-engine-v2')) {
+if (!index.includes('/player-session.js?v=20260914-bitmap-subtitles-v1') || !index.includes('/player-vlc-v1.js?v=20260914-bitmap-subtitles-v1') || !index.includes('/player-vlc-v1.css?v=20260914-bitmap-subtitles-v1')) {
   fail('index.html does not reference the PlayerSession release assets');
 }
 const playerView = read('player-vlc-v1.js');
 const playerSession = read('player-session.js');
-if (!playerView.includes("window.STREAMVAULT_PLAYER_VERSION = 'controls-autohide-v1'") || !playerView.includes('new PlayerSession')) {
+if (!playerView.includes("window.STREAMVAULT_PLAYER_VERSION = 'bitmap-subtitles-v1'") || !playerView.includes('new PlayerSession')) {
   fail('player-vlc-v1.js is not the PlayerSession view adapter');
 }
 if (!playerSession.includes("IDLE:'IDLE'") || !playerSession.includes("BUFFERING:'BUFFERING'") || !playerSession.includes('const owners = new WeakMap()') || !playerSession.includes('class MasterClock') || !playerSession.includes('class AVSynchronizer')) {

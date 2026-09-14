@@ -12348,6 +12348,82 @@ function svPlaybackCapabilitySource(resolved, requestedId) {
 const SV_PLAYBACK_SOURCE_CACHE_MS = Math.max(30000, Number(process.env.SV_PLAYBACK_SOURCE_CACHE_MS || 10 * 60 * 1000));
 const svPlaybackSourceResolutionCache = new Map();
 
+function svCachePlaybackSource(cacheKey, source) {
+  svPlaybackSourceResolutionCache.set(cacheKey, { source, resolvedAt: Date.now() });
+  if (source?.canonicalId) svPlaybackSourceResolutionCache.set(`${source.canonicalId}||`, { source, resolvedAt: Date.now() });
+  if (source?.input) svPlaybackSourceResolutionCache.set(`remote:${normalizeUrlForCompare(source.input)}||`, { source, resolvedAt: Date.now() });
+}
+
+function svResolveAuthoritativeRemotePlaybackSource(rawUrl, query = {}, options = {}) {
+  let input;
+  try { input = new URL(String(rawUrl || '')).href; }
+  catch { return null; }
+  if (!/^https?:\/\//i.test(input)) return null;
+  const normalizedInput = normalizeUrlForCompare(input);
+  const cacheKey = `remote:${normalizedInput}|${String(query.title || '')}|${String(query.year || '')}`;
+  if (options.refresh) {
+    svPlaybackSourceResolutionCache.delete(cacheKey);
+    svPlaybackSourceResolutionCache.delete(`remote:${normalizedInput}||`);
+  }
+  const cached = svPlaybackSourceResolutionCache.get(cacheKey) || svPlaybackSourceResolutionCache.get(`remote:${normalizedInput}||`);
+  if (cached && Date.now() - cached.resolvedAt <= SV_PLAYBACK_SOURCE_CACHE_MS) return cached.source;
+
+  const matched = findCatalogItemByStreamUrl(input);
+  if (matched) {
+    const canonicalId = matched.canonicalId || matched.id || matched.streamId || null;
+    if (canonicalId) {
+      const authoritative = svResolveAuthoritativePlaybackSource(canonicalId, {
+        title: matched.title || matched.name || query.title,
+        year: matched.year || query.year,
+      }, options);
+      if (authoritative) {
+        svCachePlaybackSource(cacheKey, authoritative);
+        return authoritative;
+      }
+    }
+  }
+
+  try {
+    const resolved = svMediaDownloadResolver.resolveRemoteUrl({
+      url: input,
+      title: query.title,
+      year: query.year,
+    });
+    const source = svPlaybackCapabilitySource(resolved, resolved.episode?.mediaId || resolved.episode?.id || resolved.movie?.id || input);
+    if (source) {
+      if (!matched) {
+        console.warn(`[Playback v2] remote source reconciled outside active catalog canonicalId=${source.canonicalId} sourceFingerprint=${source.fingerprint}`);
+      }
+      svCachePlaybackSource(cacheKey, source);
+      return source;
+    }
+  } catch (error) {
+    if (error?.status !== 404 && error?.status !== 400) throw error;
+  }
+
+  if (matched) {
+    const canonicalId = matched.canonicalId || matched.id || matched.streamId || null;
+    const fingerprint = crypto.createHash('sha1').update(input).digest('hex').slice(0, 20);
+    const source = {
+      id: canonicalId,
+      canonicalId,
+      input,
+      remote: true,
+      filename: matched.filename || remoteFilename(input),
+      label: matched.title || matched.name || remoteFilename(input),
+      matched,
+      fingerprint,
+      directUrl: canonicalId
+        ? `/api/playback-source/${encodeURIComponent(canonicalId)}?playbackType=media`
+        : `/api/ftp/proxy?playbackType=media&url=${encodeURIComponent(input)}`,
+    };
+    svCachePlaybackSource(cacheKey, source);
+    return source;
+  }
+
+  return null;
+}
+
 function svResolveAuthoritativePlaybackSource(id, query = {}, options = {}) {
   const mediaId = String(id ?? '').trim();
   const cacheKey = `${mediaId}|${String(query.title || '')}|${String(query.year || '')}`;
@@ -12369,8 +12445,7 @@ function svResolveAuthoritativePlaybackSource(id, query = {}, options = {}) {
       filePath: entryPath(indexed),
     }, mediaId);
     if (indexedSource) {
-      svPlaybackSourceResolutionCache.set(cacheKey, { source: indexedSource, resolvedAt: Date.now() });
-      svPlaybackSourceResolutionCache.set(`${indexedSource.canonicalId}||`, { source: indexedSource, resolvedAt: Date.now() });
+      svCachePlaybackSource(cacheKey, indexedSource);
       return indexedSource;
     }
     console.warn(`[Playback v2] stale local source canonicalId=${mediaId}; reconciling with authoritative media resolver`);
@@ -12388,8 +12463,7 @@ function svResolveAuthoritativePlaybackSource(id, query = {}, options = {}) {
     try {
       const source = svPlaybackCapabilitySource(resolve(), mediaId);
       if (source) {
-        svPlaybackSourceResolutionCache.set(cacheKey, { source, resolvedAt: Date.now() });
-        svPlaybackSourceResolutionCache.set(`${source.canonicalId}||`, { source, resolvedAt: Date.now() });
+        svCachePlaybackSource(cacheKey, source);
         return source;
       }
     } catch (error) {
@@ -12500,37 +12574,9 @@ try {
       }
       return svVersionedPlaybackCapabilitySource(source);
     },
-    resolveRemote(rawUrl) {
-      let input;
-      try {
-        input = new URL(String(rawUrl || '')).href;
-      } catch {
-        return null;
-      }
-      if (!/^https?:\/\//i.test(input)) return null;
-      const matched = findCatalogItemByStreamUrl(input);
-      if (!matched) return null;
-      const canonicalId = matched.canonicalId || matched.id || matched.streamId || null;
-      if (canonicalId) {
-        const authoritative = svResolveAuthoritativePlaybackSource(canonicalId, {
-          title: matched.title || matched.name,
-        });
-        if (authoritative) return svVersionedPlaybackCapabilitySource(authoritative);
-      }
-      const fingerprint = crypto.createHash('sha1').update(input).digest('hex').slice(0, 20);
-      return svVersionedPlaybackCapabilitySource({
-        id: canonicalId,
-        canonicalId,
-        input,
-        remote: true,
-        filename: matched.filename || remoteFilename(input),
-        label: matched.title || matched.name || remoteFilename(input),
-        matched,
-        fingerprint,
-        directUrl: canonicalId
-          ? `/api/playback-source/${encodeURIComponent(canonicalId)}?playbackType=media`
-          : `/api/ftp/proxy?playbackType=media&url=${encodeURIComponent(input)}`,
-      });
+    resolveRemote(rawUrl, req, options) {
+      const source = svResolveAuthoritativeRemotePlaybackSource(rawUrl, req?.query || {}, options || {});
+      return svVersionedPlaybackCapabilitySource(source);
     },
     getLocalSidecars(source) {
       return findSubtitleTracks(source.dir, source.filename);

@@ -126,6 +126,42 @@ test('Breaking Bad S01E01 resolves the exact canonical episode and ranked origin
   assert.equal(result.filename, 'Breaking Bad - S01E01 - Pilot.mkv');
 });
 
+
+test('remote URL resolves through the same canonical episode resolver used by downloads', t => {
+  const { root, resolver } = fixture();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const result = resolver.resolveRemoteUrl({ url: 'https://tv.example.test/Breaking.Bad.S01E01.1080p.mkv' });
+  assert.equal(result.kind, 'remote');
+  assert.equal(result.mediaType, 'episode');
+  assert.equal(result.show.id, 'series_breakingbad');
+  assert.equal(result.episode.id, 'episode_breakingbad_s01e01');
+  assert.equal(result.seasonNumber, 1);
+  assert.equal(result.episodeNumber, 1);
+  assert.equal(result.url, 'https://tv.example.test/Breaking.Bad.S01E01.1080p.mkv');
+  assert.equal(result.filename, 'Breaking Bad - S01E01 - Pilot.mkv');
+});
+
+test('remote URL preserves the exact alternate episode source when it is not the primary streamUrl', t => {
+  const { root, resolver } = fixture();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const result = resolver.resolveRemoteUrl({ url: 'https://tv.example.test/Breaking.Bad.S01E01.720p.mp4' });
+  assert.equal(result.kind, 'remote');
+  assert.equal(result.mediaType, 'episode');
+  assert.equal(result.episode.id, 'episode_breakingbad_s01e01');
+  assert.equal(result.url, 'https://tv.example.test/Breaking.Bad.S01E01.720p.mp4');
+  assert.equal(result.source.url, 'https://tv.example.test/Breaking.Bad.S01E01.720p.mp4');
+});
+
+test('remote URL resolves movie catalog sources by exact normalized source URL', t => {
+  const { root, resolver } = fixture();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const result = resolver.resolveRemoteUrl({ url: 'https://main.example.test/Multi.Source.1080p.mkv' });
+  assert.equal(result.kind, 'remote');
+  assert.equal(result.mediaType, 'movie');
+  assert.equal(result.movie.id, 'multi_1');
+  assert.equal(result.url, 'https://main.example.test/Multi.Source.1080p.mkv');
+});
+
 test('canonical episode ID reuses the same episode resolver used by downloads', t => {
   const { root, resolver } = fixture();
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

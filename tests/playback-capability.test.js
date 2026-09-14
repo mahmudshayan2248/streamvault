@@ -151,6 +151,60 @@ test('canonical source resolution retries once before reporting missing', async 
   assert.equal(status,404);assert.equal(payload.code,'SOURCE_MISSING');assert.deepEqual(calls,[{refresh:false},{refresh:true}]);
 });
 
+
+test('remote capability resolver receives request identity and can return a canonical remote source', async () => {
+  const routes = new Map();
+  const app = {
+    get(route, handler) { routes.set(`GET ${route}`, handler); },
+    post(route, handler) { routes.set(`POST ${route}`, handler); },
+  };
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'streamvault-remote-source-'));
+  let received = null;
+  const installed = installPlaybackCapability({
+    app,
+    cacheDir,
+    getMediaInfo: async () => ({
+      container: 'mov,mp4,m4a,3gp,3g2,mj2',
+      videoCodec: 'h264',
+      duration: 120,
+      audioTracks: [{ index: 1, codec: 'aac', channels: 2 }],
+    }),
+    resolveLocal: () => null,
+    resolveRemote(rawUrl, req) {
+      received = { rawUrl, title: req.query.title };
+      return {
+        id: 'episode_1',
+        canonicalId: 'episode_1',
+        remote: true,
+        input: rawUrl,
+        filename: 'Episode 1.mp4',
+        directUrl: '/api/playback-source/episode_1?playbackType=media',
+        fingerprint: 'canonical-remote-url',
+      };
+    },
+  });
+  let status = 200;
+  let payload = null;
+  const req = { query: { url: 'https://media.example.test/Episode%201.mp4', title: 'Show S01E01' } };
+  const res = {
+    setHeader() {},
+    status(value) { status = value; return this; },
+    json(value) { payload = value; return value; },
+  };
+  await routes.get('GET /api/playback/remote')(req, res);
+  installed.stopWorkers();
+  fs.rmSync(cacheDir, { recursive: true, force: true });
+
+  assert.equal(status, 200);
+  assert.deepEqual(received, { rawUrl: 'https://media.example.test/Episode%201.mp4', title: 'Show S01E01' });
+  assert.equal(payload.directUrl, '/api/playback-source/episode_1?playbackType=media');
+  assert.deepEqual(payload.source, {
+    canonicalId: 'episode_1',
+    kind: 'remote',
+    fingerprint: 'canonical-remote-url',
+  });
+});
+
 test('canonical ID capability preserves a remote source returned by the authoritative resolver', async () => {
   const routes = new Map();
   const app = {

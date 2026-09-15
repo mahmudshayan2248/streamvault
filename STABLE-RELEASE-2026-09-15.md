@@ -1,4 +1,19 @@
-﻿# StreamVault stable production baseline â€” 2026-09-15
+﻿# INVALID STABLE RELEASE â€” DO NOT USE AS KNOWN-GOOD ROLLBACK
+
+Manual user verification after tagging showed subtitles still do not render.
+
+2026-09-15 release status: **FAILED USER ACCEPTANCE â€” SUBTITLES NOT VISIBLE IN NORMAL USER BROWSER.**
+
+These published tags are forensic/checkpoint snapshots only and must not be treated as approved rollback baselines:
+
+- `streamvault-frontend-stable-2026-09-15`
+- `streamvault-backend-stable-2026-09-15`
+- `streamvault-stable-2026-09-15`
+
+Do not move these existing published tags. A future stable baseline requires user manual confirmation after normal-browser verification.
+
+---
+# StreamVault stable production baseline â€” 2026-09-15
 
 Production URL: https://streamvault.fit
 Backend URL: https://backend.streamvault.fit
@@ -94,3 +109,4 @@ cat STABLE-RELEASE-2026-09-15.md
 - No playback, seeking, HLS, multi-audio, subtitle behavior, buffering, or source-resolution functionality was changed while creating this release record.
 - The backend code checkpoint committed only the deployed `lib/playback-capability.js` subtitle backend changes; unrelated operational/cache/checkpoint dirty files were preserved.
 - Creating this checkpoint did not redeploy frontend code and did not restart the backend.
+

@@ -815,7 +815,7 @@
       overlay.classList.add('loading');
       const showImage = () => {
         if(this.bitmapSubtitleState !== state || this.bitmapSubtitleCueId !== cueKey) return;
-        if(cueForSubtitleTime(state.cues || state.manifest?.cues || [], this.bitmapSubtitleClock(state)) !== cue) return;
+        { const active = cueForSubtitleTime(state.cues || state.manifest?.cues || [], this.bitmapSubtitleClock(state)); if((active?.renderKey || active?.id) !== cueKey) return; }
         overlay.replaceChildren?.(record.image);
         if(!overlay.replaceChildren) { overlay.innerHTML = ''; overlay.appendChild(record.image); }
         overlay.classList.remove('loading','error');

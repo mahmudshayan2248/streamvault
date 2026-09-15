@@ -1,7 +1,7 @@
 (function configureStreamVault(global) {
   'use strict';
 
-  const BUILD_VERSION = '20260722-indexeddb-readiness-v2';
+  const BUILD_VERSION = '20260915-subtitle-delivery-debug-v1';
   const BACKEND_ORIGIN = 'https://backend.streamvault.fit';
   const SNAPSHOT_DB_NAME = 'streamvault-homepage';
   const SNAPSHOT_DB_VERSION = 1;
@@ -456,7 +456,7 @@
 
   function registerServiceWorker() {
     if (!('serviceWorker' in navigator) || !/^https?:$/.test(global.location.protocol)) return Promise.resolve(null);
-    return navigator.serviceWorker.register('/sw-20260722-v6.js', {
+    return navigator.serviceWorker.register('/sw-20260915-subtitle-delivery-v1.js', {
       scope: '/',
       updateViaCache: 'none'
     }).then(registration => registration.update().then(() => registration).catch(() => registration));

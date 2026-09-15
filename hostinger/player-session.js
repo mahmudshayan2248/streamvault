@@ -5,6 +5,7 @@
 })(typeof globalThis === 'object' ? globalThis : this, function() {
   'use strict';
   const STATES = Object.freeze({IDLE:'IDLE', RESOLVING:'RESOLVING', PREPARING:'PREPARING', READY:'READY', PLAYING:'PLAYING', BUFFERING:'BUFFERING', PAUSED:'PAUSED', ENDED:'ENDED', ERROR:'ERROR'});
+  const PLAYER_SESSION_BUILD = '20260915-subtitle-debug-v1';
   const owners = new WeakMap();
   const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
   const aborted = () => new DOMException('Playback operation superseded', 'AbortError');
@@ -308,10 +309,19 @@
       if(owners.has(video)) throw new Error('This video already has a PlayerSession');
       owners.set(video, this);
       Object.assign(this, {video, resolve, release, loadHls, status, fetchText, fetchJson, onChange});
+      this.subtitleNetwork = {manifests:new Map()};
       this.fetchJson = fetchJson || (async (url, signal) => {
+        const startedAt = Date.now();
         const response = await fetch(url, {signal, cache:'force-cache'});
+        const record = {url:String(url), status:response.status, ok:response.ok, contentType:response.headers.get('content-type') || '', cacheControl:response.headers.get('cache-control') || '', elapsedMs:Date.now()-startedAt, at:new Date().toISOString()};
+        this.subtitleNetwork.manifests.set(String(url), record);
+        while(this.subtitleNetwork.manifests.size > 20) this.subtitleNetwork.manifests.delete(this.subtitleNetwork.manifests.keys().next().value);
         if(!response.ok) throw new Error('Subtitle manifest unavailable');
-        return response.json();
+        const payload = await response.json();
+        record.cueCount = Array.isArray(payload?.cues) ? payload.cues.length : null;
+        record.windowStart = payload?.windowStart ?? null;
+        record.windowEnd = payload?.windowEnd ?? null;
+        return payload;
       });
       this.sequence = 0;
       this.seekSequence = 0;
@@ -779,14 +789,15 @@
       image.alt = '';
       image.decoding = 'async';
       image.draggable = false;
-      const record = {image, ok:false, failed:false, promise:null};
+      const record = {image, ok:false, failed:false, status:'loading', url:'', promise:null, startedAt:Date.now()};
       record.promise = new Promise(resolve => {
-        image.onload = () => { record.ok = true; resolve(record); };
-        image.onerror = () => { record.failed = true; resolve(record); };
+        image.onload = () => { record.ok = true; record.status = 'loaded'; record.elapsedMs = Date.now()-record.startedAt; resolve(record); };
+        image.onerror = () => { record.failed = true; record.status = 'error'; record.elapsedMs = Date.now()-record.startedAt; resolve(record); };
       });
       state.imageCache.set(key, record);
       while(state.imageCache.size > BITMAP_SUBTITLE_IMAGE_CACHE_LIMIT) state.imageCache.delete(state.imageCache.keys().next().value);
-      image.src = this.bitmapSubtitleCueAssetUrl(state, cue);
+      record.url = this.bitmapSubtitleCueAssetUrl(state, cue);
+      image.src = record.url;
       return record;
     }
     prefetchBitmapSubtitleCues(state, time = this.bitmapSubtitleClock(state)) {
@@ -998,7 +1009,79 @@
         this.abortControllers.delete(controller);
       }
     }
+
+    subtitleDebugSnapshot() {
+      const track = this.subtitleIndex >= 0 ? this.subtitleTracks[this.subtitleIndex] : null;
+      const bitmapState = this.bitmapSubtitleState || null;
+      const manifest = bitmapState?.manifest || null;
+      const clock = bitmapState ? this.bitmapSubtitleClock(bitmapState) : (this.masterClock.presentationClock || this.globalCurrentTime);
+      const activeCue = bitmapState ? cueForSubtitleTime(bitmapState.cues || manifest?.cues || [], clock) : null;
+      const activeKey = activeCue?.renderKey || activeCue?.id || null;
+      const imageRecord = activeKey && bitmapState?.imageCache ? bitmapState.imageCache.get(activeKey) : null;
+      const overlay = this.bitmapSubtitleOverlay || this.video?.ownerDocument?.querySelector?.('.bitmap-subtitle-overlay') || null;
+      const image = overlay?.querySelector?.('img') || imageRecord?.image || null;
+      const host = frameHost(this.video);
+      const style = overlay ? host.getComputedStyle(overlay) : null;
+      const rect = overlay?.getBoundingClientRect?.();
+      const parent = overlay?.parentElement || null;
+      const textTracks = [];
+      try {
+        for(let i=0;i<this.video.textTracks.length;i++) textTracks.push({index:i, mode:this.video.textTracks[i].mode, label:this.video.textTracks[i].label, activeCues:this.video.textTracks[i].activeCues?.length || 0});
+      } catch(_) {}
+      return {
+        temporary:true,
+        frontendBuild:globalThis.STREAMVAULT_CONFIG?.buildVersion || null,
+        playerBuild:globalThis.STREAMVAULT_PLAYER_BUILD || null,
+        playerVersion:globalThis.STREAMVAULT_PLAYER_VERSION || null,
+        playerSessionBuild:PLAYER_SESSION_BUILD,
+        serviceWorkerController:globalThis.navigator?.serviceWorker?.controller?.scriptURL || null,
+        activePlayerSessionId:this.sequence,
+        state:this.state,
+        mode:this.mode,
+        active:this.active,
+        activeVideoElementId:this.video?.id || null,
+        selectedSubtitleIndex:this.subtitleIndex,
+        selectedSubtitle:track ? {index:this.subtitleIndex, title:track.title || null, language:track.language || null, codec:track.codec || track.format || null, format:track.format || null, renderer:track.renderer || null, subtitleKind:track.subtitleKind || null, url:track.url || null, supported:!!track.supported} : null,
+        textOrBitmapMode:track ? (bitmapSubtitleTrack(track) ? 'bitmap' : 'text') : 'off',
+        currentGlobalTime:this.globalCurrentTime,
+        presentationClock:this.masterClock.presentationClock,
+        localCurrentTime:number(this.video?.currentTime),
+        windowStart:this.windowStart,
+        currentSubtitleWindow:manifest ? {url:manifest.url || bitmapState?.track?.url || null, windowStart:manifest.windowStart, windowEnd:manifest.windowEnd, cueCount:manifest.cueCount ?? manifest.cues?.length ?? null, timeline:manifest.timeline || null} : null,
+        activeCue:activeCue ? {id:activeCue.id || null, index:activeCue.index ?? null, start:activeCue.start, end:activeCue.end, imageUrl:this.bitmapSubtitleCueAssetUrl(bitmapState, activeCue)} : null,
+        manifestRequest:manifest?.url ? (this.subtitleNetwork?.manifests?.get(manifest.url) || null) : null,
+        cueImage:imageRecord ? {url:imageRecord.url || imageRecord.image?.currentSrc || imageRecord.image?.src || null, status:imageRecord.status || null, ok:!!imageRecord.ok, failed:!!imageRecord.failed, complete:!!imageRecord.image?.complete, naturalWidth:imageRecord.image?.naturalWidth || 0, naturalHeight:imageRecord.image?.naturalHeight || 0, elapsedMs:imageRecord.elapsedMs ?? null} : null,
+        overlay:{
+          exists:!!overlay,
+          parent:parent ? {tag:parent.tagName, id:parent.id || null, className:String(parent.className || '')} : null,
+          childCount:overlay?.childElementCount || 0,
+          className:overlay ? String(overlay.className || '') : null,
+          computedDisplay:style?.display || null,
+          visibility:style?.visibility || null,
+          opacity:style?.opacity || null,
+          zIndex:style?.zIndex || null,
+          rect:rect ? {x:rect.x, y:rect.y, width:rect.width, height:rect.height} : null,
+          image:image ? {src:image.currentSrc || image.src || null, complete:!!image.complete, naturalWidth:image.naturalWidth || 0, naturalHeight:image.naturalHeight || 0, clientWidth:image.clientWidth || 0, clientHeight:image.clientHeight || 0} : null
+        },
+        textTracks,
+        recentSubtitleErrors:(this.metrics?.errors || []).filter(error => error?.subtitle).slice(-10)
+      };
+    }
+
     fail(error) { if(!this.active) return; this.error = error.message; this.wantsPlay = false; this.video.pause(); this.transition(STATES.ERROR); }
   }
-  return {PlayerSession, PlayerSessionStates:STATES, DirectTransport, CompatibilityTransport, MasterClock, SeekController, BufferManager, AVSynchronizer, RecoveryController, SeekGeometry, windowVtt};
+  if(typeof globalThis === 'object') {
+    globalThis.STREAMVAULT_PLAYER_SESSION_BUILD = PLAYER_SESSION_BUILD;
+    try {
+      Object.defineProperty(globalThis, '__SV_SUBTITLE_DEBUG__', {
+        configurable:true,
+        get() {
+          const session = globalThis.playerSession;
+          if(session?.subtitleDebugSnapshot) return session.subtitleDebugSnapshot();
+          return {temporary:true, playerSessionBuild:PLAYER_SESSION_BUILD, playerBuild:globalThis.STREAMVAULT_PLAYER_BUILD || null, playerVersion:globalThis.STREAMVAULT_PLAYER_VERSION || null, frontendBuild:globalThis.STREAMVAULT_CONFIG?.buildVersion || null, serviceWorkerController:globalThis.navigator?.serviceWorker?.controller?.scriptURL || null, active:false, reason:'no active PlayerSession'};
+        }
+      });
+    } catch(_) {}
+  }
+  return {PlayerSession, PlayerSessionStates:STATES, DirectTransport, CompatibilityTransport, MasterClock, SeekController, BufferManager, AVSynchronizer, RecoveryController, SeekGeometry, windowVtt, PLAYER_SESSION_BUILD};
 });

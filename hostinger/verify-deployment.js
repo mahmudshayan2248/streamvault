@@ -6,7 +6,7 @@ const ROOT = __dirname;
 const INDEX = path.join(ROOT, 'index.html');
 const BACKEND_ORIGIN = 'https://backend.streamvault.fit';
 const HOME_SNAPSHOT_FILE = 'home-snapshot-76d0639-20260717.js';
-const SERVICE_WORKER_FILE = 'sw-20260722-v6.js';
+const SERVICE_WORKER_FILE = 'sw-20260915-subtitle-delivery-v1.js';
 const STATIC_JSON = ['boot-search-index.json', 'channels.json', 'catalog.json', 'manifest.webmanifest'];
 const REQUIRED_MESSAGES = [
   'Playback server is currently offline.',
@@ -145,7 +145,7 @@ for (const message of REQUIRED_MESSAGES) {
 }
 
 const activeSource = activeScripts.map(filename => fs.readFileSync(filename, 'utf8')).join('\n');
-if (!index.includes('/player-session.js?v=20260915-subtitle-continuity-v4') || !index.includes('/player-vlc-v1.js?v=20260914-bitmap-subtitles-v1') || !index.includes('/player-vlc-v1.css?v=20260914-bitmap-subtitles-v1')) {
+if (!index.includes('/player-session.js?v=20260915-subtitle-debug-v1') || !index.includes('/player-vlc-v1.js?v=20260914-bitmap-subtitles-v1') || !index.includes('/player-vlc-v1.css?v=20260914-bitmap-subtitles-v1')) {
   fail('index.html does not reference the PlayerSession release assets');
 }
 const playerView = read('player-vlc-v1.js');
@@ -172,13 +172,20 @@ for (const obsolete of ['home-feed.json', 'sw-20260714-v4.js']) {
 }
 
 const sw = read(SERVICE_WORKER_FILE);
-const fallbackSw = read('sw.js');
-if (!fallbackSw.includes(`importScripts('/${SERVICE_WORKER_FILE}')`)) {
-  fail(`sw.js must delegate to ${SERVICE_WORKER_FILE} as a compatibility fallback`);
-}
-for (const name of [SERVICE_WORKER_FILE, 'sw.js']) {
+for (const name of [SERVICE_WORKER_FILE, 'sw.js', 'sw-20260722-v6.js']) {
+  const source = read(name);
   const publicSwPath = path.resolve(ROOT, '..', 'public', name);
-  if (!fs.existsSync(publicSwPath)) fail(`public/${name} is missing for root service-worker publishing`);
+  if (!fs.existsSync(publicSwPath)) {
+    fail(`public/${name} is missing for root service-worker publishing`);
+    continue;
+  }
+  const publicSource = fs.readFileSync(publicSwPath, 'utf8');
+  if (publicSource.replace(/\r\n/g, '\n') !== source.replace(/\r\n/g, '\n')) {
+    fail(`public/${name} must mirror hostinger/${name} for root service-worker publishing`);
+  }
+}
+if (!read('sw.js').includes(`importScripts('/${SERVICE_WORKER_FILE}')`) || !read('sw-20260722-v6.js').includes(`importScripts('/${SERVICE_WORKER_FILE}')`)) {
+  fail(`service worker compatibility shims must delegate to ${SERVICE_WORKER_FILE}`);
 }
 if (!runtime.includes(`navigator.serviceWorker.register('/${SERVICE_WORKER_FILE}'`) || !runtime.includes("updateViaCache: 'none'")) {
   fail(`runtime-config.js must register /${SERVICE_WORKER_FILE} with updateViaCache none`);
@@ -197,6 +204,7 @@ if (!htaccess.includes('index\\.html|runtime-config\\.js|sw') || !htaccess.inclu
 if (!htaccess.includes('backend.streamvault.fit')) fail('.htaccess does not document the backend route boundary');
 if (!runtime.includes("BACKEND_ORIGIN + '/api/ready'")) fail('runtime readiness checks do not use /api/ready');
 if (!runtime.includes('global.indexedDB.open')) fail('runtime homepage snapshots do not use IndexedDB');
+if (!sw.includes('20260915-subtitle-delivery-v1') || !sw.includes('CURRENT_PLAYER_ASSET_PATTERN')) fail('service worker does not carry the subtitle delivery cache version');
 if (/(?:local|session)Storage/.test(runtime)) fail('runtime homepage snapshot persistence still uses Web Storage');
 
 if (failures) {

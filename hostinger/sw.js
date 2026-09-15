@@ -1,5 +1,5 @@
 'use strict';
 
-// Compatibility entry point for older registrations. The versioned worker is
-// the single source of caching behavior.
-importScripts('/sw-20260722-v6.js');
+// Compatibility entry point. The September subtitle-delivery worker owns the
+// active cache namespace and purges older StreamVault shell/static caches.
+importScripts('/sw-20260915-subtitle-delivery-v1.js');

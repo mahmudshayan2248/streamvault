@@ -665,6 +665,10 @@
         cancelFrame(this.video, this.bitmapSubtitleFrame);
         this.bitmapSubtitleFrame = 0;
       }
+      if(this.bitmapSubtitleTimer) {
+        clearInterval(this.bitmapSubtitleTimer);
+        this.bitmapSubtitleTimer = 0;
+      }
       this.bitmapSubtitleState = null;
       this.bitmapSubtitleCueId = null;
       this.bitmapSubtitlePrefetched = new Set();
@@ -855,7 +859,14 @@
       this.prefetchBitmapSubtitleCues(state, now);
     }
     scheduleBitmapSubtitleLoop() {
-      if(this.bitmapSubtitleFrame || !this.bitmapSubtitleState) return;
+      if(!this.bitmapSubtitleState) return;
+      if(!this.bitmapSubtitleTimer) {
+        this.bitmapSubtitleTimer = setInterval(() => {
+          if(!this.bitmapSubtitleState) { clearInterval(this.bitmapSubtitleTimer); this.bitmapSubtitleTimer = 0; return; }
+          this.updateBitmapSubtitle();
+        }, 250);
+      }
+      if(this.bitmapSubtitleFrame) return;
       const tick = () => {
         this.bitmapSubtitleFrame = 0;
         if(!this.bitmapSubtitleState) return;

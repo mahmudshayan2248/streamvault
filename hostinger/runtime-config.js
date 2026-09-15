@@ -1,7 +1,7 @@
 (function configureStreamVault(global) {
   'use strict';
 
-  const BUILD_VERSION = '20260915-subtitle-delivery-debug-v1';
+  const BUILD_VERSION = '20260915-subtitle-warmup-v1';
   const BACKEND_ORIGIN = 'https://backend.streamvault.fit';
   const SNAPSHOT_DB_NAME = 'streamvault-homepage';
   const SNAPSHOT_DB_VERSION = 1;

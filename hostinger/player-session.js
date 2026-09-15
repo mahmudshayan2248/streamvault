@@ -5,7 +5,7 @@
 })(typeof globalThis === 'object' ? globalThis : this, function() {
   'use strict';
   const STATES = Object.freeze({IDLE:'IDLE', RESOLVING:'RESOLVING', PREPARING:'PREPARING', READY:'READY', PLAYING:'PLAYING', BUFFERING:'BUFFERING', PAUSED:'PAUSED', ENDED:'ENDED', ERROR:'ERROR'});
-  const PLAYER_SESSION_BUILD = '20260915-subtitle-debug-v1';
+  const PLAYER_SESSION_BUILD = '20260915-subtitle-warmup-v1';
   const owners = new WeakMap();
   const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
   const aborted = () => new DOMException('Playback operation superseded', 'AbortError');
@@ -349,6 +349,7 @@
       this.listeners = [];
       this.subtitleCache = new Map();
       this.bitmapSubtitleManifestCache = new Map();
+      this.bitmapSubtitleWarmImageCache = new Map();
       this.releases = new Map();
       this.health = {};
       this.metrics = {errors:[], stalls:[], seeks:[], samples:[]};
@@ -512,6 +513,7 @@
       this.video.removeAttribute('src');
       this.video.load();
       this.clearSubtitle();
+      this.startBitmapSubtitleWarmup(target);
       this.capability = capability;
       this.windowStart = capability.mode === 'direct' ? 0 : number(capability.windowStart);
       this.avSynchronizer.reset();
@@ -541,7 +543,7 @@
       const local = target-this.windowStart;
       this.seeking = true;
       this.globalCurrentTime = target;
-      if(bitmapSubtitleTrack(this.subtitleTracks[this.subtitleIndex])) this.clearSubtitle();
+      if(bitmapSubtitleTrack(this.subtitleTracks[this.subtitleIndex])) { this.clearSubtitle(); this.startBitmapSubtitleWarmup(target); }
       this.emit();
       try {
         if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
@@ -566,6 +568,7 @@
             this.assertCurrent(op);
             if(capability.mode !== 'hls' || (capability.source?.fingerprint && capability.source.fingerprint !== this.sourceIdentity)) throw new Error('Media identity changed while seeking');
             this.subtitleTracks=capability.subtitleTracks || this.subtitleTracks;
+            this.startBitmapSubtitleWarmup(target);
           }
           const previous = this.capability;
           this.adapter?.destroy();
@@ -717,6 +720,11 @@
           index:Number.isInteger(cue.index)?cue.index:index,
           start:number(cue.start), end:number(cue.end),
           baseUrl:manifestUrl,
+          streamIndex:manifest.streamIndex ?? cue.streamIndex ?? null,
+          sourceFingerprint:manifest.sourceFingerprint || null,
+          windowStart:normalized.windowStart,
+          windowEnd:normalized.windowEnd,
+          identityKey:[manifest.sourceFingerprint || '', manifest.streamIndex ?? '', cue.pts ?? cue.start, cue.dts ?? '', cue.pos ?? '', cue.size ?? '', cue.start, cue.end].join('|'),
           renderKey:`${manifestUrl}#${cue.id || index}`
         }))
         .filter(cue => cue.imageUrl && cue.end > cue.start)
@@ -728,7 +736,7 @@
       if(!state?.manifests || state.manifests.has(manifestUrl)) return state?.manifests?.get(manifestUrl) || manifest;
       state.manifests.set(manifestUrl, manifest);
       for(const cue of manifest.cues || []) {
-        const key = `${cue.start.toFixed(3)}|${cue.end.toFixed(3)}`;
+        const key = cue.identityKey || [manifest.sourceFingerprint || '', manifest.streamIndex ?? '', cue.pts ?? cue.start, cue.dts ?? '', cue.pos ?? '', cue.size ?? '', cue.start, cue.end].join('|');
         if(state.cueMap.has(key)) continue;
         state.cueMap.set(key, cue);
       }
@@ -779,25 +787,42 @@
     bitmapSubtitleCueAssetUrl(state, cue) {
       return subtitleAssetUrl(cue?.imageUrl, cue?.baseUrl || state?.manifest?.url || state?.track?.url);
     }
+    warmBitmapSubtitleImage(url) {
+      if(!url || typeof Image === 'undefined') return null;
+      const normalizedUrl = String(url);
+      const cached = this.bitmapSubtitleWarmImageCache?.get(normalizedUrl);
+      if(cached) return cached;
+      const image = new Image();
+      image.alt = '';
+      image.decoding = 'async';
+      image.draggable = false;
+      const record = {image, ok:false, failed:false, status:'loading', url:normalizedUrl, promise:null, startedAt:Date.now(), warm:true};
+      record.promise = new Promise(resolve => {
+        image.onload = () => { record.ok = true; record.status = 'loaded'; record.elapsedMs = Date.now()-record.startedAt; resolve(record); };
+        image.onerror = () => { record.failed = true; record.status = 'error'; record.elapsedMs = Date.now()-record.startedAt; resolve(record); };
+      });
+      this.bitmapSubtitleWarmImageCache.set(normalizedUrl, record);
+      while(this.bitmapSubtitleWarmImageCache.size > BITMAP_SUBTITLE_IMAGE_CACHE_LIMIT * 2) this.bitmapSubtitleWarmImageCache.delete(this.bitmapSubtitleWarmImageCache.keys().next().value);
+      image.src = normalizedUrl;
+      return record;
+    }
     preloadBitmapSubtitleCue(state, cue) {
       if(!state || !cue || typeof Image === 'undefined') return null;
       const key = cue.renderKey || cue.id;
       if(!key) return null;
       const cached = state.imageCache.get(key);
       if(cached) return cached;
-      const image = new Image();
-      image.alt = '';
-      image.decoding = 'async';
-      image.draggable = false;
-      const record = {image, ok:false, failed:false, status:'loading', url:'', promise:null, startedAt:Date.now()};
-      record.promise = new Promise(resolve => {
-        image.onload = () => { record.ok = true; record.status = 'loaded'; record.elapsedMs = Date.now()-record.startedAt; resolve(record); };
-        image.onerror = () => { record.failed = true; record.status = 'error'; record.elapsedMs = Date.now()-record.startedAt; resolve(record); };
-      });
+      const url = this.bitmapSubtitleCueAssetUrl(state, cue);
+      const warmed = this.bitmapSubtitleWarmImageCache?.get(String(url));
+      if(warmed && !warmed.failed) {
+        state.imageCache.set(key, warmed);
+        while(state.imageCache.size > BITMAP_SUBTITLE_IMAGE_CACHE_LIMIT) state.imageCache.delete(state.imageCache.keys().next().value);
+        return warmed;
+      }
+      const record = this.warmBitmapSubtitleImage(url);
+      if(!record) return null;
       state.imageCache.set(key, record);
       while(state.imageCache.size > BITMAP_SUBTITLE_IMAGE_CACHE_LIMIT) state.imageCache.delete(state.imageCache.keys().next().value);
-      record.url = this.bitmapSubtitleCueAssetUrl(state, cue);
-      image.src = record.url;
       return record;
     }
     prefetchBitmapSubtitleCues(state, time = this.bitmapSubtitleClock(state)) {
@@ -910,6 +935,44 @@
       if(!state || state.refreshing || this.subtitleIndex < 0) return;
       state.refreshing = true;
       this.ensureBitmapSubtitleWindow(state, this.bitmapSubtitleClock(state), true).finally(() => { if(state === this.bitmapSubtitleState) state.refreshing = false; });
+    }
+    async warmBitmapSubtitleWindow(track, time, signal = null) {
+      if(!bitmapSubtitleTrack(track) || !track?.supported || !track?.url) return null;
+      const manifestUrl = this.bitmapSubtitleManifestUrl(track, time);
+      let manifest = this.bitmapSubtitleManifestCache.get(manifestUrl);
+      if(!manifest) {
+        const result = await this.fetchJson(manifestUrl, signal || undefined);
+        if(!result?.ok || !Array.isArray(result.cues)) throw new Error('Invalid bitmap subtitle manifest');
+        manifest = this.normalizeBitmapSubtitleManifest(result, manifestUrl);
+        this.bitmapSubtitleManifestCache.set(manifestUrl, manifest);
+        if(this.bitmapSubtitleManifestCache.size > 16) this.bitmapSubtitleManifestCache.delete(this.bitmapSubtitleManifestCache.keys().next().value);
+      }
+      const warmState = {track:{...track,url:manifestUrl}, sourceTrack:{...track}, manifest};
+      const now = number(time);
+      let count = 0;
+      for(const cue of manifest.cues || []) {
+        if(number(cue.end) < now - 0.25) continue;
+        if(number(cue.start) > now + BITMAP_SUBTITLE_PREFETCH_AHEAD_SECONDS) break;
+        this.warmBitmapSubtitleImage(this.bitmapSubtitleCueAssetUrl(warmState, cue));
+        if(++count >= BITMAP_SUBTITLE_PREFETCH_CUE_LIMIT) break;
+      }
+      return manifest;
+    }
+    startBitmapSubtitleWarmup(time) {
+      const track = this.subtitleIndex >= 0 ? this.subtitleTracks[this.subtitleIndex] : null;
+      if(!bitmapSubtitleTrack(track) || !track?.supported || !track?.url) return null;
+      const controller = this.controller();
+      const token = this.subtitleSequence;
+      const sequence = this.sequence;
+      const task = Promise.allSettled([
+        this.warmBitmapSubtitleWindow(track, time, controller.signal),
+        this.warmBitmapSubtitleWindow(track, number(time) + BITMAP_SUBTITLE_PREFETCH_AHEAD_SECONDS, controller.signal)
+      ]).finally(() => this.abortControllers.delete(controller));
+      task.then(results => {
+        if(token !== this.subtitleSequence || sequence !== this.sequence) return;
+        for(const result of results) if(result.status === 'rejected' && result.reason?.name !== 'AbortError') boundedPush(this.metrics.errors, {at:Date.now(), subtitle:true, bitmap:true, warmup:true, message:result.reason?.message || 'Bitmap subtitle warmup unavailable'});
+      });
+      return task;
     }
     async loadBitmapSubtitle(track, controller, token, sequence) {
       const manifestUrl = this.bitmapSubtitleManifestUrl(track);
@@ -1041,14 +1104,17 @@
         active:this.active,
         activeVideoElementId:this.video?.id || null,
         selectedSubtitleIndex:this.subtitleIndex,
-        selectedSubtitle:track ? {index:this.subtitleIndex, title:track.title || null, language:track.language || null, codec:track.codec || track.format || null, format:track.format || null, renderer:track.renderer || null, subtitleKind:track.subtitleKind || null, url:track.url || null, supported:!!track.supported} : null,
+        selectedSubtitle:track ? {index:this.subtitleIndex, title:track.title || null, language:track.language || null, codec:track.codec || track.format || null, format:track.format || null, renderer:track.renderer || null, subtitleKind:track.subtitleKind || null, streamIndex:track.streamIndex ?? null, relativeIndex:track.relativeIndex ?? null, timeline:track.timeline || null, url:track.url || null, supported:!!track.supported} : null,
         textOrBitmapMode:track ? (bitmapSubtitleTrack(track) ? 'bitmap' : 'text') : 'off',
         currentGlobalTime:this.globalCurrentTime,
         presentationClock:this.masterClock.presentationClock,
         localCurrentTime:number(this.video?.currentTime),
         windowStart:this.windowStart,
-        currentSubtitleWindow:manifest ? {url:manifest.url || bitmapState?.track?.url || null, windowStart:manifest.windowStart, windowEnd:manifest.windowEnd, cueCount:manifest.cueCount ?? manifest.cues?.length ?? null, timeline:manifest.timeline || null} : null,
-        activeCue:activeCue ? {id:activeCue.id || null, index:activeCue.index ?? null, start:activeCue.start, end:activeCue.end, imageUrl:this.bitmapSubtitleCueAssetUrl(bitmapState, activeCue)} : null,
+        subtitleGeneration:this.subtitleSequence,
+        sessionGeneration:this.sequence,
+        bitmapState:bitmapState ? {sequence:bitmapState.sequence, token:bitmapState.token, cueCount:bitmapState.cues?.length || 0, manifestCount:bitmapState.manifests?.size || 0, loadingManifestCount:bitmapState.loadingManifests?.size || 0, warmImageCacheCount:this.bitmapSubtitleWarmImageCache?.size || 0} : null,
+        currentSubtitleWindow:manifest ? {url:manifest.url || bitmapState?.track?.url || null, windowStart:manifest.windowStart, windowEnd:manifest.windowEnd, cueCount:manifest.cueCount ?? manifest.cues?.length ?? null, timeline:manifest.timeline || null, streamIndex:manifest.streamIndex ?? null, sourceFingerprint:manifest.sourceFingerprint || null} : null,
+        activeCue:activeCue ? {id:activeCue.id || null, index:activeCue.index ?? null, start:activeCue.start, end:activeCue.end, streamIndex:activeCue.streamIndex ?? null, pts:activeCue.pts ?? null, dts:activeCue.dts ?? null, pos:activeCue.pos ?? null, size:activeCue.size ?? null, identityKey:activeCue.identityKey || null, imageUrl:this.bitmapSubtitleCueAssetUrl(bitmapState, activeCue)} : null,
         manifestRequest:manifest?.url ? (this.subtitleNetwork?.manifests?.get(manifest.url) || null) : null,
         cueImage:imageRecord ? {url:imageRecord.url || imageRecord.image?.currentSrc || imageRecord.image?.src || null, status:imageRecord.status || null, ok:!!imageRecord.ok, failed:!!imageRecord.failed, complete:!!imageRecord.image?.complete, naturalWidth:imageRecord.image?.naturalWidth || 0, naturalHeight:imageRecord.image?.naturalHeight || 0, elapsedMs:imageRecord.elapsedMs ?? null} : null,
         overlay:{

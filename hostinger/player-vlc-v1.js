@@ -188,7 +188,8 @@
     status:async (key,signal) => {
       const response = await fetch(backendUrl('/api/playback/status'),{signal,cache:'no-store'});
       const body = await response.json();
-      return body.sessions?.find(item=>item.key===key);
+      const session = body.sessions?.find(item=>item.key===key);
+      return session ? {...session,_activeWorkers:body.activeWorkers} : null;
     },
     fetchText:async (url,signal) => {
       const response = await fetch(url,{signal,cache:'force-cache'});
@@ -257,7 +258,7 @@
   }
   window.StreamVaultPlayerView = {start, close, render};
   window.STREAMVAULT_PLAYER_VERSION = 'media-engine-v2';
-  window.STREAMVAULT_PLAYER_BUILD = '20260912-media-engine-v2';
+  window.STREAMVAULT_PLAYER_BUILD = '20260919-buffer-ahead-v1';
   video.disablePictureInPicture = false;
   video.removeAttribute('disablepictureinpicture');
 })();

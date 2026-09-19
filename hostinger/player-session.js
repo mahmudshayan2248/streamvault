@@ -5,6 +5,12 @@
 })(typeof globalThis === 'object' ? globalThis : this, function() {
   'use strict';
   const STATES = Object.freeze({IDLE:'IDLE', RESOLVING:'RESOLVING', PREPARING:'PREPARING', READY:'READY', PLAYING:'PLAYING', BUFFERING:'BUFFERING', PAUSED:'PAUSED', ENDED:'ENDED', ERROR:'ERROR'});
+  const BUFFER_POLICY = Object.freeze({
+    TARGET_BUFFER_AHEAD_SECONDS: 90,
+    MIN_BUFFER_AHEAD_SECONDS: 45,
+    BACK_BUFFER_SECONDS: 30,
+    BUFFERED_SEEK_MIN_AHEAD_SECONDS: 0.25,
+  });
   const owners = new WeakMap();
   const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
   const aborted = () => new DOMException('Playback operation superseded', 'AbortError');
@@ -75,25 +81,55 @@
       this.videoOrigin = value; this.audioOrigin = value; this.avOffsetMs = 0;
     }
     snapshot() {
-      // Fragment arrival/frontier timestamps are not simultaneous audio/video
-      // presentation measurements. Never label their difference as lip sync.
-      return {videoPTS:null,audioPTS:null,expectedPTS:this.clock.presentationClock,avOffsetMs:null,
-        fragmentOriginOffsetMs:this.avOffsetMs,avMeasurement:'unavailable',
-        videoBufferedPTS:this.videoBufferedPTS,audioBufferedPTS:this.audioBufferedPTS,syncEpoch:this.epoch};
+      const expected=this.clock.presentationClock;
+      const offset=this.avOffsetMs===null?null:this.avOffsetMs/1000;
+      return {videoPTS:this.videoOrigin===null?null:expected,audioPTS:this.audioOrigin===null?null:expected+offset,expectedPTS:expected,avOffsetMs:this.avOffsetMs,videoBufferedPTS:this.videoBufferedPTS,audioBufferedPTS:this.audioBufferedPTS,syncEpoch:this.epoch};
     }
   }
 
   class BufferManager {
     constructor(clock) { this.clock = clock; this.reset(); }
-    reset() { Object.assign(this,{bufferedStart:0,bufferedEnd:0,secondsAhead:0,secondsBehind:0,targetBuffer:90,minimumSafeBuffer:6,networkThroughput:null,sourceThroughput:null,generationSpeed:null}); }
+    reset() { Object.assign(this,{bufferedStart:0,bufferedEnd:0,secondsAhead:0,secondsBehind:0,targetBuffer:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS,minimumSafeBuffer:BUFFER_POLICY.MIN_BUFFER_AHEAD_SECONDS,backBuffer:BUFFER_POLICY.BACK_BUFFER_SECONDS,networkThroughput:null,sourceThroughput:null,generationSpeed:null}); }
+    ranges(video) {
+      const result = [];
+      try {
+        for(let i=0;i<video.buffered.length;i++) result.push({start:number(video.buffered.start(i)), end:number(video.buffered.end(i))});
+      } catch(_) {}
+      return result.filter(range => range.end > range.start).sort((a,b) => a.start-b.start);
+    }
+    rangeFor(video, local, tolerance = 0.05) {
+      const ranges = this.ranges(video);
+      if(!ranges.length) return null;
+      const current = number(local);
+      const containing = ranges.find(range => range.start <= current+tolerance && range.end >= current-tolerance);
+      if(containing) return containing;
+      return ranges.reduce((nearest, range) => {
+        const distance = current < range.start ? range.start-current : current-range.end;
+        return !nearest || distance < nearest.distance ? {range,distance} : nearest;
+      }, null)?.range || null;
+    }
+    secondsAheadAt(video, local) {
+      const range = this.rangeFor(video, local);
+      if(!range || number(local) < range.start-0.05 || number(local) > range.end+0.05) return 0;
+      return Math.max(0, range.end-number(local));
+    }
+    containsBuffered(video, local, minAhead = BUFFER_POLICY.BUFFERED_SEEK_MIN_AHEAD_SECONDS) {
+      const range = this.rangeFor(video, local);
+      if(!range) return false;
+      const target = number(local);
+      return target >= range.start-0.05 && target < range.end-Math.max(0, number(minAhead));
+    }
     sample(video, mode) {
       const local = number(video.currentTime);
-      let start = local, end = local;
-      for(let i=0;i<video.buffered.length;i++) if(video.buffered.start(i) <= local+.05 && video.buffered.end(i) >= local-.05) { start=video.buffered.start(i); end=video.buffered.end(i); break; }
+      const range = this.rangeFor(video, local);
+      const start = range ? range.start : local;
+      const end = range ? range.end : local;
       this.bufferedStart=this.clock.localToGlobal(start); this.bufferedEnd=this.clock.localToGlobal(end);
-      this.secondsAhead=Math.max(0,end-local); this.secondsBehind=Math.max(0,local-start);
-      this.targetBuffer=mode === 'DIRECT' ? 120 : 90;
-      this.minimumSafeBuffer=mode === 'DIRECT' ? 2 : 6;
+      this.secondsAhead=local >= start-.05 && local <= end+.05 ? Math.max(0,end-local) : 0;
+      this.secondsBehind=local >= start-.05 && local <= end+.05 ? Math.max(0,local-start) : 0;
+      this.targetBuffer=BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS;
+      this.minimumSafeBuffer=BUFFER_POLICY.MIN_BUFFER_AHEAD_SECONDS;
+      this.backBuffer=BUFFER_POLICY.BACK_BUFFER_SECONDS;
       return this.snapshot();
     }
     startupThreshold(mode) {
@@ -101,10 +137,7 @@
       if(this.generationSpeed && this.generationSpeed < 1.5) return 8;
       return 3;
     }
-    seekResumeThreshold(mode) {
-      return mode === 'DIRECT' ? .25 : .75;
-    }
-    snapshot() { return {bufferedStart:this.bufferedStart,bufferedEnd:this.bufferedEnd,secondsAhead:this.secondsAhead,secondsBehind:this.secondsBehind,targetBuffer:this.targetBuffer,minimumSafeBuffer:this.minimumSafeBuffer,networkThroughput:this.networkThroughput,sourceThroughput:this.sourceThroughput,generationSpeed:this.generationSpeed}; }
+    snapshot() { return {bufferedStart:this.bufferedStart,bufferedEnd:this.bufferedEnd,secondsAhead:this.secondsAhead,secondsBehind:this.secondsBehind,targetBuffer:this.targetBuffer,minimumSafeBuffer:this.minimumSafeBuffer,backBuffer:this.backBuffer,networkThroughput:this.networkThroughput,sourceThroughput:this.sourceThroughput,generationSpeed:this.generationSpeed}; }
   }
 
   class RecoveryController {
@@ -166,6 +199,7 @@
       s.video.currentTime = localTime;
     }
     contains() { return true; }
+    isBuffered(localTime) { return this.session.bufferManager.containsBuffered(this.session.video, localTime); }
     seek(localTime) { this.session.video.currentTime = localTime; }
     destroy() {}
   }
@@ -179,6 +213,7 @@
       }
       return false;
     }
+    isBuffered(localTime) { return this.session.bufferManager.containsBuffered(this.session.video, localTime); }
     seek(localTime) { this.session.video.currentTime = localTime; }
     async attach(capability, localTime, operation) {
       const s = this.session;
@@ -196,19 +231,20 @@
       }
       const hls = this.hls = s.hls = new Hls({
         enableWorker:true, lowLatencyMode:false, startPosition:localTime,
-        startFragPrefetch:true, backBufferLength:60,
-        maxBufferLength:90, maxMaxBufferLength:180, maxBufferSize:128*1024*1024,
+        startFragPrefetch:true,
+        backBufferLength:BUFFER_POLICY.BACK_BUFFER_SECONDS,
+        maxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS,
+        maxMaxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS * 2,
+        maxBufferSize:160*1024*1024,
+        maxBufferHole:0.5, highBufferWatchdogPeriod:2,
         // Growing EVENT manifests describe VOD preparation, never a live edge.
         liveSyncDuration:1e9, liveMaxLatencyDuration:Infinity, maxLiveSyncPlaybackRate:1,
+        liveDurationInfinity:true,
         manifestLoadingTimeOut:30000, levelLoadingTimeOut:30000, fragLoadingTimeOut:30000,
-        manifestLoadingMaxRetry:6, levelLoadingMaxRetry:6, fragLoadingMaxRetry:8,
-        manifestLoadingRetryDelay:1000, levelLoadingRetryDelay:1000, fragLoadingRetryDelay:1000,
-        manifestLoadingMaxRetryTimeout:15000, levelLoadingMaxRetryTimeout:15000, fragLoadingMaxRetryTimeout:15000,
       });
       const valid = () => s.active && s.adapter === this && this.hls === hls;
       hls.on(Hls.Events.FRAG_LOADED, (_event, data) => {
         if(!valid()) return;
-        s.recoveryController.networkAttempts = 0;
         const stats = data.stats || data.frag?.stats;
         const ms = Math.max(0, number(stats?.loading?.end)-number(stats?.loading?.start));
         s.health.fragmentLoadMs = ms;
@@ -245,8 +281,7 @@
         hls.on(Hls.Events.FRAG_BUFFERED, () => { if(valid()) finish(); });
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if(!valid()) return;
-          boundedPush(s.metrics.errors, {at:Date.now(), type:data.type, details:data.details, fatal:!!data.fatal,
-            sn:data.frag?.sn, url:data.frag?.url, response:data.response?.code});
+          boundedPush(s.metrics.errors, {at:Date.now(), type:data.type, details:data.details, fatal:!!data.fatal});
           if(!data.fatal) return;
           if(s.recoveryController.recoverHls(data,hls)) return;
           const error = new Error(`Compatibility playback failed: ${data.details}`);
@@ -300,8 +335,17 @@
       this.releases = new Map();
       this.health = {};
       this.metrics = {errors:[], stalls:[], seeks:[], samples:[]};
+      this.lastSeekTarget = null;
+      this.lastSeekWasBuffered = false;
+      this.lastSeekLatencyMs = null;
+      this.lastBufferPumpAt = 0;
+      this.lastStatusPollAt = 0;
     }
-    emit() { this.onChange(this.snapshot()); }
+    emit() {
+      const state = this.snapshot();
+      this.publishDebug(state);
+      this.onChange(state);
+    }
     snapshot() {
       return {state:this.state, active:this.active, canonicalMediaId:this.canonicalMediaId,
         sourceIdentity:this.sourceIdentity, mode:this.mode, globalDuration:this.globalDuration,
@@ -312,6 +356,33 @@
         seeking:this.seeking, buffering:this.buffering, presentationClock:this.masterClock.presentationClock,
         sessionGeneration:this.sequence, seekGeneration:this.seekSequence,
         health:{...this.health,...this.bufferManager.snapshot(),...this.avSynchronizer.snapshot()}, error:this.error};
+    }
+    bufferedRanges() {
+      return this.bufferManager.ranges(this.video).map(range => [
+        Number(this.masterClock.localToGlobal(range.start).toFixed(3)),
+        Number(this.masterClock.localToGlobal(range.end).toFixed(3)),
+      ]);
+    }
+    publishDebug(state = this.snapshot()) {
+      try {
+        globalThis.__SV_PLAYER_DEBUG__ = {
+          globalTime: state.globalCurrentTime,
+          videoTime: number(this.video?.currentTime),
+          bufferedRanges: this.bufferedRanges(),
+          bufferAheadSeconds: state.health?.secondsAhead ?? 0,
+          bufferBehindSeconds: state.health?.secondsBehind ?? 0,
+          engine: state.mode,
+          windowStart: state.windowStart,
+          windowEnd: state.health?.generatedEnd ?? state.health?.bufferedEnd ?? null,
+          hlsAttached: !!this.hls,
+          sessionId: this.capability?.cacheKey || null,
+          activeWorkers: this.health?.activeWorkers ?? null,
+          lastSeekTarget: this.lastSeekTarget,
+          lastSeekWasBuffered: this.lastSeekWasBuffered,
+          lastSeekLatencyMs: this.lastSeekLatencyMs,
+          state: state.state,
+        };
+      } catch(_) {}
     }
     getCurrentTime() { return this.masterClock.globalCurrentTime; }
     getDuration() { return this.masterClock.canonicalDuration; }
@@ -352,18 +423,17 @@
         Promise.resolve().then(() => { if(op.signal.aborted) cancel(); else if(ready?.()) done(); });
       });
     }
-    waitForPresentation(localTime, op, timeoutMs = 15000, thresholdSeconds = null) {
+    waitForPresentation(localTime, op, timeoutMs = 6000) {
       return new Promise((resolve, reject) => {
         const started=Date.now();
         const check=()=>{
           if(!this.current(op)) return reject(aborted());
           const buffer=this.bufferManager.sample(this.video,this.mode);
           const remaining=Math.max(0,this.globalDuration-this.masterClock.localToGlobal(localTime));
-          const desiredThreshold=Number.isFinite(Number(thresholdSeconds)) ? Number(thresholdSeconds) : this.bufferManager.startupThreshold(this.mode);
-          const threshold=Math.min(desiredThreshold,remaining);
+          const threshold=Math.min(this.bufferManager.startupThreshold(this.mode),remaining);
           const atTarget=Math.abs(number(this.video.currentTime)-localTime)<.35;
           if(atTarget && (buffer.secondsAhead>=threshold || remaining<.5)) return resolve();
-          if(Date.now()-started>=timeoutMs) return reject(new Error('Seek target did not become ready'));
+          if(Date.now()-started>=timeoutMs) return resolve();
           setTimeout(check,75);
         };
         check();
@@ -435,7 +505,7 @@
         this.subtitleTracks = capability.subtitleTracks || [];
         this.audioIndex = Math.max(0, this.audioTracks.findIndex(track => track.default));
         this.bindEvents();
-        this.healthTimer = setInterval(() => { this.sampleHealth(); this.pollStatus(); }, 5000);
+        this.healthTimer = setInterval(() => { this.sampleHealth(); this.pollStatus(); }, 1000);
         this.capability = capability;
         const target = this.clamp(typeof resume === 'function' ? resume(this) : resume);
         if(target > 0) return await this.seekTo(target);
@@ -462,7 +532,6 @@
       this.clearSubtitle();
       this.capability = capability;
       this.windowStart = capability.mode === 'direct' ? 0 : number(capability.windowStart);
-      this.avSynchronizer.reset();
       this.mode = capability.mode === 'direct' ? 'DIRECT' : 'COMPATIBILITY';
       if(!['direct','hls'].includes(capability.mode)) throw new Error('Unknown playback transport');
       await this.releases.get(capability.cacheKey);
@@ -487,25 +556,23 @@
       const {operation:op,target} = this.seekController.begin(globalSeconds);
       const startedAt = Date.now();
       const local = target-this.windowStart;
+      const bufferedSeek = !!(this.adapter?.isBuffered?.(local));
+      this.lastSeekTarget = target;
+      this.lastSeekWasBuffered = bufferedSeek;
+      this.lastSeekLatencyMs = null;
       this.seeking = true;
       this.globalCurrentTime = target;
       this.emit();
       try {
         if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
-          this.video.pause();
-          if(this.wantsPlay) this.transition(STATES.BUFFERING);
-          else this.emit();
           this.adapter.seek(local);
-          await this.waitForPresentation(local,op,15000,this.bufferManager.seekResumeThreshold(this.mode));
+          await this.waitForPresentation(local,op);
           this.assertCurrent(op);
           this.masterClock.commitWindow(this.windowStart, local);
           this.seeking = false;
+          this.lastSeekLatencyMs = Date.now()-startedAt;
           this.emit();
-          if(this.wantsPlay) await this.play();
         } else {
-          this.video.pause();
-          if(this.wantsPlay) this.transition(STATES.BUFFERING);
-          else this.emit();
           let capability = this.capability;
           if(capability.mode === 'hls') {
             capability = await this.resolve(this.source, {signal:op.signal, start:target});
@@ -521,11 +588,13 @@
           await this.attach(capability, target, op);
           this.assertCurrent(op);
         }
-        boundedPush(this.metrics.seeks, {target, elapsedMs:Date.now()-startedAt, ok:true});
+        if(this.lastSeekLatencyMs === null) this.lastSeekLatencyMs = Date.now()-startedAt;
+        boundedPush(this.metrics.seeks, {target, elapsedMs:Date.now()-startedAt, ok:true, buffered:bufferedSeek});
         return true;
       } catch(error) {
         if(this.current(op) && error.name !== 'AbortError') {
-          boundedPush(this.metrics.seeks, {target, elapsedMs:Date.now()-startedAt, ok:false});
+          this.lastSeekLatencyMs = Date.now()-startedAt;
+          boundedPush(this.metrics.seeks, {target, elapsedMs:this.lastSeekLatencyMs, ok:false, buffered:bufferedSeek});
           this.seeking = false;
           this.fail(error);
         }
@@ -574,6 +643,23 @@
       this.emit();
     }
     applyPreferences() { this.video.playbackRate = this.speed; this.video.volume = this.volume; this.video.muted = this.muted; }
+    maintainForwardBuffer(buffer = this.bufferManager.snapshot()) {
+      if(!this.active || !this.adapter || this.seeking || this.state === STATES.RESOLVING || this.state === STATES.PREPARING) return;
+      if(this.releasing || this.closing) return;
+      if(this.state !== STATES.PLAYING && this.state !== STATES.PAUSED && this.state !== STATES.READY && !this.wantsPlay) return;
+      if(this.video) this.video.preload = 'auto';
+      const ahead = number(buffer.secondsAhead);
+      if(ahead >= BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS) return;
+      const now = Date.now();
+      if(this.mode === 'COMPATIBILITY' && this.hls && now-this.lastBufferPumpAt >= 1000) {
+        this.lastBufferPumpAt = now;
+        try { this.hls.startLoad?.(Math.max(0, number(this.video.currentTime))); } catch(_) {}
+      }
+      if(this.mode === 'COMPATIBILITY' && ahead < BUFFER_POLICY.MIN_BUFFER_AHEAD_SECONDS && now-this.lastStatusPollAt >= 3000) {
+        this.lastStatusPollAt = now;
+        this.pollStatus();
+      }
+    }
     async play() {
       if(!this.active) return;
       this.wantsPlay = true;
@@ -666,6 +752,7 @@
       const buffer = this.bufferManager.sample(this.video,this.mode);
       if(this.mode === 'DIRECT') this.avSynchronizer.inferNative();
       Object.assign(this.health, {globalCurrentTime:this.globalCurrentTime,localCurrentTime:local,...buffer,...this.avSynchronizer.snapshot()});
+      this.maintainForwardBuffer(buffer);
       if(!this.lastSampleAt || Date.now()-this.lastSampleAt >= 1000) {
         this.lastSampleAt = Date.now();
         boundedPush(this.metrics.samples, {at:Date.now(), ...this.health});
@@ -680,6 +767,7 @@
         const status = await this.status(key, controller.signal);
         if(this.active && sequence === this.sequence && key === this.capability?.cacheKey) {
           this.health.ffmpegSpeed = status?.speed ?? null;
+          this.health.activeWorkers = status?._activeWorkers ?? this.health.activeWorkers ?? null;
           this.bufferManager.generationSpeed = this.health.ffmpegSpeed;
           this.health.generatedEnd = status ? number(status.windowStart)+number(status.outTimeSeconds) : null;
           this.emit();

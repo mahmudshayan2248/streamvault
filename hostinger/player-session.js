@@ -576,7 +576,8 @@
           this.masterClock.commitWindow(this.windowStart, local);
           this.seeking = false;
           this.lastSeekLatencyMs = Date.now()-startedAt;
-          this.emit();
+          if(bufferedSeek && this.wantsPlay && !this.video.paused) this.transition(STATES.PLAYING);
+          else this.emit();
         } else {
           let capability = this.capability;
           if(capability.mode === 'hls') {

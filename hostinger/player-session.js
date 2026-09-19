@@ -214,7 +214,10 @@
       return false;
     }
     isBuffered(localTime) { return this.session.bufferManager.containsBuffered(this.session.video, localTime); }
-    seek(localTime) { this.session.video.currentTime = localTime; }
+    seek(localTime, options = {}) {
+      if(!options.buffered && this.hls?.startLoad) this.hls.startLoad(Math.max(0, number(localTime)));
+      this.session.video.currentTime = localTime;
+    }
     async attach(capability, localTime, operation) {
       const s = this.session;
       const Hls = await s.loadHls();
@@ -564,9 +567,9 @@
       this.globalCurrentTime = target;
       this.emit();
       try {
-        const canSeekInPlace = this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local) && (this.mode !== 'COMPATIBILITY' || bufferedSeek);
-        if(canSeekInPlace) {
-          this.adapter.seek(local);
+        if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
+          if(this.mode === 'COMPATIBILITY' && !bufferedSeek) this.transition(STATES.BUFFERING);
+          this.adapter.seek(local, {buffered:bufferedSeek});
           await this.waitForPresentation(local,op);
           this.assertCurrent(op);
           this.masterClock.commitWindow(this.windowStart, local);

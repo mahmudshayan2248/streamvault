@@ -369,6 +369,11 @@
           engine: state.mode,
           windowStart: state.windowStart,
           windowEnd: state.health?.generatedEnd ?? state.health?.bufferedEnd ?? null,
+          bufferedSeekableRanges: (() => {
+            const ranges = [];
+            try { for(let i=0;i<(this.video?.seekable?.length||0);i++) ranges.push([Number(this.masterClock.localToGlobal(this.video.seekable.start(i)).toFixed(3)), Number(this.masterClock.localToGlobal(this.video.seekable.end(i)).toFixed(3))]); } catch(_) {}
+            return ranges;
+          })(),
           hlsAttached: !!this.hls,
           sessionId: this.capability?.cacheKey || null,
           activeWorkers: this.health?.activeWorkers ?? null,
@@ -559,8 +564,8 @@
       this.globalCurrentTime = target;
       this.emit();
       try {
-        if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
-          if(this.mode === 'COMPATIBILITY' && !bufferedSeek) this.transition(STATES.BUFFERING);
+        const canSeekInPlace = this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local) && (this.mode !== 'COMPATIBILITY' || bufferedSeek);
+        if(canSeekInPlace) {
           this.adapter.seek(local);
           await this.waitForPresentation(local,op);
           this.assertCurrent(op);

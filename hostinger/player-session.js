@@ -656,9 +656,15 @@
       const ahead = number(buffer.secondsAhead);
       if(ahead >= BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS) return;
       const now = Date.now();
-      if(this.mode === 'COMPATIBILITY' && ahead < BUFFER_POLICY.MIN_BUFFER_AHEAD_SECONDS && now-this.lastStatusPollAt >= 3000) {
-        this.lastStatusPollAt = now;
-        this.pollStatus();
+      if(this.mode === 'COMPATIBILITY' && ahead < BUFFER_POLICY.MIN_BUFFER_AHEAD_SECONDS) {
+        if(this.hls?.startLoad && now-this.lastBufferPumpAt >= 8000) {
+          this.lastBufferPumpAt = now;
+          this.hls.startLoad(Math.max(0, number(this.video?.currentTime)));
+        }
+        if(now-this.lastStatusPollAt >= 3000) {
+          this.lastStatusPollAt = now;
+          this.pollStatus();
+        }
       }
     }
     async play() {

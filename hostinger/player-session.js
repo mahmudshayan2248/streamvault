@@ -426,14 +426,15 @@
         Promise.resolve().then(() => { if(op.signal.aborted) cancel(); else if(ready?.()) done(); });
       });
     }
-    waitForPresentation(localTime, op, timeoutMs = 6000) {
+    waitForPresentation(localTime, op, timeoutMs = 6000, options = {}) {
       return new Promise((resolve, reject) => {
         const started=Date.now();
         const check=()=>{
           if(!this.current(op)) return reject(aborted());
           const buffer=this.bufferManager.sample(this.video,this.mode);
           const remaining=Math.max(0,this.globalDuration-this.masterClock.localToGlobal(localTime));
-          const threshold=Math.min(this.bufferManager.startupThreshold(this.mode),remaining);
+          const startupThreshold=this.bufferManager.startupThreshold(this.mode);
+          const threshold=Math.min(number(options.minAhead ?? startupThreshold),remaining);
           const atTarget=Math.abs(number(this.video.currentTime)-localTime)<.35;
           if(atTarget && (buffer.secondsAhead>=threshold || remaining<.5)) return resolve();
           if(Date.now()-started>=timeoutMs) return resolve();
@@ -570,7 +571,7 @@
         if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
           if(this.mode === 'COMPATIBILITY' && !bufferedSeek) this.transition(STATES.BUFFERING);
           this.adapter.seek(local, {buffered:bufferedSeek});
-          await this.waitForPresentation(local,op);
+          await this.waitForPresentation(local,op,6000,{minAhead:BUFFER_POLICY.BUFFERED_SEEK_MIN_AHEAD_SECONDS});
           this.assertCurrent(op);
           this.masterClock.commitWindow(this.windowStart, local);
           this.seeking = false;

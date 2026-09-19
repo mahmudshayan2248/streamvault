@@ -233,7 +233,6 @@
         enableWorker:true, lowLatencyMode:false, startPosition:localTime,
         startFragPrefetch:true, backBufferLength:BUFFER_POLICY.BACK_BUFFER_SECONDS,
         maxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS, maxMaxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS * 2, maxBufferSize:128*1024*1024,
-        maxBufferHole:0.5, highBufferWatchdogPeriod:2,
         // Growing EVENT manifests describe VOD preparation, never a live edge.
         liveSyncDuration:1e9, liveMaxLatencyDuration:Infinity, maxLiveSyncPlaybackRate:1,
         manifestLoadingTimeOut:30000, levelLoadingTimeOut:30000, fragLoadingTimeOut:30000,
@@ -561,6 +560,7 @@
       this.emit();
       try {
         if(this.adapter && this.state !== STATES.PREPARING && this.adapter.contains(local)) {
+          if(this.mode === 'COMPATIBILITY' && !bufferedSeek) this.transition(STATES.BUFFERING);
           this.adapter.seek(local);
           await this.waitForPresentation(local,op);
           this.assertCurrent(op);

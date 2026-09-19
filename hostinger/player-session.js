@@ -231,15 +231,11 @@
       }
       const hls = this.hls = s.hls = new Hls({
         enableWorker:true, lowLatencyMode:false, startPosition:localTime,
-        startFragPrefetch:true,
-        backBufferLength:BUFFER_POLICY.BACK_BUFFER_SECONDS,
-        maxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS,
-        maxMaxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS * 2,
-        maxBufferSize:160*1024*1024,
+        startFragPrefetch:true, backBufferLength:BUFFER_POLICY.BACK_BUFFER_SECONDS,
+        maxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS, maxMaxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS * 2, maxBufferSize:128*1024*1024,
         maxBufferHole:0.5, highBufferWatchdogPeriod:2,
         // Growing EVENT manifests describe VOD preparation, never a live edge.
         liveSyncDuration:1e9, liveMaxLatencyDuration:Infinity, maxLiveSyncPlaybackRate:1,
-        liveDurationInfinity:true,
         manifestLoadingTimeOut:30000, levelLoadingTimeOut:30000, fragLoadingTimeOut:30000,
       });
       const valid = () => s.active && s.adapter === this && this.hls === hls;
@@ -651,10 +647,6 @@
       const ahead = number(buffer.secondsAhead);
       if(ahead >= BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS) return;
       const now = Date.now();
-      if(this.mode === 'COMPATIBILITY' && this.hls && now-this.lastBufferPumpAt >= 1000) {
-        this.lastBufferPumpAt = now;
-        try { this.hls.startLoad?.(Math.max(0, number(this.video.currentTime))); } catch(_) {}
-      }
       if(this.mode === 'COMPATIBILITY' && ahead < BUFFER_POLICY.MIN_BUFFER_AHEAD_SECONDS && now-this.lastStatusPollAt >= 3000) {
         this.lastStatusPollAt = now;
         this.pollStatus();

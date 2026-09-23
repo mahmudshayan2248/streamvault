@@ -55,6 +55,76 @@ function has(cols, name) { return cols.has(name); }
 function col(cols, name, expr = `NULL AS ${name}`) { return has(cols, name) ? `m.\`${name}\`` : expr; }
 function invCol(cols, name, expr = `NULL AS ${name}`) { return has(cols, name) ? `inv.\`${name}\`` : expr; }
 
+function compactList(values) {
+  return [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))];
+}
+
+function inventoryScore(row) {
+  const source = String(row.source_path || '');
+  let score = 0;
+  if (/^https?:/i.test(source) || source.includes('/') || source.includes('\\')) score += 1000;
+  if (/Season[ ._-]*\d{1,4}|S\d{1,4}E\d{1,3}|\d{1,3}x\d{1,3}|TV[ ._-]*(?:Series|Documentary)/i.test(source)) score += 500;
+  if (row.media_type === 'episode') score += 100;
+  score += Math.min(source.length, 2000) / 1000;
+  return score;
+}
+
+function chooseInventory(current, candidate) {
+  if (!current) return candidate;
+  const currentScore = inventoryScore(current);
+  const candidateScore = inventoryScore(candidate);
+  if (candidateScore !== currentScore) return candidateScore > currentScore ? candidate : current;
+  return String(candidate.inventory_key || '').localeCompare(String(current.inventory_key || '')) < 0 ? candidate : current;
+}
+
+async function queryInventoryBy(conn, field, values, invCols) {
+  if (!values.length || !has(invCols, field)) return [];
+  const selected = [
+    invCol(invCols, 'inventory_key', 'NULL AS inventory_key').replace(/inv\./g, ''),
+    invCol(invCols, 'stream_id', 'NULL AS stream_id').replace(/inv\./g, ''),
+    invCol(invCols, 'title', 'NULL AS title').replace(/inv\./g, ''),
+    invCol(invCols, 'source_path', 'NULL AS source_path').replace(/inv\./g, ''),
+    invCol(invCols, 'source_catalog', 'NULL AS source_catalog').replace(/inv\./g, ''),
+    invCol(invCols, 'media_type', 'NULL AS media_type').replace(/inv\./g, ''),
+  ].join(', ');
+  const out = [];
+  const chunkSize = 250;
+  for (let i = 0; i < values.length; i += chunkSize) {
+    const chunk = values.slice(i, i + chunkSize);
+    const placeholders = chunk.map(() => '?').join(',');
+    const [rows] = await conn.query(`SELECT ${selected} FROM media_cache_inventory WHERE \`${field}\` IN (${placeholders})`, chunk);
+    out.push(...rows);
+  }
+  return out;
+}
+
+async function hydrateInventoryContext(conn, rows, invCols) {
+  if (!rows.length || !has(invCols, 'inventory_key')) return rows;
+  const streamIds = compactList(rows.map(row => row.stream_id));
+  const blankStreamTitles = compactList(rows.filter(row => !String(row.stream_id || '').trim()).map(row => row.title));
+  const byStream = new Map();
+  const byTitle = new Map();
+  for (const inv of await queryInventoryBy(conn, 'stream_id', streamIds, invCols)) {
+    if (!String(inv.stream_id || '').trim()) continue;
+    const key = String(inv.stream_id);
+    byStream.set(key, chooseInventory(byStream.get(key), inv));
+  }
+  for (const inv of await queryInventoryBy(conn, 'title', blankStreamTitles, invCols)) {
+    if (!String(inv.title || '').trim()) continue;
+    const key = String(inv.title);
+    byTitle.set(key, chooseInventory(byTitle.get(key), inv));
+  }
+  for (const row of rows) {
+    const streamKey = String(row.stream_id || '').trim();
+    const inv = streamKey ? byStream.get(streamKey) : byTitle.get(String(row.title || ''));
+    row.inventory_key = inv?.inventory_key || null;
+    row.source_path = inv?.source_path || null;
+    row.source_catalog = inv?.source_catalog || null;
+    row.inventory_media_type = inv?.media_type || null;
+  }
+  return rows;
+}
+
 async function fetchCandidates(conn, movieCols, invCols) {
   const where = [];
   const params = [];
@@ -72,27 +142,6 @@ async function fetchCandidates(conn, movieCols, invCols) {
     params.push(...episodeLike.map(() => episodePattern));
   }
   const limitSql = LIMIT ? ' LIMIT ' + LIMIT : '';
-  let join = 'LEFT JOIN media_cache_inventory inv ON 1=0';
-  if (has(invCols, 'inventory_key')) {
-    const streamMatch = has(invCols, 'stream_id') && has(movieCols, 'stream_id')
-      ? "((m.`stream_id` IS NOT NULL AND m.`stream_id` <> '' AND inv2.`stream_id` = m.`stream_id`))"
-      : 'FALSE';
-    const titleMatch = has(invCols, 'title') && has(movieCols, 'title')
-      ? "((m.`stream_id` IS NULL OR m.`stream_id` = '') AND inv2.`title` = m.`title`)"
-      : 'FALSE';
-    join = `LEFT JOIN media_cache_inventory inv ON inv.\`inventory_key\` = (
-      SELECT inv2.\`inventory_key\`
-      FROM media_cache_inventory inv2
-      WHERE ${streamMatch} OR ${titleMatch}
-      ORDER BY
-        CASE WHEN ${streamMatch} THEN 0 ELSE 1 END,
-        CASE WHEN inv2.\`source_path\` LIKE 'http%' OR inv2.\`source_path\` LIKE '%/%' OR inv2.\`source_path\` LIKE '%\\%' THEN 0 ELSE 1 END,
-        CASE WHEN inv2.\`source_path\` REGEXP 'Season[ ._-]*[0-9]{1,4}|S[0-9]{1,4}E[0-9]{1,3}|[0-9]{1,3}x[0-9]{1,3}|TV[ ._-]*(Series|Documentary)' THEN 0 ELSE 1 END,
-        CHAR_LENGTH(inv2.\`source_path\`) DESC,
-        inv2.\`inventory_key\` ASC
-      LIMIT 1
-    )`;
-  }
   const orderBy = has(movieCols, 'id')
     ? 'ORDER BY m.`id` ASC'
     : (has(movieCols, 'media_key') ? 'ORDER BY m.`media_key` ASC' : '');
@@ -107,16 +156,15 @@ async function fetchCandidates(conn, movieCols, invCols) {
       ${col(movieCols, 'remote_poster_url', 'NULL AS movie_remote_poster_url')} AS movie_remote_poster_url,
       ${col(movieCols, 'lookup_status', 'NULL AS lookup_status')} AS lookup_status,
       ${col(movieCols, 'repair_status', 'NULL AS repair_status')} AS repair_status,
-      ${invCol(invCols, 'inventory_key', 'NULL AS inventory_key')} AS inventory_key,
-      ${invCol(invCols, 'source_path', 'NULL AS source_path')} AS source_path,
-      ${invCol(invCols, 'source_catalog', 'NULL AS source_catalog')} AS source_catalog,
-      ${invCol(invCols, 'media_type', 'NULL AS inventory_media_type')} AS inventory_media_type
+      NULL AS inventory_key,
+      NULL AS source_path,
+      NULL AS source_catalog,
+      NULL AS inventory_media_type
     FROM media_cache_movies m
-    ${join}
     WHERE ${where.join(' AND ')}
     ${orderBy}${limitSql}`;
   const [rows] = await conn.query(sql, params);
-  return rows;
+  return hydrateInventoryContext(conn, rows, invCols);
 }
 
 function classifyRow(row) {

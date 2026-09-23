@@ -1,6 +1,8 @@
 const express = require('express');
 const fs      = require('fs');
 const path    = require('path');
+try { require('dotenv').config({ path: path.join(__dirname, '.env'), quiet: true }); } catch (_) {}
+try { require('dotenv').config({ path: path.join(__dirname, '.env.local'), override: false, quiet: true }); } catch (_) {}
 const https   = require('https');
 const http    = require('http');
 const crypto  = require('crypto');

@@ -12743,7 +12743,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   const catalogManagerDelayMs = Math.max(30000, Number(process.env.CATALOG_MANAGER_STARTUP_DELAY_MS || 3600000) || 300000);
   const catalogManagerTimer = setTimeout(() => catalogManager.start(), catalogManagerDelayMs);
   catalogManagerTimer.unref?.();
-  const mediaCacheDbDelayMs = Math.max(30000, Number(process.env.MEDIA_CACHE_DB_STARTUP_DELAY_MS || 3600000) || 300000);
+  const mediaCacheDbDelayMs = Math.max(30000, Number(process.env.MEDIA_CACHE_DB_STARTUP_DELAY_MS || 30000) || 30000);
   const mediaCacheDbTimer = setTimeout(() => svMediaCacheDb.start(), mediaCacheDbDelayMs);
   mediaCacheDbTimer.unref?.();
   const fifaWarmupDelayMs = Math.max(30000, Number(process.env.FIFA_STARTUP_WARMUP_DELAY_MS || 3600000) || 300000);

@@ -72,9 +72,27 @@ async function fetchCandidates(conn, movieCols, invCols) {
     params.push(...episodeLike.map(() => episodePattern));
   }
   const limitSql = LIMIT ? ' LIMIT ' + LIMIT : '';
-  const join = has(invCols, 'stream_id') && has(movieCols, 'stream_id')
-    ? 'LEFT JOIN media_cache_inventory inv ON inv.`stream_id` = m.`stream_id`'
-    : 'LEFT JOIN media_cache_inventory inv ON 1=0';
+  let join = 'LEFT JOIN media_cache_inventory inv ON 1=0';
+  if (has(invCols, 'inventory_key')) {
+    const streamMatch = has(invCols, 'stream_id') && has(movieCols, 'stream_id')
+      ? "((m.`stream_id` IS NOT NULL AND m.`stream_id` <> '' AND inv2.`stream_id` = m.`stream_id`))"
+      : 'FALSE';
+    const titleMatch = has(invCols, 'title') && has(movieCols, 'title')
+      ? "((m.`stream_id` IS NULL OR m.`stream_id` = '') AND inv2.`title` = m.`title`)"
+      : 'FALSE';
+    join = `LEFT JOIN media_cache_inventory inv ON inv.\`inventory_key\` = (
+      SELECT inv2.\`inventory_key\`
+      FROM media_cache_inventory inv2
+      WHERE ${streamMatch} OR ${titleMatch}
+      ORDER BY
+        CASE WHEN ${streamMatch} THEN 0 ELSE 1 END,
+        CASE WHEN inv2.\`source_path\` LIKE 'http%' OR inv2.\`source_path\` LIKE '%/%' OR inv2.\`source_path\` LIKE '%\\%' THEN 0 ELSE 1 END,
+        CASE WHEN inv2.\`source_path\` REGEXP 'Season[ ._-]*[0-9]{1,4}|S[0-9]{1,4}E[0-9]{1,3}|[0-9]{1,3}x[0-9]{1,3}|TV[ ._-]*(Series|Documentary)' THEN 0 ELSE 1 END,
+        CHAR_LENGTH(inv2.\`source_path\`) DESC,
+        inv2.\`inventory_key\` ASC
+      LIMIT 1
+    )`;
+  }
   const orderBy = has(movieCols, 'id')
     ? 'ORDER BY m.`id` ASC'
     : (has(movieCols, 'media_key') ? 'ORDER BY m.`media_key` ASC' : '');

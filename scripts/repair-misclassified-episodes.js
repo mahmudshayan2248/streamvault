@@ -228,7 +228,7 @@ async function writeAudit(conn, item, status) {
   await conn.query(`
     INSERT INTO media_cache_repair_audit
       (source_media_key, original_title, original_year, source_path, inferred_series, inferred_season, inferred_episode, confidence, reason, target_episode_key, status, details)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CAST(? AS JSON))`, [
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
     item.row.media_key || String(item.row.movie_id || ''),
     item.row.title || '',
     item.row.movie_year || '',

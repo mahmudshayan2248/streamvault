@@ -12708,7 +12708,9 @@ if (process.env.SV_SEARCH_WARMUP === '1') {
     catch (e) { console.warn('âš  Search index warmup failed:', e.message); }
   }, searchWarmupDelay);
 }
-setTimeout(() => runBackgroundEnrichment(), 60000);    // ðŸ”„ fill missing posters after startup settles
+const backgroundEnrichmentDelayMs = Math.max(60000, Number(process.env.BACKGROUND_ENRICHMENT_STARTUP_DELAY_MS || 600000) || 600000);
+const backgroundEnrichmentTimer = setTimeout(() => runBackgroundEnrichment(), backgroundEnrichmentDelayMs);    // ðŸ”„ fill missing posters after startup settles
+backgroundEnrichmentTimer.unref?.();
 
 const os = require('os');
 function getLanIP() {

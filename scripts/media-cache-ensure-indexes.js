@@ -50,6 +50,7 @@ async function ensureIndex(conn, spec) {
 async function main() {
   const indexes = [
     { table: 'media_cache_inventory', name: 'idx_inventory_stream_id', columns: '`stream_id`' },
+    { table: 'media_cache_inventory', name: 'idx_inventory_title', columns: '`title`(255)' },
     { table: 'media_cache_movies', name: 'idx_movies_repair_status_id', columns: '`repair_status`, `id`' },
     { table: 'media_cache_movies', name: 'idx_movies_stream_id', columns: '`stream_id`' },
   ];

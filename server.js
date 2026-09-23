@@ -12734,7 +12734,9 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`âœ¨ Seeking, pausing, and all controls work instantly\n`);
   console.log(`ðŸ§¹ Cartoon/Anime filter active â€” only real movies & series are shown`);
   console.log('Ã°Å¸â€œÂ¡ Infra telemetry active at /infra/live');
-  setImmediate(svWarmStartupCatalogIndexes);
+  const catalogWarmupDelayMs = Math.max(5000, Number(process.env.SV_STARTUP_CATALOG_WARMUP_DELAY_MS || 120000) || 120000);
+  const catalogWarmupTimer = setTimeout(svWarmStartupCatalogIndexes, catalogWarmupDelayMs);
+  catalogWarmupTimer.unref?.();
   catalogManager.start();
   svMediaCacheDb.start();
   setTimeout(() => svWarmFifaLiveCache('startup'), 750);

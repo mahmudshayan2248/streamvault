@@ -12742,14 +12742,16 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   const catalogManagerDelayMs = Math.max(30000, Number(process.env.CATALOG_MANAGER_STARTUP_DELAY_MS || 300000) || 300000);
   const catalogManagerTimer = setTimeout(() => catalogManager.start(), catalogManagerDelayMs);
   catalogManagerTimer.unref?.();
-  svMediaCacheDb.initPool?.().catch(error => console.warn('[MediaCacheDB] init failed:', error?.message || error));
   const mediaCacheDbDelayMs = Math.max(30000, Number(process.env.MEDIA_CACHE_DB_STARTUP_DELAY_MS || 300000) || 300000);
   const mediaCacheDbTimer = setTimeout(() => svMediaCacheDb.start(), mediaCacheDbDelayMs);
   mediaCacheDbTimer.unref?.();
-  setTimeout(() => svWarmFifaLiveCache('startup'), 750);
-  setTimeout(() => {
+  const fifaWarmupDelayMs = Math.max(30000, Number(process.env.FIFA_STARTUP_WARMUP_DELAY_MS || 300000) || 300000);
+  const fifaLiveTimer = setTimeout(() => svWarmFifaLiveCache('startup'), fifaWarmupDelayMs);
+  fifaLiveTimer.unref?.();
+  const fifaNewsTimer = setTimeout(() => {
     svGetFifaNewsPayload().catch(err => svFifaWarn('startup news warmup failed', err));
-  }, 2500);
+  }, fifaWarmupDelayMs + 2000);
+  fifaNewsTimer.unref?.();
 });
 infraTelemetry.attachWebSocket(server);
 /* SV_INSTANT_LIVE_PREWARM_PATCH */

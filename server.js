@@ -8502,6 +8502,7 @@ app.get('/api/search', (req, res, next) => {
   }
 });
 
+const svAuthorityWarmupDelayMs = Math.max(30000, Number(process.env.SV_AUTHORITY_WARMUP_DELAY_MS || 300000) || 300000);
 const svAuthorityWarmTimer = setTimeout(() => {
   try {
     loadMassiveCatalog();
@@ -8510,7 +8511,7 @@ const svAuthorityWarmTimer = setTimeout(() => {
   } catch (error) {
     console.error('[Search Authority] warmup failed:', error.message);
   }
-}, 1200);
+}, svAuthorityWarmupDelayMs);
 svAuthorityWarmTimer.unref?.();
 
 app.get('/api/search', (req, res) => {

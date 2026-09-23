@@ -9103,20 +9103,28 @@ app.get('/api/series', (req, res) => {
     const limit = Math.max(0, parseInt(req.query.limit || '0', 10) || 0);
     const hasSearch = String(req.query.q || '').trim().length >= 2;
     const includeMassiveOnly = hasSearch && String(req.query.massive || '1') !== '0';
-    let allSeries = state.shows.filter(show =>
+    const allSeries = state.shows.filter(show =>
       show.episodeCount > 0 && !isCartoonOrAnime(show) &&
       (includeMassiveOnly || show.sourceKinds.some(source => source === 'local' || source === 'ftpCatalog'))
     );
     const summary = String(req.query.summary || '') === '1';
-    allSeries = allSeries.map(svHydrateSeriesArtwork);
-    if (summary) allSeries = allSeries.map(canonicalSeriesSummary);
+    const hydrateSeriesForResponse = show => {
+      const hydrated = svHydrateSeriesArtwork(show);
+      return summary ? canonicalSeriesSummary(hydrated) : hydrated;
+    };
 
     if (String(req.query.page || '') !== '' || String(req.query.q || '').trim()) {
       const paged = svFilterPaged(allSeries, req, true, 'series');
-      return res.json({ series: paged.items, total: paged.list.length, page: paged.page, pages: paged.pages });
+      return res.json({
+        series: paged.items.map(hydrateSeriesForResponse),
+        total: paged.list.length,
+        page: paged.page,
+        pages: paged.pages,
+      });
     }
 
-    const payload = limit ? allSeries.slice(0, limit) : allSeries;
+    const payloadRaw = limit ? allSeries.slice(0, limit) : allSeries;
+    const payload = payloadRaw.map(hydrateSeriesForResponse);
     if (!limit) return svSendMemorySeries(res, payload, `${_canonicalSeriesStamp}|summary=${summary ? 1 : 0}|${payload.length}`);
     res.json(payload);
   } catch (e) {

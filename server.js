@@ -12695,9 +12695,12 @@ if (!catalogManager.loadPersisted()) {
   _movieList = [];
   _seriesList = [];
 }
-svGetBootSearchIndex();                                // instant search boot payload, no massive catalog
-try { svDetailCatalogIndex(); }                        // warm playable recommendations before first detail click
-catch (e) { console.warn('Detail recommendation warmup failed:', e.message); }
+function svWarmStartupCatalogIndexes() {
+  try { svGetBootSearchIndex(); }                      // instant search boot payload, no massive catalog
+  catch (e) { console.warn('Boot search warmup failed:', e.message); }
+  try { svDetailCatalogIndex(); }                      // warm playable recommendations before first detail click
+  catch (e) { console.warn('Detail recommendation warmup failed:', e.message); }
+}
 if (process.env.SV_SEARCH_WARMUP === '1') {
   const searchWarmupDelay = Math.max(30000, parseInt(process.env.SV_SEARCH_WARMUP_DELAY_MS || '120000', 10) || 120000);
   setTimeout(() => {
@@ -12731,6 +12734,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`âœ¨ Seeking, pausing, and all controls work instantly\n`);
   console.log(`ðŸ§¹ Cartoon/Anime filter active â€” only real movies & series are shown`);
   console.log('Ã°Å¸â€œÂ¡ Infra telemetry active at /infra/live');
+  setImmediate(svWarmStartupCatalogIndexes);
   catalogManager.start();
   svMediaCacheDb.start();
   setTimeout(() => svWarmFifaLiveCache('startup'), 750);

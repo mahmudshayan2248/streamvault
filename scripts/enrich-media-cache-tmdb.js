@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
+const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const { extractReleaseYear, normalizedKey, parseMediaIdentity } = require('../lib/media-identity');
@@ -36,7 +37,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return `Usage: node scripts/enrich-media-cache-tmdb.js [--mode=all|movies|series|episodes] [--limit=100] [--offset=0] [--include-misses] [--apply]\n\nDry-run is default. --apply is required to write DB changes. Requires DATABASE_URL or DB_HOST/DB_NAME/DB_USER/DB_PASSWORD and TMDB_TOKEN/TMDB_BEARER_TOKEN.`;
+  return `Usage: node scripts/enrich-media-cache-tmdb.js [--mode=all|movies|series|episodes] [--limit=100] [--offset=0] [--include-misses] [--apply]\n\nDry-run is default. --apply is required to write DB changes. Requires DATABASE_URL or DB_HOST/DB_NAME/DB_USER/DB_PASSWORD and TMDB_TOKEN/TMDB_BEARER_TOKEN, or the existing server.js TMDB_TOKEN constant.`;
 }
 
 function dbConfig() {
@@ -61,8 +62,18 @@ async function connect() {
     : mysql.createConnection(config);
 }
 
+function serverTmdbToken() {
+  try {
+    const serverPath = path.join(process.cwd(), 'server.js');
+    const source = fs.readFileSync(serverPath, 'utf8');
+    return source.match(/const\s+TMDB_TOKEN\s*=\s*['"]([^'"]+)['"]/m)?.[1] || '';
+  } catch (_) {
+    return '';
+  }
+}
+
 function tmdbToken() {
-  return process.env.TMDB_TOKEN || process.env.TMDB_BEARER_TOKEN || process.env.TMDB_READ_TOKEN || '';
+  return process.env.TMDB_TOKEN || process.env.TMDB_BEARER_TOKEN || process.env.TMDB_READ_TOKEN || serverTmdbToken() || '';
 }
 
 function sleep(ms) {

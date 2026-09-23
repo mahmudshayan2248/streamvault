@@ -8502,7 +8502,7 @@ app.get('/api/search', (req, res, next) => {
   }
 });
 
-const svAuthorityWarmupDelayMs = Math.max(30000, Number(process.env.SV_AUTHORITY_WARMUP_DELAY_MS || 300000) || 300000);
+const svAuthorityWarmupDelayMs = Math.max(30000, Number(process.env.SV_AUTHORITY_WARMUP_DELAY_MS || 3600000) || 300000);
 const svAuthorityWarmTimer = setTimeout(() => {
   try {
     loadMassiveCatalog();
@@ -12709,7 +12709,7 @@ if (process.env.SV_SEARCH_WARMUP === '1') {
     catch (e) { console.warn('âš  Search index warmup failed:', e.message); }
   }, searchWarmupDelay);
 }
-const backgroundEnrichmentDelayMs = Math.max(60000, Number(process.env.BACKGROUND_ENRICHMENT_STARTUP_DELAY_MS || 600000) || 600000);
+const backgroundEnrichmentDelayMs = Math.max(60000, Number(process.env.BACKGROUND_ENRICHMENT_STARTUP_DELAY_MS || 3600000) || 600000);
 const backgroundEnrichmentTimer = setTimeout(() => runBackgroundEnrichment(), backgroundEnrichmentDelayMs);    // ðŸ”„ fill missing posters after startup settles
 backgroundEnrichmentTimer.unref?.();
 
@@ -12737,16 +12737,16 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`âœ¨ Seeking, pausing, and all controls work instantly\n`);
   console.log(`ðŸ§¹ Cartoon/Anime filter active â€” only real movies & series are shown`);
   console.log('Ã°Å¸â€œÂ¡ Infra telemetry active at /infra/live');
-  const catalogWarmupDelayMs = Math.max(5000, Number(process.env.SV_STARTUP_CATALOG_WARMUP_DELAY_MS || 120000) || 120000);
+  const catalogWarmupDelayMs = Math.max(5000, Number(process.env.SV_STARTUP_CATALOG_WARMUP_DELAY_MS || 3600000) || 120000);
   const catalogWarmupTimer = setTimeout(svWarmStartupCatalogIndexes, catalogWarmupDelayMs);
   catalogWarmupTimer.unref?.();
-  const catalogManagerDelayMs = Math.max(30000, Number(process.env.CATALOG_MANAGER_STARTUP_DELAY_MS || 300000) || 300000);
+  const catalogManagerDelayMs = Math.max(30000, Number(process.env.CATALOG_MANAGER_STARTUP_DELAY_MS || 3600000) || 300000);
   const catalogManagerTimer = setTimeout(() => catalogManager.start(), catalogManagerDelayMs);
   catalogManagerTimer.unref?.();
-  const mediaCacheDbDelayMs = Math.max(30000, Number(process.env.MEDIA_CACHE_DB_STARTUP_DELAY_MS || 300000) || 300000);
+  const mediaCacheDbDelayMs = Math.max(30000, Number(process.env.MEDIA_CACHE_DB_STARTUP_DELAY_MS || 3600000) || 300000);
   const mediaCacheDbTimer = setTimeout(() => svMediaCacheDb.start(), mediaCacheDbDelayMs);
   mediaCacheDbTimer.unref?.();
-  const fifaWarmupDelayMs = Math.max(30000, Number(process.env.FIFA_STARTUP_WARMUP_DELAY_MS || 300000) || 300000);
+  const fifaWarmupDelayMs = Math.max(30000, Number(process.env.FIFA_STARTUP_WARMUP_DELAY_MS || 3600000) || 300000);
   const fifaLiveTimer = setTimeout(() => svWarmFifaLiveCache('startup'), fifaWarmupDelayMs);
   fifaLiveTimer.unref?.();
   const fifaNewsTimer = setTimeout(() => {

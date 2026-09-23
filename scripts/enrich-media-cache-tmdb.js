@@ -264,7 +264,12 @@ function episodePatch(row, tmdbEpisode) {
 async function fetchMovieRows(conn, limit, offset, includeMisses) {
   const cols = await columns(conn, 'media_cache_movies');
   if (!cols.size) return { cols, rows: [] };
-  const missClause = includeMisses ? " OR m.`lookup_status` IN ('miss','ambiguous','network_error','temporary_error')" : '';
+  const retryStatuses = includeMisses
+    ? "'miss','ambiguous','network_error','temporary_error','pending_tmdb',''"
+    : "'pending_tmdb',''";
+  const statusGate = cols.has('lookup_status')
+    ? `(m.\`lookup_status\` IS NULL OR m.\`lookup_status\` IN (${retryStatuses}))`
+    : '1=1';
   const [rows] = await conn.query(`
     SELECT
       ${col(cols, 'id')} AS id,
@@ -283,9 +288,8 @@ async function fetchMovieRows(conn, limit, offset, includeMisses) {
       ${col(cols, 'repair_status')} AS repair_status
     FROM media_cache_movies m
     WHERE (
-      m.${cols.has('tmdb_id') ? '`tmdb_id` IS NULL OR m.`tmdb_id` = 0' : '`id` IS NOT NULL'}
-      ${cols.has('remote_poster_url') ? " OR m.`remote_poster_url` IS NULL OR m.`remote_poster_url` = ''" : ''}
-      ${cols.has('lookup_status') ? missClause : ''}
+      ((m.${cols.has('tmdb_id') ? '`tmdb_id` IS NULL OR m.`tmdb_id` = 0' : '`id` IS NOT NULL'}) AND ${statusGate})
+      ${cols.has('remote_poster_url') && cols.has('tmdb_id') ? " OR ((m.`tmdb_id` IS NOT NULL AND m.`tmdb_id` <> 0) AND (m.`remote_poster_url` IS NULL OR m.`remote_poster_url` = ''))" : ''}
     )
     ${cols.has('repair_status') ? "AND (m.`repair_status` IS NULL OR m.`repair_status` = '' OR m.`repair_status` NOT LIKE 'episode_%')" : ''}
     ORDER BY m.${cols.has('id') ? '`id`' : '`media_key`'}
@@ -310,13 +314,17 @@ async function fetchSeriesRows(conn, limit, offset, includeMisses, episodesOnly 
     `, [limit, offset]);
     return { cols, epCols, rows };
   }
-  const missClause = includeMisses ? " OR s.`lookup_status` IN ('miss','ambiguous','network_error','temporary_error')" : '';
+  const retryStatuses = includeMisses
+    ? "'miss','ambiguous','network_error','temporary_error','pending_tmdb',''"
+    : "'pending_tmdb',''";
+  const statusGate = cols.has('lookup_status')
+    ? `(s.\`lookup_status\` IS NULL OR s.\`lookup_status\` IN (${retryStatuses}))`
+    : '1=1';
   const [rows] = await conn.query(`
     SELECT * FROM media_cache_series s
     WHERE (
-      ${cols.has('tmdb_id') ? "s.`tmdb_id` IS NULL OR s.`tmdb_id` = 0" : '1=1'}
-      ${cols.has('remote_poster_url') ? " OR s.`remote_poster_url` IS NULL OR s.`remote_poster_url` = ''" : ''}
-      ${cols.has('lookup_status') ? missClause : ''}
+      ((${cols.has('tmdb_id') ? "s.`tmdb_id` IS NULL OR s.`tmdb_id` = 0" : '1=1'}) AND ${statusGate})
+      ${cols.has('remote_poster_url') && cols.has('tmdb_id') ? " OR ((s.`tmdb_id` IS NOT NULL AND s.`tmdb_id` <> 0) AND (s.`remote_poster_url` IS NULL OR s.`remote_poster_url` = ''))" : ''}
     )
     ORDER BY s.${cols.has('series_key') ? '`series_key`' : '`series_name`'}
     LIMIT ? OFFSET ?

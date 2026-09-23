@@ -13,6 +13,10 @@ const {
   walkVideoFiles,
 } = require('./lib/series-library');
 const {
+  extractReleaseYear: svCanonicalReleaseYear,
+  parseMediaIdentity: svParseMediaIdentity,
+} = require('./lib/media-identity');
+const {
   createCanonicalSeriesIndex,
   groupEpisodeRecords,
   seriesSummary: canonicalSeriesSummary,
@@ -25,6 +29,7 @@ const {
 const { streamOriginalDownload } = require('./lib/resilient-download');
 const { installPlaybackFaststart } = require('./lib/playback-faststart');
 const { CatalogManager } = require('./lib/catalog/catalog-manager');
+const { createMediaCacheDb } = require('./lib/media-cache-db');
 
 const tracker         = require('./middleware/tracker');
 const dashboardRoutes = require('./routes/dashboard');
@@ -70,6 +75,19 @@ const infraTelemetry = createInfraTelemetry({
   nodeName: 'mac-mini-streamvault',
   serviceName: 'StreamVault'
 });
+const svMediaCacheDb = createMediaCacheDb({
+  logger: console,
+  refreshIntervalMs: Number(process.env.MEDIA_CACHE_DB_REFRESH_MS || 600000) || 600000,
+  onRefresh: () => svInvalidateCatalogDerivedCaches('media-cache-db-refresh'),
+});
+
+function svHydrateMovieArtwork(item) {
+  return svMediaCacheDb.hydrateMovie(item);
+}
+
+function svHydrateSeriesArtwork(show) {
+  return svMediaCacheDb.hydrateSeriesDeep(show);
+}
 const FFMPEG_BIN = process.env.FFMPEG_BIN || process.env.FFMPEG_PATH || 'ffmpeg';
 const FFPROBE_BIN = process.env.FFPROBE_BIN || process.env.FFPROBE_PATH || 'ffprobe';
 
@@ -853,26 +871,13 @@ function svIsNoisyMassiveTitle(title, source='') {
 }
 
 function svExtractYear(value) {
-  const text = svSafeDecode(value || '');
-  const m = text.match(/(?:^|[^0-9])((?:19|20)\d{2})(?:[^0-9]|$)/);
-  return m ? m[1] : '';
+  return svCanonicalReleaseYear(value);
 }
 
 // SV_20260817_MASSIVE_YEAR_V3: massive catalog filenames may contain a year as part of the title
 // followed by a bracketed release year, e.g. Madrid, 1987 (2011).
 function svExtractMassiveReleaseYear(value) {
-  const text = svSafeDecode(value || '')
-    .split(/[?#]/)[0]
-    .replace(/\\/g, '/')
-    .split('/')
-    .pop() || '';
-
-  const wrapped = [...text.matchAll(/[\(\[\{]\s*((?:19|20)\d{2})\s*[\)\]\}]/g)];
-  if (wrapped.length) return wrapped[wrapped.length - 1][1];
-
-  const years = [...text.matchAll(/(?:^|[^0-9])((?:19|20)\d{2})(?=[^0-9]|$)/g)]
-    .map(match => match[1]);
-  return years.length ? years[years.length - 1] : '';
+  return svCanonicalReleaseYear(value);
 }
 
 function svStableId(prefix, value) {
@@ -880,8 +885,10 @@ function svStableId(prefix, value) {
 }
 
 function svLooksLikeSeries(value) {
+  const identity = svParseMediaIdentity(value);
+  if (identity.kind === 'episode' && identity.confidence !== 'low') return true;
   const v = svSafeDecode(value || '').toLowerCase();
-  return /\bs\d{1,2}e\d{1,3}\b|\bseason[ ._-]*\d{1,2}\b|\bepisode[ ._-]*\d{1,3}\b|tv[ ._-]*series|web[ ._-]*series|korean tv|anime & cartoon tv/.test(v);
+  return /\bs\d{1,4}e\d{1,3}\b|\b\d{1,3}x\d{1,3}\b|\bseason[ ._-]*\d{1,4}\b|\b(?:episode|ep)[ ._-]*\d{1,3}\b|tv[ ._-]*series|web[ ._-]*series|korean tv|anime & cartoon tv/.test(v);
 }
 
 function svParseEpisode(value) {
@@ -914,7 +921,16 @@ function loadMassiveCatalog() {
     const raw = JSON.parse(fs.readFileSync(MASSIVE_CATALOG_FILE, 'utf8'));
     const movieSeen = new Set();
     const groupedEpisodes = groupEpisodeRecords(raw, {
-      isSeriesRecord: value => svLooksLikeSeries(value),
+      isSeriesRecord: (value, item = {}) => {
+        const url = String(item.url || item.streamUrl || item.source || '').trim();
+        const identity = svParseMediaIdentity({
+          title: value,
+          filename: item.filename || item.file || '',
+          streamUrl: url,
+          source_path: item.source_path || item.sourcePath || item.path || url,
+        });
+        return identity.kind === 'episode' && identity.confidence !== 'low';
+      },
     });
     const seriesEpisodeUrls = groupedEpisodes.episodeUrls;
 
@@ -924,7 +940,13 @@ function loadMassiveCatalog() {
       if (!/\.(mp4|mkv|avi|mov|webm|m3u8|ts|flv|wmv|mpg|mpeg)(?:$|[?#])/i.test(url)) continue;
       const year = svExtractMassiveReleaseYear(item.title || url);
 
-      if (seriesEpisodeUrls.has(url) || svLooksLikeSeries(item.title || url)) continue;
+      const identity = svParseMediaIdentity({
+        title: item.title || item.name || '',
+        filename: item.filename || item.file || '',
+        streamUrl: url,
+        source_path: item.source_path || item.sourcePath || item.path || url,
+      });
+      if (seriesEpisodeUrls.has(url) || (identity.kind === 'episode' && identity.confidence !== 'low') || svLooksLikeSeries(`${item.title || ''} ${url}`)) continue;
 
       const title = svCanonicalTitleForSearch(item.title || url, year);
       if (svIsNoisyMassiveTitle(title, item.title || url)) continue;
@@ -1002,7 +1024,9 @@ function svBuildPosterBridge() {
   return map;
 }
 function svHydrateMassiveSearchItem(item, kind='movie') {
-  if (!item || item.poster || item.backdrop) return item;
+  if (!item) return item;
+  item = kind === 'series' ? svHydrateSeriesArtwork(item) : svHydrateMovieArtwork(item);
+  if (item.poster || item.backdrop) return item;
   const bridge = svBuildPosterBridge();
   const name = item.name || item.title || '';
   const hit = bridge.get(svPosterBridgeKey(name, item.year)) || bridge.get(svPosterBridgeKey(name, ''));
@@ -1199,14 +1223,14 @@ function svMakeSearchEntry(item, kind) {
 
 function svBuildFastSearchIndex() {
   loadMassiveCatalog();
-  const localMovies = (_movieList || buildMovieListSync()).filter(m => !isCartoonOrAnime(m));
-  const ftpMovies = getCachedMovies().filter(m => !isCartoonOrAnime(m)).map((m, i) => ({
+  const localMovies = (_movieList || buildMovieListSync()).filter(m => !isCartoonOrAnime(m)).map(svHydrateMovieArtwork);
+  const ftpMovies = getCachedMovies().filter(m => !isCartoonOrAnime(m)).map((m, i) => svHydrateMovieArtwork({
     id:`ftp_${i}`, name:m.title, title:m.title, file:m.filename || '', poster:m.poster || null,
     backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
     type:'movie', genre:m.genre || '', category:m.category || '', streamUrl:m.streamUrl, isFtp:true
   }));
-  const localSeries = (_seriesList || buildSeriesListSync()).filter(s => !isCartoonOrAnime(s)).map(s => ({ ...s, _isSeries:true, type:s.type || 'series' }));
-  const ftpSeries = getCachedSeries().filter(s => !isCartoonOrAnime(s)).map((s, i) => ({
+  const localSeries = (_seriesList || buildSeriesListSync()).filter(s => !isCartoonOrAnime(s)).map(s => svHydrateSeriesArtwork({ ...s, _isSeries:true, type:s.type || 'series' }));
+  const ftpSeries = getCachedSeries().filter(s => !isCartoonOrAnime(s)).map((s, i) => svHydrateSeriesArtwork({
     id:`ftp_series_${i}`, name:s.title, title:s.title, file:s.title || '', poster:s.poster || null,
     backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
     type:'series', genre:s.genre || '', category:s.category || 'Series', seasons:s.seasons || [], isFtp:true, _isSeries:true
@@ -3164,7 +3188,7 @@ function buildMovieListSync() {
     if (!name) continue;
     const key  = path.basename(entry.file, path.extname(entry.file));
     const info = posterCache[key] || null;
-    list.push({
+    list.push(svHydrateMovieArtwork({
       id: entry.id || legacyIndex,
       name,
       file:     entry.file,
@@ -3179,7 +3203,7 @@ function buildMovieListSync() {
       director: info?.director || '',
       language: info?.language || '',
       productionCompanies: info?.productionCompanies || [],
-    });
+    }));
   }
   return list;
 }
@@ -3203,7 +3227,7 @@ function buildSeriesListSync() {
   for (const conflict of _seriesDiagnostics.sampleConflicts) {
     console.warn(`[Series parser] Season conflict: ${conflict.path} (filename=${conflict.filename}, directory=${conflict.directory}; filename kept)`);
   }
-  return built.shows;
+  return built.shows.map(svHydrateSeriesArtwork);
 }
 
 // â”€â”€ Called once at startup â€” builds both lists in milliseconds â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -6259,10 +6283,10 @@ app.get('/api/mobile-hls/local/:id/index.m3u8', async (req, res) => {
 });
 
 function allApiMoviesForDetails() {
-  const localMovies = _movieList || buildMovieListSync();
+  const localMovies = (_movieList || buildMovieListSync()).map(svHydrateMovieArtwork);
   const ftpMovies = getCachedMovies()
     .filter(m => !isCartoonOrAnime(m))
-    .map((m, i) => ({
+    .map((m, i) => svHydrateMovieArtwork({
       id: `ftp_${i}`,
       name: m.title,
       file: m.filename,
@@ -6294,7 +6318,7 @@ function allApiSeriesForDetails() {
   //   [{ season, episodes: [...] }, ...]
   // while the massive catalog already uses { seasonNumber: [episodes] }.
   // Normalize both shapes into the detail API's canonical seasons object.
-  const localSeries = _seriesList || buildSeriesListSync();
+  const localSeries = (_seriesList || buildSeriesListSync()).map(svHydrateSeriesArtwork);
 
   function normalizeEpisode(rawEpisode, showIndex, seasonNumber, episodeIndex) {
     const ep = rawEpisode && typeof rawEpisode === 'object'
@@ -6361,7 +6385,7 @@ function allApiSeriesForDetails() {
 
   const ftpSeries = getCachedSeries()
     .filter(s => !isCartoonOrAnime(s))
-    .map((s, i) => ({
+    .map((s, i) => svHydrateSeriesArtwork({
       id: s.id || `ftp_series_${i}`,
       name: s.name || s.title,
       title: s.title || s.name,
@@ -6382,7 +6406,7 @@ function allApiSeriesForDetails() {
   try {
     loadMassiveCatalog();
     massiveSeries = Array.isArray(_massiveSeries)
-      ? _massiveSeries.map((s, i) => ({
+      ? _massiveSeries.map((s, i) => svHydrateSeriesArtwork({
           ...s,
           type: 'series',
           _isSeries: true,
@@ -6394,7 +6418,7 @@ function allApiSeriesForDetails() {
     if (SV_DETAIL_VERBOSE) console.warn('[Series detail] Massive catalog unavailable:', error.message);
   }
 
-  return [...localSeries, ...ftpSeries, ...massiveSeries];
+  return [...localSeries, ...ftpSeries, ...massiveSeries].map(svHydrateSeriesArtwork);
 }
 
 function splitDetailGenres(value) {
@@ -7067,7 +7091,7 @@ app.get('/api/series/detail', (req, res) => {
   const episodeCount = Object.values(seasons).reduce((total, eps) => total + (Array.isArray(eps) ? eps.length : 0), 0);
   if (!episodeCount) return jsonError(res, 404, 'SERIES_PLAYBACK_NOT_FOUND', 'Playable series episodes were not found');
   res.setHeader('Cache-Control', 'private, max-age=300');
-  return res.json({
+  return res.json(svHydrateSeriesArtwork({
     ...show,
     id: req.query.id || show.id,
     type: 'series',
@@ -7077,7 +7101,7 @@ app.get('/api/series/detail', (req, res) => {
     hasStream: episodeCount > 0,
     seasonCount: Object.keys(seasons).length,
     episodeCount,
-  });
+  }));
 });
 
 function localSimilarForDetails(item, mediaType) {
@@ -7876,10 +7900,10 @@ const svSectionListCache = new Map();
 
 function svNormalMovieItems() {
   if (svNormalMovieItemsCache) return svNormalMovieItemsCache;
-  const localMovies = (_movieList || buildMovieListSync()).map(m => ({ ...m, type:'movie', _sourceRank:0 }));
+  const localMovies = (_movieList || buildMovieListSync()).map(m => svHydrateMovieArtwork({ ...m, type:'movie', _sourceRank:0 }));
   const ftpMovies = getCachedMovies()
     .filter(m => !isCartoonOrAnime(m))
-    .map((m, i) => ({
+    .map((m, i) => svHydrateMovieArtwork({
       id:`ftp_home_${i}`, name:m.title, title:m.title, file:m.filename || '', poster:m.poster || null,
       backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
       year:m.year || '', rating:m.rating || null, type:'movie', genre:m.genre || '', category:m.category || '',
@@ -7897,10 +7921,10 @@ function svNormalMovieItems() {
 
 function svNormalSeriesItems() {
   if (svNormalSeriesItemsCache) return svNormalSeriesItemsCache;
-  const localSeries = (_seriesList || buildSeriesListSync()).map(s => ({ ...s, type:'series', _sourceRank:0 }));
+  const localSeries = (_seriesList || buildSeriesListSync()).map(s => svHydrateSeriesArtwork({ ...s, type:'series', _sourceRank:0 }));
   const ftpSeries = getCachedSeries()
     .filter(s => !isCartoonOrAnime(s))
-    .map((s, i) => ({
+    .map((s, i) => svHydrateSeriesArtwork({
       id:`ftp_series_home_${i}`, name:s.title, title:s.title, poster:s.poster || null, backdrop:s.backdrop || s.poster || null,
       tmdbId:s.tmdbId || null, overview:s.overview || '', year:s.year || '', rating:s.rating || null,
       genre:s.genre || '', category:s.category || '', language:s.language || '', type:'series', isFtp:true,
@@ -8290,12 +8314,12 @@ app.get('/api/home-feed', (req, res) => {
 
 app.get('/api/movies', (req, res) => {
   try {
-    const localMovies = _movieList || buildMovieListSync();
+    const localMovies = (_movieList || buildMovieListSync()).map(svHydrateMovieArtwork);
 
     const ftpMoviesRaw = getCachedMovies();
     const ftpMovies = ftpMoviesRaw
       .filter(m => !isCartoonOrAnime(m))
-      .map((m, i) => ({
+      .map((m, i) => svHydrateMovieArtwork({
         id:        `ftp_${i}`,
         name:      m.title,
         title:     m.title,
@@ -9031,10 +9055,30 @@ app.get('/api/series/:seriesId', (req, res) => {
     return jsonError(res, 404, 'CANONICAL_SERIES_NOT_FOUND', 'Canonical series episodes were not found');
   }
   res.setHeader('Cache-Control', 'private, max-age=300');
-  res.json({ ...show, isSummary: false, detailResolvable: true, hasStream: true, streamAvailable: true });
+  res.json(svHydrateSeriesArtwork({ ...show, isSummary: false, detailResolvable: true, hasStream: true, streamAvailable: true }));
 });
 
 const svSeriesApiGzipCache = new Map();
+function svInvalidateCatalogDerivedCaches(reason = '') {
+  svNormalMovieItemsCache = null;
+  svNormalSeriesItemsCache = null;
+  svSectionListCache.clear();
+  svPrebuiltHomeJsonCache.clear();
+  svSeriesApiGzipCache.clear();
+  _svPosterBridge = null;
+  _svFastSearchIndex = null;
+  _svFastSearchIndexStamp = '';
+  _svDetailCatalogIndex = null;
+  _canonicalSeriesState = null;
+  _canonicalSeriesStamp = '';
+  if (reason) console.log(`[Catalog cache] invalidated derived artwork/search caches: ${reason}`);
+}
+
+app.get('/api/media-cache-db/status', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ ok: true, ...svMediaCacheDb.status() });
+});
+
 function svSendMemorySeries(res, list, cacheKey) {
   if (!/\bgzip\b/i.test(String(res.req.headers['accept-encoding'] || ''))) return res.json(list);
   let body = svSeriesApiGzipCache.get(cacheKey);
@@ -9061,6 +9105,7 @@ app.get('/api/series', (req, res) => {
       (includeMassiveOnly || show.sourceKinds.some(source => source === 'local' || source === 'ftpCatalog'))
     );
     const summary = String(req.query.summary || '') === '1';
+    allSeries = allSeries.map(svHydrateSeriesArtwork);
     if (summary) allSeries = allSeries.map(canonicalSeriesSummary);
 
     if (String(req.query.page || '') !== '' || String(req.query.q || '').trim()) {
@@ -12685,6 +12730,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`ðŸ§¹ Cartoon/Anime filter active â€” only real movies & series are shown`);
   console.log('Ã°Å¸â€œÂ¡ Infra telemetry active at /infra/live');
   catalogManager.start();
+  svMediaCacheDb.start();
   setTimeout(() => svWarmFifaLiveCache('startup'), 750);
   setTimeout(() => {
     svGetFifaNewsPayload().catch(err => svFifaWarn('startup news warmup failed', err));

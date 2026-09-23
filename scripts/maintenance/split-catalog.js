@@ -6,6 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 const readline = require("readline");
+const { parseMediaIdentity } = require("../../lib/media-identity");
 
 const INPUT =
   process.argv[2] || "catalog.ndjson";
@@ -52,6 +53,8 @@ const feeds = {
 const counters = {
   movies: 0,
   series: 0,
+  episodes: 0,
+  episodeCandidates: 0,
   downloads: 0,
   invalid: 0
 };
@@ -165,8 +168,44 @@ function isSeries(item) {
   return (
     item.seasons ||
     item.episodes ||
-    item.type === "series"
+    item.type === "series" ||
+    item.type === "tv"
   );
+}
+
+function episodeIdentity(item) {
+  return parseMediaIdentity({
+    title: item.title || item.name || item.filename || item.file || "",
+    filename: item.filename || item.file || "",
+    streamUrl: item.streamUrl || item.url || item.source || "",
+    source_path: item.source_path || item.sourcePath || item.path || item.streamUrl || item.url || item.source || "",
+  });
+}
+
+function isEpisodeRecord(item, identity = episodeIdentity(item)) {
+  return identity.kind === "episode" &&
+    identity.seriesKey &&
+    identity.season !== null &&
+    (identity.confidence === "high" || identity.confidence === "medium");
+}
+
+function toEpisodeRecord(item, identity) {
+  return {
+    ...item,
+    type: "episode",
+    mediaType: "episode",
+    seriesName: identity.seriesName,
+    series_key: identity.seriesKey,
+    season: identity.season,
+    episode: identity.episode,
+    epTitle: identity.episodeTitle || `Episode ${identity.episode}`,
+    title: item.title || item.name || identity.episodeTitle || `Episode ${identity.episode}`,
+    name: item.name || item.title || identity.episodeTitle || `Episode ${identity.episode}`,
+    year: item.year || identity.year || "",
+    repairConfidence: identity.confidence,
+    repairReason: identity.reason,
+    sourceFingerprint: identity.sourceFingerprint,
+  };
 }
 
 function isDownload(item) {
@@ -221,8 +260,6 @@ async function start() {
       );
     }
 
-    detectFeeds(item);
-
     if (isDownload(item)) {
       downloadsStream.write(
         JSON.stringify(item) + "\n"
@@ -232,13 +269,23 @@ async function start() {
       continue;
     }
 
+    const identity = episodeIdentity(item);
     if (isSeries(item)) {
+      detectFeeds(item);
       seriesStream.write(
         JSON.stringify(item) + "\n"
       );
 
       counters.series++;
+    } else if (isEpisodeRecord(item, identity)) {
+      const episode = toEpisodeRecord(item, identity);
+      seriesStream.write(
+        JSON.stringify(episode) + "\n"
+      );
+      counters.episodes++;
+      if (identity.confidence === "medium") counters.episodeCandidates++;
     } else {
+      detectFeeds(item);
       movieStream.write(
         JSON.stringify(item) + "\n"
       );
@@ -271,6 +318,8 @@ async function start() {
   console.log("====================");
   console.log(`🎬 Movies    : ${counters.movies}`);
   console.log(`📺 Series    : ${counters.series}`);
+  console.log(`🎞 Episodes  : ${counters.episodes}`);
+  console.log(`⚠️ Candidates: ${counters.episodeCandidates}`);
   console.log(`💾 Downloads : ${counters.downloads}`);
   console.log(`❌ Invalid   : ${counters.invalid}`);
   console.log("====================\n");

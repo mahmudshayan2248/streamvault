@@ -9125,7 +9125,7 @@ app.get('/api/series', (req, res) => {
 
     const payloadRaw = limit ? allSeries.slice(0, limit) : allSeries;
     const payload = payloadRaw.map(hydrateSeriesForResponse);
-    if (!limit) return svSendMemorySeries(res, payload, ${_canonicalSeriesStamp}|summary=|);
+    if (!limit) return svSendMemorySeries(res, payload, `${_canonicalSeriesStamp}|summary=${summary ? 1 : 0}|${payload.length}`);
     res.json(payload);
   } catch (e) {
     console.error('/api/series error:', e.message);

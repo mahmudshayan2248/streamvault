@@ -8316,12 +8316,12 @@ app.get('/api/home-feed', (req, res) => {
 
 app.get('/api/movies', (req, res) => {
   try {
-    const localMovies = (_movieList || buildMovieListSync()).map(svHydrateMovieArtwork);
+    const localMovies = (_movieList || buildMovieListSync()).map(m => ({ ...m, type:m.type || 'movie' }));
 
     const ftpMoviesRaw = getCachedMovies();
     const ftpMovies = ftpMoviesRaw
       .filter(m => !isCartoonOrAnime(m))
-      .map((m, i) => svHydrateMovieArtwork({
+      .map((m, i) => ({
         id:        `ftp_${i}`,
         name:      m.title,
         title:     m.title,
@@ -8360,7 +8360,7 @@ app.get('/api/movies', (req, res) => {
 
     const paged = svFilterPaged(allMovies, req, true, 'movies');
     res.json({
-      movies: paged.items,
+      movies: paged.items.map(svHydrateMovieArtwork),
       total:  paged.list.length,
       page:   paged.page,
       pages:  paged.pages,
@@ -9069,11 +9069,13 @@ function svInvalidateCatalogDerivedCaches(reason = '') {
   svPrebuiltHomeJsonCache.clear();
   svSeriesApiGzipCache.clear();
   _svPosterBridge = null;
-  _svFastSearchIndex = null;
-  _svFastSearchIndexStamp = '';
-  _svDetailCatalogIndex = null;
-  _canonicalSeriesState = null;
-  _canonicalSeriesStamp = '';
+  if (reason !== 'media-cache-db-refresh') {
+    _svFastSearchIndex = null;
+    _svFastSearchIndexStamp = '';
+    _svDetailCatalogIndex = null;
+    _canonicalSeriesState = null;
+    _canonicalSeriesStamp = '';
+  }
   if (reason) console.log(`[Catalog cache] invalidated derived artwork/search caches: ${reason}`);
 }
 

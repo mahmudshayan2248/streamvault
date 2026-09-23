@@ -4,8 +4,17 @@ const path = require("path");
 const app = express();
 
 const ROOT = __dirname;
+const POSTER_CACHE_ROOT = process.env.STREAMVAULT_POSTER_CACHE_DIR || "/home/u655076875/streamvault-persistent/posters";
 
 app.disable("x-powered-by");
+app.use("/cache/posters", express.static(POSTER_CACHE_ROOT, {
+  index: false,
+  fallthrough: false,
+  setHeaders(res) {
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  }
+}));
+
 app.use(express.static(ROOT, {
   index: "index.html",
   setHeaders(res, filename) {

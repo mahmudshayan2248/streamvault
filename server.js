@@ -6930,6 +6930,43 @@ app.get('/api/series/episodes-direct', (req, res) => {
       return res.json(cached);
     }
 
+    try {
+      const ftpCandidates = getCachedSeries().filter(show => svDirectEpisodeKey(show?.name || show?.title || '') === target);
+      const rankedFtp = ftpCandidates.map(show => {
+        const seasons = svDirectNormalizeEpisodes(show);
+        const episodeCount = Object.values(seasons).reduce((n, eps) => n + eps.length, 0);
+        if (!episodeCount) return null;
+        const title = show && (show.name || show.title) || '';
+        const showYear = String(show.year || title).match(/(?:19|20)\d{2}/)?.[0] || '';
+        let score = episodeCount + 10000;
+        if (requestedYear && showYear) score += requestedYear === showYear ? 1000 : -500;
+        return { show, seasons, episodeCount, score };
+      }).filter(Boolean).sort((a, b) => b.score - a.score || b.episodeCount - a.episodeCount);
+      if (rankedFtp[0]) {
+        const match = rankedFtp[0];
+        const payload = {
+          ...match.show,
+          id: match.show.id || requestedTitle,
+          name: match.show.name || match.show.title || requestedTitle,
+          title: match.show.title || match.show.name || requestedTitle,
+          type: 'series',
+          seasons: match.seasons,
+          seasonCount: Object.keys(match.seasons).length,
+          episodeCount: match.episodeCount,
+          streamAvailable: true,
+          hasStream: true,
+          isSummary: false,
+          authority: 'series-episode-direct-v7-ftp-fast'
+        };
+        svDirectEpisodeResponseCacheV7.set(responseKey, payload);
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.setHeader('X-StreamVault-Episode-Authority', 'v7-ftp-fast');
+        return res.json(payload);
+      }
+    } catch (error) {
+      if (SV_DETAIL_VERBOSE) console.warn('[Episodes direct V7] FTP fast path:', error.message);
+    }
+
     const index = svDirectBuildEpisodeIndexV7();
     let candidates = index.get(target) || [];
     if (!candidates.length) {

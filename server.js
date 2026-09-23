@@ -12737,7 +12737,9 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   const catalogWarmupDelayMs = Math.max(5000, Number(process.env.SV_STARTUP_CATALOG_WARMUP_DELAY_MS || 120000) || 120000);
   const catalogWarmupTimer = setTimeout(svWarmStartupCatalogIndexes, catalogWarmupDelayMs);
   catalogWarmupTimer.unref?.();
-  catalogManager.start();
+  const catalogManagerDelayMs = Math.max(30000, Number(process.env.CATALOG_MANAGER_STARTUP_DELAY_MS || 300000) || 300000);
+  const catalogManagerTimer = setTimeout(() => catalogManager.start(), catalogManagerDelayMs);
+  catalogManagerTimer.unref?.();
   svMediaCacheDb.initPool?.().catch(error => console.warn('[MediaCacheDB] init failed:', error?.message || error));
   const mediaCacheDbDelayMs = Math.max(30000, Number(process.env.MEDIA_CACHE_DB_STARTUP_DELAY_MS || 300000) || 300000);
   const mediaCacheDbTimer = setTimeout(() => svMediaCacheDb.start(), mediaCacheDbDelayMs);

@@ -8316,6 +8316,28 @@ app.get('/api/home-feed', (req, res) => {
 
 app.get('/api/movies', (req, res) => {
   try {
+    const limit = Math.max(0, parseInt(req.query.limit || '0', 10) || 0);
+    const hasSearch = String(req.query.q || '').trim().length >= 2;
+    if (limit && !hasSearch && String(req.query.page || '') === '') {
+      const localRaw = Array.isArray(_movieList) ? _movieList : [];
+      const localMovies = localRaw
+        .filter(m => m && !isCartoonOrAnime(m))
+        .slice(0, limit)
+        .map(m => ({ ...m, type:m.type || 'movie' }));
+      const seenLocal = new Set(localMovies.map(m => `${String(m.name || m.title || '').toLowerCase()}|${m.year || ''}`));
+      const remaining = Math.max(0, limit - localMovies.length);
+      const ftpMovies = remaining ? getCachedMovies()
+        .filter(m => m && !isCartoonOrAnime(m) && !seenLocal.has(`${String(m.title || m.name || '').toLowerCase()}|${m.year || ''}`))
+        .slice(0, remaining)
+        .map((m, i) => ({
+          id:`ftp_${i}`, name:m.title, title:m.title, file:m.filename, poster:m.poster || null,
+          backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '',
+          rating:m.rating || null, type:'movie', genre:m.genre || '', category:m.category || '',
+          streamUrl:m.streamUrl, isFtp:true,
+        })) : [];
+      const movies = [...localMovies, ...ftpMovies].map(svHydrateMovieArtwork);
+      return res.json({ movies, total:movies.length, page:0, pages:1 });
+    }
     const localMovies = (_movieList || buildMovieListSync()).map(m => ({ ...m, type:m.type || 'movie' }));
 
     const ftpMoviesRaw = getCachedMovies();
@@ -8345,7 +8367,6 @@ app.get('/api/movies', (req, res) => {
     // IMPORTANT: massive catalog is SEARCH-ONLY here.
     // Default movies page stays poster-rich and does not pollute homepage/browse with 500k null-poster items.
     let allMovies = baseMovies;
-    const hasSearch = String(req.query.q || '').trim().length >= 2;
     if (hasSearch && String(req.query.massive || '1') !== '0') {
       loadMassiveCatalog();
       const seen = new Set(baseMovies.map(m => `${String(m.name || m.title || '').toLowerCase()}|${m.year || ''}|${m.streamUrl || m.id || ''}`));
@@ -9101,20 +9122,31 @@ function svSendMemorySeries(res, list, cacheKey) {
 
 app.get('/api/series', (req, res) => {
   try {
-    const state = svGetCanonicalSeriesState();
     const limit = Math.max(0, parseInt(req.query.limit || '0', 10) || 0);
     const hasSearch = String(req.query.q || '').trim().length >= 2;
-    const includeMassiveOnly = hasSearch && String(req.query.massive || '1') !== '0';
-    const allSeries = state.shows.filter(show =>
-      show.episodeCount > 0 && !isCartoonOrAnime(show) &&
-      (includeMassiveOnly || show.sourceKinds.some(source => source === 'local' || source === 'ftpCatalog'))
-    );
     const summary = String(req.query.summary || '') === '1';
     const hydrateSeriesForResponse = show => {
       const hydrated = svHydrateSeriesArtwork(show);
       return summary ? canonicalSeriesSummary(hydrated) : hydrated;
     };
-
+    if (limit && !hasSearch && String(req.query.page || '') === '') {
+      const localRaw = Array.isArray(_seriesList) ? _seriesList : [];
+      const localItems = localRaw
+        .filter(show => show && !isCartoonOrAnime(show))
+        .slice(0, limit);
+      const remaining = Math.max(0, limit - localItems.length);
+      const ftpItems = remaining ? getCachedSeries()
+        .filter(show => show && !isCartoonOrAnime(show))
+        .slice(0, remaining)
+        .map((show, i) => ({ ...show, id:show.id || `ftp_series_${i}`, type:'series', isFtp:true })) : [];
+      return res.json([...localItems, ...ftpItems].map(hydrateSeriesForResponse));
+    }
+    const state = svGetCanonicalSeriesState();
+    const includeMassiveOnly = hasSearch && String(req.query.massive || '1') !== '0';
+    const allSeries = state.shows.filter(show =>
+      show.episodeCount > 0 && !isCartoonOrAnime(show) &&
+      (includeMassiveOnly || show.sourceKinds.some(source => source === 'local' || source === 'ftpCatalog'))
+    );
     if (String(req.query.page || '') !== '' || String(req.query.q || '').trim()) {
       const paged = svFilterPaged(allSeries, req, true, 'series');
       return res.json({

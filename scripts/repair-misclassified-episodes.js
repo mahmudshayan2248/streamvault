@@ -298,24 +298,133 @@ async function updateMovieStatus(conn, movieCols, item, status) {
   await conn.query('UPDATE media_cache_movies SET `repair_status` = ? WHERE `id` = ?', [status, item.row.movie_id]);
 }
 
+function chunkArray(values, size = 500) {
+  const chunks = [];
+  for (let i = 0; i < values.length; i += size) chunks.push(values.slice(i, i + size));
+  return chunks;
+}
+
+async function bulkInsert(conn, table, names, rows, updateSql = '') {
+  if (!names.length || !rows.length) return;
+  const colsSql = names.map(name => `\`${name}\``).join(',');
+  const rowPlaceholder = `(${names.map(() => '?').join(',')})`;
+  for (const chunk of chunkArray(rows, 300)) {
+    const placeholders = chunk.map(() => rowPlaceholder).join(',');
+    const vals = chunk.flat();
+    await conn.query(`INSERT INTO ${table} (${colsSql}) VALUES ${placeholders}${updateSql}`, vals);
+  }
+}
+
+async function bulkUpsertSeries(conn, seriesCols, items) {
+  const unique = new Map();
+  for (const item of items) {
+    if (!item.migratable || !item.targetSeriesKey) continue;
+    unique.set(item.targetSeriesKey, item);
+  }
+  const rows = [...unique.values()];
+  if (!rows.length) return;
+  const valueObjects = rows.map(item => ({
+    series_key: item.targetSeriesKey,
+    series_name: item.identity.seriesName,
+    lookup_status: 'pending_tmdb',
+    updated_at: new Date(),
+  }));
+  const { names } = assignments(seriesCols, valueObjects[0]);
+  if (!names.includes('series_key') || !names.includes('series_name')) return;
+  const vals = valueObjects.map(values => names.map(name => values[name]));
+  const updates = names
+    .filter(name => name !== 'series_key')
+    .map(name => `\`${name}\`=COALESCE(NULLIF(\`${name}\`,''), VALUES(\`${name}\`))`)
+    .join(',');
+  await bulkInsert(conn, 'media_cache_series', names, vals, ` ON DUPLICATE KEY UPDATE ${updates || '`series_key`=`series_key`'}`);
+}
+
+async function bulkUpsertEpisodes(conn, episodeCols, items) {
+  const unique = new Map();
+  for (const item of items) {
+    if (!item.migratable || !item.targetEpisodeKey) continue;
+    unique.set(item.targetEpisodeKey, item);
+  }
+  const rows = [...unique.values()];
+  if (!rows.length) return;
+  const valueObjects = rows.map(item => {
+    const row = item.row;
+    const id = item.identity;
+    return {
+      episode_key: item.targetEpisodeKey,
+      stream_id: row.stream_id || null,
+      series_key: item.targetSeriesKey,
+      series_name: id.seriesName,
+      season_num: id.season,
+      episode_num: id.episode,
+      episode_title: id.episodeTitle || `Episode ${id.episode}`,
+      tmdb_id: null,
+      poster_url: '',
+      remote_poster_url: '',
+      source: row.source_catalog || 'repair-misclassified-episodes',
+      updated_at: new Date(),
+    };
+  });
+  const { names } = assignments(episodeCols, valueObjects[0]);
+  if (!names.includes('episode_key') || !names.includes('series_key')) return;
+  const vals = valueObjects.map(values => names.map(name => values[name]));
+  const updates = names
+    .filter(name => name !== 'episode_key')
+    .map(name => {
+      if (['poster_url','remote_poster_url','tmdb_id'].includes(name)) return `\`${name}\`=COALESCE(NULLIF(\`${name}\`,''), VALUES(\`${name}\`))`;
+      return `\`${name}\`=VALUES(\`${name}\`)`;
+    })
+    .join(',');
+  await bulkInsert(conn, 'media_cache_episodes', names, vals, ` ON DUPLICATE KEY UPDATE ${updates || '`episode_key`=`episode_key`'}`);
+}
+
+async function bulkWriteAudit(conn, items) {
+  const names = ['source_media_key', 'original_title', 'original_year', 'source_path', 'inferred_series', 'inferred_season', 'inferred_episode', 'confidence', 'reason', 'target_episode_key', 'status', 'details'];
+  const vals = items.map(item => {
+    const status = item.migratable ? 'episode_migrated' : item.status;
+    return [
+      item.row.media_key || String(item.row.movie_id || ''),
+      item.row.title || '',
+      item.row.movie_year || '',
+      item.row.source_path || item.row.stream_id || '',
+      item.identity.seriesName || '',
+      item.identity.season,
+      item.identity.episode,
+      item.identity.confidence,
+      item.identity.reason,
+      item.targetEpisodeKey,
+      status,
+      JSON.stringify({ stream_id: item.row.stream_id || null, inventory_key: item.row.inventory_key || null, source_catalog: item.row.source_catalog || null }),
+    ];
+  });
+  await bulkInsert(conn, 'media_cache_repair_audit', names, vals);
+}
+
+async function bulkUpdateMovieStatuses(conn, movieCols, items) {
+  if (!has(movieCols, 'repair_status')) return;
+  const groups = new Map();
+  for (const item of items) {
+    if (item.row.movie_id == null) continue;
+    const status = item.migratable ? 'episode_migrated' : item.status;
+    if (!groups.has(status)) groups.set(status, []);
+    groups.get(status).push(item.row.movie_id);
+  }
+  for (const [status, ids] of groups) {
+    for (const chunk of chunkArray(ids, 500)) {
+      await conn.query(`UPDATE media_cache_movies SET \`repair_status\` = ? WHERE \`id\` IN (${chunk.map(() => '?').join(',')})`, [status, ...chunk]);
+    }
+  }
+}
+
 async function applyMigrations(conn, schema, items) {
   await ensureAuditTable(conn);
-  let migrated = 0;
+  const migrated = items.filter(item => item.migratable).length;
   await conn.beginTransaction();
   try {
-    for (const item of items) {
-      if (!item.migratable) {
-        await writeAudit(conn, item, item.status);
-        await updateMovieStatus(conn, schema.movieCols, item, item.status);
-        continue;
-      }
-      await upsertSeries(conn, schema.seriesCols, item);
-      await upsertEpisode(conn, schema.episodeCols, item);
-      await writeAudit(conn, item, 'episode_migrated');
-      await updateMovieStatus(conn, schema.movieCols, item, 'episode_migrated');
-      migrated++;
-      if (migrated % 500 === 0) console.log(`migrated=${migrated}`);
-    }
+    await bulkUpsertSeries(conn, schema.seriesCols, items);
+    await bulkUpsertEpisodes(conn, schema.episodeCols, items);
+    await bulkWriteAudit(conn, items);
+    await bulkUpdateMovieStatuses(conn, schema.movieCols, items);
     await conn.commit();
   } catch (error) {
     await conn.rollback();

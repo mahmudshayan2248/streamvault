@@ -8574,7 +8574,7 @@ async function hydrateMoviePlayback(movie){
     const params = new URLSearchParams();
     if(movie.name)params.set('title', movie.name);
     if(movie.year)params.set('year', movie.year);
-    const r = await fetchWithTimeout(`/api/playback/movie/${encodeURIComponent(movie.id || movie.name || '')}?${params.toString()}`, {}, 2500);
+    const r = await fetchWithTimeout(`/api/playback/movie/${encodeURIComponent(movie.id || movie.name || '')}?${params.toString()}`, {}, 15000);
     if(r && r.ok){
       const data = await r.json();
       if(data && data.ok){

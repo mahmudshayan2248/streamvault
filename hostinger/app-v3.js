@@ -8793,7 +8793,9 @@ function closeMovieDetail(){
 }
 
 async function hydrateMoviePlayback(movie){
-  if(!movie || movie.streamUrl || (!movie.isFtp && !movie.hasStream && movie.streamAvailable !== true))return movie;
+  if(!movie || movie.streamUrl)return movie;
+  const explicitlyUnavailable = movie.streamAvailable === false && movie.hasStream === false && !movie.isFtp;
+  if(explicitlyUnavailable)return movie;
   try{
     const params = new URLSearchParams();
     if(movie.name)params.set('title', movie.name);

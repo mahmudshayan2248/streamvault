@@ -195,7 +195,9 @@
         if(year)params.set('year',year);
         params.set('_',String(Date.now()));
 
-        const response=await fetch(`/api/playback/movie/${encodeURIComponent(identity)}?${params.toString()}`,{
+        const backendOrigin=String(window.STREAMVAULT_CONFIG?.backendOrigin||window.API_BASE||'').replace(/\/$/,'');
+        const playbackUrl=`${backendOrigin}/api/playback/movie/${encodeURIComponent(identity)}?${params.toString()}`;
+        const response=await fetch(playbackUrl,{
           method:'GET',
           cache:'no-store',
           headers:{Accept:'application/json'}
@@ -224,4 +226,3 @@
     return movie;
   };
 })();
-

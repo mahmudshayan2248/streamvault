@@ -269,7 +269,7 @@
           error ? reject(error) : resolve();
         };
         const onAbort = () => finish(aborted());
-        const timer = setTimeout(() => finish(new Error('Compatibility preparation timed out')), 45000);
+        const timer = setTimeout(() => finish(new Error('Compatibility preparation timed out')), 120000);
         operation.signal.addEventListener('abort', onAbort, {once:true});
         hls.on(Hls.Events.MEDIA_ATTACHED, () => { if(valid()) hls.loadSource(capability.hlsUrl); });
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -421,7 +421,7 @@
         this.video.addEventListener(event, done);
         this.video.addEventListener('error', failed);
         op.signal.addEventListener('abort', cancel, {once:true});
-        timer = setTimeout(() => finish(new Error('Media preparation timed out')), 45000);
+        timer = setTimeout(() => finish(new Error('Media preparation timed out')), 120000);
         // Check in a microtask so the caller can first replace video.src.
         Promise.resolve().then(() => { if(op.signal.aborted) cancel(); else if(ready?.()) done(); });
       });

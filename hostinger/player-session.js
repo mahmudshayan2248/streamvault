@@ -270,8 +270,14 @@
         };
         const onAbort = () => finish(aborted());
         const timer = setTimeout(() => finish(new Error('Compatibility preparation timed out')), 120000);
+        let sourceLoaded = false;
+        const loadSource = () => {
+          if(!valid() || sourceLoaded) return;
+          sourceLoaded = true;
+          hls.loadSource(capability.hlsUrl);
+        };
         operation.signal.addEventListener('abort', onAbort, {once:true});
-        hls.on(Hls.Events.MEDIA_ATTACHED, () => { if(valid()) hls.loadSource(capability.hlsUrl); });
+        hls.on(Hls.Events.MEDIA_ATTACHED, loadSource);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           if(!valid()) return finish(aborted());
           if(hls.audioTracks[s.audioIndex]) hls.audioTrack = s.audioIndex;
@@ -286,6 +292,9 @@
           if(!settled) finish(error); else s.fail(error);
         });
         hls.attachMedia(s.video);
+        Promise.resolve().then(() => {
+          if(hls.media || hls.mediaAttached) loadSource();
+        });
       });
       s.assertCurrent(operation);
       s.video.currentTime = localTime;

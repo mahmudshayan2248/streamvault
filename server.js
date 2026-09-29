@@ -2863,9 +2863,18 @@ app.get('/api/series', (req, res) => {
   try {
     const localSeries = _seriesList || buildSeriesListSync();
     const limit = Math.max(0, parseInt(req.query.limit || '0', 10) || 0);
+    const hasQuery = !!String(req.query.q || '').trim();
 
-    const ftpSeriesRaw = getCachedSeries();
-    const ftpSource = limit && !String(req.query.q || '').trim() ? ftpSeriesRaw.slice(0, Math.max(limit - localSeries.length, 0)) : ftpSeriesRaw;
+    // Fast path for small browse/stress requests. The old code called
+    // getCachedSeries() first, which deduplicates the entire remote series
+    // catalog synchronously before honoring `limit`. On a large catalog that
+    // can block the Node event loop long enough for Cloudflare to return 502s
+    // for this request and unrelated concurrent requests.
+    const fastLimitedBrowse = limit > 0 && !hasQuery;
+    const ftpSeriesRaw = fastLimitedBrowse ? ftpCatalog.series : getCachedSeries();
+    const ftpSource = fastLimitedBrowse
+      ? ftpSeriesRaw.slice(0, Math.max(limit - localSeries.length, 0))
+      : ftpSeriesRaw;
     const ftpSeries = ftpSource
       .filter(s => !isCartoonOrAnime(s))
       .map(s => ({

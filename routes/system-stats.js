@@ -4,7 +4,7 @@ const express = require('express');
 const os = require('os');
 const { execFile } = require('child_process');
 
-const CACHE_MS = 1800;
+const CACHE_MS = 10000;
 let cachedWindows = null;
 let cachedAt = 0;
 let windowsSampleInFlight = null;
@@ -47,7 +47,7 @@ function runPowerShell(script) {
     execFile(
       'powershell.exe',
       ['-NoProfile', '-NonInteractive', '-Command', script],
-      { timeout: 3500, windowsHide: true, maxBuffer: 1024 * 1024 },
+      { timeout: 7000, windowsHide: true, maxBuffer: 1024 * 1024 },
       (error, stdout) => {
         if (error) return resolve(null);
         const text = String(stdout || '').trim();

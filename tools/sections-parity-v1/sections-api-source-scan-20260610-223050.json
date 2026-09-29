@@ -1,0 +1,220 @@
+﻿{
+    "branch":  "haskell-sections-api-audit-20260610-223050",
+    "baseBranch":  "haskell-search-shadow-reader-gate-20260610-222904",
+    "sectionKeys":  {
+
+                    },
+    "sectionKeyCount":  0,
+    "hits":  [
+                 {
+                     "file":  "server.js",
+                     "pattern":  "sectionKey",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "/api/home-feed",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "netflix",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "marvel",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "dc",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "trending",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "series",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "new",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "universal",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "disney",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "warner",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "hbo",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "apple",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "indian",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "anime",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "koreanDrama",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "horrorNights",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "cyberpunkScifi",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "topRated",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "server.js",
+                     "pattern":  "allMovies",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "netflix",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "marvel",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "dc",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "trending",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "series",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "new",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "universal",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "disney",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "warner",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "hbo",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "apple",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "indian",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "catalog.json",
+                     "pattern":  "anime",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "poster-cache.json",
+                     "pattern":  "marvel",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "poster-cache.json",
+                     "pattern":  "dc",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "poster-cache.json",
+                     "pattern":  "series",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "poster-cache.json",
+                     "pattern":  "new",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "poster-cache.json",
+                     "pattern":  "universal",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "poster-cache.json",
+                     "pattern":  "disney",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "poster-cache.json",
+                     "pattern":  "warner",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "poster-cache.json",
+                     "pattern":  "hbo",
+                     "matched":  true
+                 },
+                 {
+                     "file":  "poster-cache.json",
+                     "pattern":  "indian",
+                     "matched":  true
+                 }
+             ]
+}

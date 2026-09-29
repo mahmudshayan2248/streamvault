@@ -1,0 +1,91 @@
+﻿=== HOME-FEED CONTRACT HASKELL READER FIXED REPORT ===
+DATE=2026-06-10 18:02:33
+WORK_BRANCH=haskell-home-feed-contract-reader-ghc-20260610-175103
+MASTER_LEFT_AT=0f9bec0dd6c87fab550968fea1bb9507c98e59cd
+HEAD=ffd3a7d7e457e2efb20cbbba547018169a886bc3
+MASTER_NOT_TOUCHED=YES
+NOTE=Base-only Haskell reader; validates home-feed fixture by stable section IDs.
+
+
+============================================================
+RUN: test home-feed fixture schema
+CMD: node tools\home-feed-parity-v1\test-home-feed-fixture-schema.js
+============================================================
+HOME_FEED_SCHEMA_SECTIONS=5
+HOME_FEED_SCHEMA_BAD=0
+HOME_FEED_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: compile home-feed fixed Haskell contract reader
+CMD: ghc -Wall -o tools\home-feed-parity-v1\home-feed-contract-reader.exe tools\home-feed-parity-v1\HomeFeedContractFixtureReader.hs
+============================================================
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\home-feed-parity-v1\HomeFeedContractFixtureReader.hs, tools\home-feed-parity-v1\HomeFeedContractFixtureReader.o )
+[2 of 2] Linking tools\\home-feed-parity-v1\\home-feed-contract-reader.exe
+EXIT_CODE=0
+
+============================================================
+RUN: run home-feed fixed Haskell contract reader
+CMD: tools\home-feed-parity-v1\home-feed-contract-reader.exe
+============================================================
+HOME_FEED_READER_ITEMS_BLOCKS=5
+HOME_FEED_READER_TITLE_ROWS=106
+HOME_FEED_READER_TYPE_ROWS=106
+HOME_FEED_READER_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: movies fixture schema
+CMD: node tools\movies-parity-v1\test-movies-fixture-schema.js
+============================================================
+MOVIES_SCHEMA_ROWS=120
+MOVIES_SCHEMA_BAD=0
+MOVIES_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture schema
+CMD: node tools\details-parity-v1\validate-details-fixture-schema.js
+============================================================
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details route contract
+CMD: node tools\details-parity-v1\test-details-route-contract.js
+============================================================
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details response snapshot
+CMD: node tools\details-parity-v1\test-details-response-snapshot.js
+============================================================
+RESPONSE_SNAPSHOT_ROWS=120
+RESPONSE_SNAPSHOT_BAD=0
+DETAILS_RESPONSE_SNAPSHOT_PASS
+EXIT_CODE=0
+
+=== CABAL BUILD ALL SAFE CAPTURE ===
+cabal : Configuration is affected by the following files:
+At line:103 char:1
++ cabal build all *> $cabalTmp
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Configuration i...ollowing files::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+- cabal.project
+Up to date
+EXIT_CODE=0
+
+=== FINAL STATUS BEFORE COMMIT ===
+?? tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs
+?? tools/home-feed-parity-v1/cabal-build-home-feed-reader-fixed-20260610-180233.txt
+?? tools/home-feed-parity-v1/home-feed-contract-reader-fixed-report-20260610-180233.txt

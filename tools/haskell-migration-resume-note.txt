@@ -1,0 +1,10 @@
+﻿HASKELL_MIGRATION_RESUME_NOTE
+BRANCH=haskell-migration-resume-20260609-131601
+BASE=haskell-migration-main
+SOURCE_BACKUP=origin/backup-master-with-haskell-20260609-125744
+DATE=2026-06-09 13:16:02
+
+RULE:
+Do not merge Haskell migration branches into master.
+Master must stay JS-only/original app.
+Use haskell-migration-main as the Haskell migration base branch.

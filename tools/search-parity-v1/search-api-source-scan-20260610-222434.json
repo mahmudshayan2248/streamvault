@@ -1,0 +1,127 @@
+﻿[
+    {
+        "file":  "server.js",
+        "pattern":  "/api/search",
+        "matched":  true
+    },
+    {
+        "file":  "server.js",
+        "pattern":  "search",
+        "matched":  true
+    },
+    {
+        "file":  "server.js",
+        "pattern":  "movies",
+        "matched":  true
+    },
+    {
+        "file":  "server.js",
+        "pattern":  "series",
+        "matched":  true
+    },
+    {
+        "file":  "server.js",
+        "pattern":  "title",
+        "matched":  true
+    },
+    {
+        "file":  "server.js",
+        "pattern":  "name",
+        "matched":  true
+    },
+    {
+        "file":  "server.js",
+        "pattern":  "genre",
+        "matched":  true
+    },
+    {
+        "file":  "server.js",
+        "pattern":  "overview",
+        "matched":  true
+    },
+    {
+        "file":  "server.js",
+        "pattern":  "poster",
+        "matched":  true
+    },
+    {
+        "file":  "catalog.json",
+        "pattern":  "search",
+        "matched":  true
+    },
+    {
+        "file":  "catalog.json",
+        "pattern":  "movies",
+        "matched":  true
+    },
+    {
+        "file":  "catalog.json",
+        "pattern":  "series",
+        "matched":  true
+    },
+    {
+        "file":  "catalog.json",
+        "pattern":  "title",
+        "matched":  true
+    },
+    {
+        "file":  "catalog.json",
+        "pattern":  "name",
+        "matched":  true
+    },
+    {
+        "file":  "catalog.json",
+        "pattern":  "genre",
+        "matched":  true
+    },
+    {
+        "file":  "catalog.json",
+        "pattern":  "overview",
+        "matched":  true
+    },
+    {
+        "file":  "catalog.json",
+        "pattern":  "poster",
+        "matched":  true
+    },
+    {
+        "file":  "poster-cache.json",
+        "pattern":  "search",
+        "matched":  true
+    },
+    {
+        "file":  "poster-cache.json",
+        "pattern":  "movies",
+        "matched":  true
+    },
+    {
+        "file":  "poster-cache.json",
+        "pattern":  "series",
+        "matched":  true
+    },
+    {
+        "file":  "poster-cache.json",
+        "pattern":  "title",
+        "matched":  true
+    },
+    {
+        "file":  "poster-cache.json",
+        "pattern":  "name",
+        "matched":  true
+    },
+    {
+        "file":  "poster-cache.json",
+        "pattern":  "genre",
+        "matched":  true
+    },
+    {
+        "file":  "poster-cache.json",
+        "pattern":  "overview",
+        "matched":  true
+    },
+    {
+        "file":  "poster-cache.json",
+        "pattern":  "poster",
+        "matched":  true
+    }
+]

@@ -1,0 +1,838 @@
+﻿=== SERIES ROUTE READINESS AUDIT ===
+DATE=2026-06-10 19:48:11
+WORK_BRANCH=haskell-series-route-readiness-audit-20260610-194808
+BASE_BRANCH=haskell-series-contract-reader-ghc-20260610-181838
+MASTER_LEFT_AT=0f9bec0dd6c87fab550968fea1bb9507c98e59cd
+HEAD=bd7e2014706589ed7d593f1d080dbe3c5b5debe3
+MASTER_NOT_TOUCHED=YES
+
+=== READINESS SUMMARY ===
+STATUS=READY_FOR_STANDALONE_HASKELL_SERIES_SHADOW_PAGER
+WHY=Series fixture schema exists, base-only Haskell fixture reader passes, home-feed/movies/details safety gates pass, cabal build all passes.
+RISK=Do not wire Haskell series route into Node, app/Main.hs, or master yet. Keep standalone shadow tool only.
+
+=== SERIES FIXTURE FILES ===
+
+Name                                               Length
+----                                               ------
+build-series-fixture.js                              2058
+cabal-build-series-audit-20260610-181146.txt          668
+cabal-build-series-fixture-20260610-181514.txt        668
+cabal-build-series-reader-20260610-181838.txt         668
+series-api-audit-20260610-181146.txt                65899
+series-contract-fixture-report-20260610-181514.txt   5490
+series-contract-fixture.json                        43254
+series-contract-reader-report-20260610-181838.txt    6066
+series-route-readiness-audit-20260610-194808.txt      699
+SeriesContractFixtureReader.hs                       1256
+test-series-fixture-schema.js                         818
+
+
+
+
+=== SERIES FIXTURE SUMMARY ===
+CATALOG_SERIES_TOTAL=3431
+FIXTURE_SERIES_TOTAL=120
+PAGE=0
+LIMIT=120
+ITEMS=120
+FIRST_TITLE=A Knight of the Seven Kingdoms (TV Series 2026ΓÇô ) 1080p [Dual Audio]
+
+=== NODE SERIES ROUTE SOURCE HITS ===
+lib/catalog-cleaner.js:103:    type === 'series' ? `__series__${title}` : ''
+lib/catalog-cleaner.js:137:  const validation = validateMediaItem({ ...merged, filename, streamUrl }, { kind: type === 'series' ? 'series' : 'movie', allowFolders: type === 'series' });
+lib/catalog-cleaner.js:138:  if (!validation.ok && type !== 'series') return null;
+lib/catalog-cleaner.js:151:  const seasons = toArray(merged.seasons);
+lib/catalog-cleaner.js:152:  const episodeCount = seasons.reduce((sum, season) => sum + toArray(season.episodes).length, 0);
+lib/catalog-cleaner.js:179:    type: type === 'series' ? 'tv' : 'movie',
+lib/catalog-cleaner.js:183:    seasons: type === 'series' ? seasons : undefined,
+lib/catalog-cleaner.js:184:    seasonCount: type === 'series' ? seasons.length : 0,
+lib/catalog-cleaner.js:185:    episodeCount: type === 'series' ? episodeCount : 0,
+lib/catalog-cleaner.js:195:  clean.approvedForHome = !!(posterOk(clean) && (clean.streamUrl || type === 'series') && (type !== 'series' || episodeCount > 0));
+lib/catalog-cleaner.js:238:  data.series = dedupeCatalog(data.series || [], { kind: 'series', allowMetadataOnly: true });
+lib/catalog-cleaner.js:241:    series: data.series.filter(item => item.approvedForHome)
+lib/catalog-cleaner.js:243:  data.home.sections = buildHomeSections({ movies: data.home.movies, series: data.home.series });
+lib/catalog-cleaner.js:247:    series: data.series.length,
+lib/catalog-cleaner.js:249:    homeSeries: data.home.series.length,
+lib/catalog-cleaner.js:262:    series: toArray(rawCatalog.series).map(item => cleanOne(item, { posterCache, type: 'series' })).filter(Boolean)
+lib/catalog-cleaner.js:326:        const enrichmentCandidates = [...next.movies, ...next.series]
+lib/catalog-cleaner.js:331:          const byId = new Map([...next.movies, ...next.series].map(item => [item.id, item]));
+lib/catalog-cleaner.js:334:          next.series = Array.from(byId.values()).filter(item => item.type === 'tv');
+lib/catalog-cleaner.js:355:    const all = [...toArray(data.movies), ...toArray(data.series)].filter(item => item.approvedForSearch || item.approvedForHome);
+lib/catalog-dedupe.js:149:      requireEpisodes: options.requireEpisodes,
+lib/catalog-dedupe.js:150:      episodeCount: options.episodeCount
+lib/catalog-index.js:77:    isSummary: type === 'tv' || type === 'series',
+lib/catalog-index.js:78:    seasonCount: row.seasonCount || 0,
+lib/catalog-index.js:79:    episodeCount: row.episodeCount || 0,
+lib/catalog-index.js:80:    seasons: (type === 'tv' || type === 'series') ? {} : undefined,
+lib/catalog-index.js:107:function parseEpisode(raw) {
+lib/catalog-index.js:113:  const season = sxe ? parseInt(sxe[1], 10) : 1;
+lib/catalog-index.js:114:  const episode = sxe ? parseInt(sxe[2], 10) : (dash ? parseInt(dash[1], 10) : 0);
+lib/catalog-index.js:116:    showName: cleanTitle(showGuess) || 'Unknown Series',
+lib/catalog-index.js:117:    season: Number.isFinite(season) && season > 0 ? season : 1,
+lib/catalog-index.js:118:    episode: Number.isFinite(episode) && episode > 0 ? episode : 0,
+lib/catalog-index.js:128:  const seriesFile = path.join(catalogDir, 'series.ndjson');
+lib/catalog-index.js:164:    return `${SEARCH_SCHEMA_VERSION}|${fileMtime(moviesFile)}|${fileMtime(seriesFile)}`;
+lib/catalog-index.js:182:    await run(`CREATE TABLE IF NOT EXISTS series (
+lib/catalog-index.js:184:      rating REAL, genre TEXT, overview TEXT, language TEXT, tmdbId TEXT, seasonCount INTEGER DEFAULT 0,
+lib/catalog-index.js:185:      episodeCount INTEGER DEFAULT 0, firstStreamUrl TEXT, addedAt TEXT, sortYear INTEGER DEFAULT 0,
+lib/catalog-index.js:188:    await run(`CREATE TABLE IF NOT EXISTS episodes (
+lib/catalog-index.js:189:      id TEXT PRIMARY KEY, seriesId TEXT, showName TEXT, season INTEGER, episode INTEGER,
+lib/catalog-index.js:194:    await run('CREATE INDEX IF NOT EXISTS idx_series_sort ON series(sortYear DESC, rating DESC)');
+lib/catalog-index.js:195:    await run('CREATE INDEX IF NOT EXISTS idx_episodes_series ON episodes(seriesId, season, episode)');
+lib/catalog-index.js:222:    const count = await get('SELECT (SELECT COUNT(*) FROM movies) AS movies, (SELECT COUNT(*) FROM series) AS series').catch(() => null);
+lib/catalog-index.js:223:    if (meta?.value === version && ((count?.movies || 0) || (count?.series || 0))) {
+lib/catalog-index.js:232:      await run('DELETE FROM series');
+lib/catalog-index.js:233:      await run('DELETE FROM episodes');
+lib/catalog-index.js:242:      const episodeStmt = await prepare(`INSERT OR REPLACE INTO episodes
+lib/catalog-index.js:243:        (id,seriesId,showName,season,episode,epTitle,filename,streamUrl,source,addedAt,searchText)
+lib/catalog-index.js:245:      const seriesAgg = new Map();
+lib/catalog-index.js:246:      await streamEpisodes(episodeStmt, seriesAgg);
+lib/catalog-index.js:247:      await episodeStmt.finalize();
+lib/catalog-index.js:249:      const seriesStmt = await prepare(`INSERT OR REPLACE INTO series
+lib/catalog-index.js:250:        (id,name,title,poster,backdrop,year,rating,genre,overview,language,tmdbId,seasonCount,episodeCount,firstStreamUrl,addedAt,sortYear,searchText)
+lib/catalog-index.js:252:      for (const show of seriesAgg.values()) {
+lib/catalog-index.js:253:        const seasonCount = show.seasons.size;
+lib/catalog-index.js:255:        await seriesStmt.run([
+lib/catalog-index.js:257:          seasonCount, show.episodeCount, show.firstStreamUrl, show.addedAt || '', parseInt(show.year, 10) || 0, searchText
+lib/catalog-index.js:259:        await ftsStmt.run([show.id, 'series', show.name, searchText]);
+lib/catalog-index.js:261:      await seriesStmt.finalize();
+lib/catalog-index.js:304:  async function streamEpisodes(episodeStmt, seriesAgg) {
+lib/catalog-index.js:305:    if (!fs.existsSync(seriesFile)) return;
+lib/catalog-index.js:306:    const rl = readline.createInterface({ input: fs.createReadStream(seriesFile), crlfDelay: Infinity });
+lib/catalog-index.js:314:      const valid = validateMediaItem({ ...raw, filename, streamUrl }, { kind: 'episode' });
+lib/catalog-index.js:316:      const parsed = parseEpisode(raw);
+lib/catalog-index.js:317:      const seriesId = `idx_s_${hash(normalize(parsed.showName) || parsed.showName)}`;
+lib/catalog-index.js:318:      const episodeId = `idx_e_${hash(streamUrl || filename)}`;
+lib/catalog-index.js:320:      if (!seriesAgg.has(seriesId)) {
+lib/catalog-index.js:321:        seriesAgg.set(seriesId, {
+lib/catalog-index.js:322:          id: seriesId,
+lib/catalog-index.js:324:          seasons: new Set(),
+lib/catalog-index.js:325:          episodeCount: 0,
+lib/catalog-index.js:332:      const show = seriesAgg.get(seriesId);
+lib/catalog-index.js:333:      show.seasons.add(parsed.season);
+lib/catalog-index.js:334:      show.episodeCount += 1;
+lib/catalog-index.js:336:      pending.push(episodeStmt.run([
+lib/catalog-index.js:337:        episodeId, seriesId, parsed.showName, parsed.season, parsed.episode, parsed.epTitle,
+lib/catalog-index.js:389:  async function pagedSeries(query = {}) {
+lib/catalog-index.js:392:    const rows = await all('SELECT * FROM series ORDER BY sortYear DESC, rating DESC, name LIMIT ? OFFSET ?', [limit, offset]);
+lib/catalog-index.js:393:    const total = await get('SELECT COUNT(*) AS count FROM series');
+lib/catalog-index.js:394:    const items = dedupeCatalog(rows.map(row => summaryItem({ ...row, type: 'tv', streamUrl: row.firstStreamUrl })).filter(Boolean), { kind: 'series', allowMetadataOnly: true });
+lib/catalog-index.js:395:    return { items, series: items, total: total?.count || 0, page, limit, pages: Math.ceil((total?.count || 0) / limit) };
+lib/catalog-index.js:415:      } else if (row.kind === 'series') {
+lib/catalog-index.js:416:        const show = await get('SELECT * FROM series WHERE id = ?', [row.id]);
+lib/catalog-index.js:434:    row = await get('SELECT * FROM series WHERE id = ?', [cleanId]);
+lib/catalog-index.js:436:    const episodes = await all('SELECT season, episode, epTitle, filename, streamUrl, id AS streamId FROM episodes WHERE seriesId = ? ORDER BY season, episode, filename LIMIT 1000', [cleanId]);
+lib/catalog-index.js:437:    const seasons = {};
+lib/catalog-index.js:438:    for (const ep of episodes) {
+lib/catalog-index.js:439:      const s = ep.season || 1;
+lib/catalog-index.js:440:      if (!seasons[s]) seasons[s] = [];
+lib/catalog-index.js:441:      seasons[s].push(ep);
+lib/catalog-index.js:444:    return item ? { ...item, seasons, overview: row.overview } : null;
+lib/catalog-index.js:459:        type: item.type === 'series' ? 'tv' : item.type || 'movie',
+lib/catalog-index.js:461:      }, item.type === 'series' ? 'tv' : item.type || 'movie')).filter(Boolean);
+lib/catalog-index.js:492:    return { ready, building, dbFile, moviesFile, seriesFile };
+lib/catalog-index.js:495:  return { init, initBackground, status, pagedMovies, pagedSeries, search, title, homeFeed, section };
+lib/home-sections.js:42:function isSeries(item) {
+lib/home-sections.js:43:  return item.type === 'tv' || item.type === 'series' || Number(item.seasonCount || 0) > 0 || Number(item.episodeCount || 0) > 0;
+lib/home-sections.js:150:    series: item => isSeries(item)
+lib/home-sections.js:168:  const series = Array.isArray(items.series) ? items.series : [];
+lib/home-sections.js:169:  const all = [...movies, ...series].filter(item => item && item.approvedForHome && hasArt(item));
+lib/home-sections.js:173:  sections.series = sectionSort('series', all.filter(predicates.series)).slice(0, 240);
+lib/home-sections.js:178:    if (key === 'series') return;
+lib/media-validator.js:40:  else if (kind === 'series' && options.requireEpisodes && !options.episodeCount) reason = 'season folder without episodes';
+lib/media-validator.js:41:  else if (kind === 'episode' && !/\bS\d{1,2}E\d{1,3}\b/i.test(raw) && /\b(part|cd|disc)\s*\d{1,3}\b/i.test(raw)) reason = 'isolated episode fragment';
+lib/normalize-title.js:78:    .replace(/\bSeason\s*\d{1,2}\b/ig, ' ')
+lib/normalize-title.js:79:    .replace(/\bEpisode\s*\d{1,3}\b/ig, ' ');
+lib/software-library.js:220:  if (match) return { kind: 'rar-series', number: Number(match[1]) + 2 };
+lib/software-library.js:222:  if (match) return { kind: 'numeric-series', number: Number(match[1]) };
+lib/software-metadata.js:81:  if (match) return { kind: 'rar-series', number: Number(match[1]) + 2 };
+lib/software-metadata.js:83:  if (match) return { kind: 'numeric-series', number: Number(match[1]) };
+lib/tmdb-verify.js:59:  const isSeries = type === 'tv' || type === 'series';
+lib/tmdb-verify.js:60:  const endpoint = isSeries ? 'search/tv' : 'search/movie';
+lib/tmdb-verify.js:61:  const yearParam = year ? `&${isSeries ? 'first_air_date_year' : 'year'}=${encodeURIComponent(year)}` : '';
+migrate-json-to-sql.js:36:  if (Array.isArray(data.series)) return data.series
+organize-files.js:38:    'episode-title-cache.json',
+public/app.js:27:let trendingMovies = [], trendingSeries = [];
+public/app.js:29:let movies=[],series=[],channels=[];
+public/app.js:38:let seriesWatchlist=[];
+public/app.js:39:try{seriesWatchlist=JSON.parse(localStorage.getItem('sv_series_watchlist')||'[]');}catch{}
+public/app.js:42:let _seriesDetailRegistry = new Map();
+public/app.js:43:let _seriesDetailSeq = 0;
+public/app.js:50:let currentShow=null,currentSeason=1;
+public/app.js:51:let _playerShow=null,_playerSeason=null,_playerEpIdx=null;
+public/app.js:133:let _allSeriesLoaded=false;
+public/app.js:421:      fetch('/api/series?summary=1&limit=24')
+public/app.js:425:    series = await sR.json();
+public/app.js:429:    series = series.filter(s => !isCartoonClient(s));
+public/app.js:437:          trendingSeries = (d.series || []).filter(s => !isCartoonClient(s));
+public/app.js:503:async function loadAllSeriesForBrowse(){
+public/app.js:504:  if(_allSeriesLoaded) return;
+public/app.js:505:  _allSeriesLoaded = true;
+public/app.js:507:    const r = await fetch('/api/series');
+public/app.js:510:      series = data.filter(s=>s&&s.name&&!isCartoonClient(s));
+public/app.js:513:    console.warn('[Series] Full load error:', e.message);
+public/app.js:538:  document.getElementById('seriesSection').style.display=tab==='series'?'block':'none';
+public/app.js:553:  if(tab==='series'){
+public/app.js:555:    filterSeriesPage();
+public/app.js:556:    loadAllSeriesForBrowse().then(()=>filterSeriesPage());
+public/app.js:577:  var mp4S=series.filter(function(s){var allEps=[].concat.apply([],Object.values(s.seasons||{}));if(!allEps.length)return false;return allEps.every(function(e){var u=(e.streamUrl||'').toLowerCase().split('?')[0];return u.endsWith('.mp4')||u.endsWith('.m4v');});}).map(function(s){return Object.assign({},s,{_isSeries:true});});
+public/app.js:583:  grid.innerHTML=all.map(function(item){return item._isSeries?sCardHTML(item):cardHTML(item);}).join('');
+public/app.js:675:  hideSeriesPlayerBar();
+public/app.js:751:    .map(m => ({...m, _isSeries:false, _releaseOrder:Number(m.id)||0}));
+public/app.js:752:  const seriesItems = series
+public/app.js:754:    .map((s,i) => ({...s, _isSeries:true, _releaseOrder:i}));
+public/app.js:755:  heroMovies = [...movieItems, ...seriesItems]
+public/app.js:763:  if(!heroMovies.length) heroMovies = [...seriesItems, ...movieItems].slice(0, 12);
+public/app.js:767:      const html = item._isSeries ? sCardHTML(item) : cardHTML(item);
+public/app.js:806:  if(m.type==='tv'){te.textContent='SERIES';te.style.display='';}else te.style.display='none';
+public/app.js:837:    ...series.map(s=>({...s, _type:'series'}))
+public/app.js:849:    item._type === 'series' ? sCardHTML(item) : cardHTML(item)
+public/app.js:891:  const sList = series.filter(s => {
+public/app.js:895:  }).map(s => ({...s, _isSeries: true}));
+public/app.js:898:    document.getElementById(trackId).innerHTML = list.slice(0, 50).map(item => item._isSeries ? sCardHTML(item) : cardHTML(item)).join('');
+public/app.js:908:  const sList = series.filter(predicate).map(s => ({...s, _isSeries: true}));
+public/app.js:946:    item._isSeries ? sCardHTML(item) : cardHTML(item)
+public/app.js:1004:    ...trendingSeries.slice(0,10).map(s=>({...s,_isSeries:true})),
+public/app.js:1009:      item._isSeries ? sCardHTML(item) : cardHTML(item)
+public/app.js:1017:    var mp4S=series.filter(function(s){var allEps=[].concat.apply([],Object.values(s.seasons||{}));if(!allEps.length)return false;return allEps.every(function(e){var u=(e.streamUrl||'').toLowerCase().split('?')[0];return u.endsWith('.mp4')||u.endsWith('.m4v');});}).map(function(s){return Object.assign({},s,{_isSeries:true});});
+public/app.js:1020:    document.getElementById('mobilePlayableTrack').innerHTML=combined.map(function(item){return item._isSeries?sCardHTML(item):cardHTML(item);}).join('');
+public/app.js:1024:  const newSeries = series.filter(s=>!s.isFtp).slice(-5).reverse().map(s=>({...s,_isSeries:true}));
+public/app.js:1025:  const newMixed = [...newSeries,...newMovies];
+public/app.js:1027:    document.getElementById('newTrack').innerHTML=newMixed.slice(0,25).map(item=>item._isSeries?sCardHTML(item):cardHTML(item)).join('');
+public/app.js:1030:  bsr('seriesTrack','seriesRow');
+public/app.js:1054:    const sList = series.filter(predicate).map(s => ({...s, _isSeries: true}));
+public/app.js:1088:      item._isSeries ? sCardHTML(item) : cardHTML(item)
+public/app.js:1151:  const sList = series.filter(s => genreMatch(s, genres)).map(s=>({...s,_isSeries:true}));
+public/app.js:1153:  if(list.length >= 1){document.getElementById(tid).innerHTML=list.slice(0,50).map(item=>item._isSeries?sCardHTML(item):cardHTML(item)).join('');show(rid);}else hide(rid);
+public/app.js:1157:  const sList = series.filter(s => langMatch(s, langs)).map(s=>({...s,_isSeries:true}));
+public/app.js:1159:  if(list.length >= 1){document.getElementById(tid).innerHTML=list.slice(0,50).map(item=>item._isSeries?sCardHTML(item):cardHTML(item)).join('');show(rid);}else hide(rid);
+public/app.js:1163:  const sList = series.filter(predFn).map(s=>({...s,_isSeries:true}));
+public/app.js:1165:  if(list.length >= 1){document.getElementById(tid).innerHTML=list.slice(0,50).map(item=>item._isSeries?sCardHTML(item):cardHTML(item)).join('');show(rid);}else hide(rid);
+public/app.js:1167:function bsr(tid,rid){if(!series.length){hide(rid);return;}document.getElementById(tid).innerHTML=series.slice(0,50).map(sCardHTML).join('');show(rid);}
+public/app.js:1168:function buildSeriesGrid(){ filterSeriesPage(); }
+public/app.js:1176:function registerSeriesForDetail(show){
+public/app.js:1177:  const key = 'sd-' + (++_seriesDetailSeq);
+public/app.js:1178:  _seriesDetailRegistry.set(key, show);
+public/app.js:1183:  const sc=Object.keys(s.seasons).length,ep=Object.values(s.seasons).reduce((a,b)=>a+b.length,0);
+public/app.js:1186:  return `<div class="card" onclick="openSeriesModal('${sname}')">${img}<div class="series-badge">SERIES</div><div class="card-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div class="card-overlay"><div class="card-title">${esc(s.name)}</div><div class="card-meta">${s.rating?`<span class="card-rating">Γÿà ${s.rating}</span>`:''}<span>${sc}S ┬╖ ${ep}Ep</span></div></div></div>`;
+public/app.js:1207:function seriesEpisodes(show){
+public/app.js:1208:  return Object.values(show?.seasons || {}).reduce((all, eps)=>all.concat(Array.isArray(eps)?eps:[]), []);
+public/app.js:1211:function renderSeriesMediaInfo(show){
+public/app.js:1212:  const eps = seriesEpisodes(show);
+public/app.js:1222:    {label:'Seasons', value:String(Object.keys(show.seasons || {}).length || '')},
+public/app.js:1223:    {label:'Episodes', value:String(eps.length || '')},
+public/app.js:1230:function renderSeriesAbout(show, details){
+public/app.js:1242:    {label:'Type', value:'Series'},
+public/app.js:1246:async function loadSeriesOnlineDetails(show, token){
+public/app.js:1252:    renderSeriesAbout(show, details);
+public/app.js:1256:      setupSeriesOverview(details.overview);
+public/app.js:1263:    console.warn('[Series] Online details unavailable:', e.message);
+public/app.js:1268:function openSeriesDetail(key){
+public/app.js:1269:  const show = _seriesDetailRegistry.get(key);
+public/app.js:1270:  if(show)showSeriesDetail(show);
+public/app.js:1273:function showSeriesDetail(show){
+public/app.js:1275:  recordWatchHistory(show.id||show.name, show.name, show.genre||'', 'series');
+public/app.js:1280:  setupSeriesOverview(show.overview || '');
+public/app.js:1291:  const seasons=Object.keys(show.seasons || {}).map(Number).sort((a,b)=>a-b);
+public/app.js:1292:  const firstEp=seasons.length ? (show.seasons[seasons[0]]||[])[0] : null;
+public/app.js:1295:    smPlayBtn.onclick=()=>playSeriesEpisode(show.name, seasons[0], 0);
+public/app.js:1300:  const seasonTabsEl=document.getElementById('seasonTabs');
+public/app.js:1301:  seasonTabsEl.innerHTML=seasons.length>1?seasons.map(s=>`<button class="season-tab${s===seasons[0]?' active':''}" onclick="selectSeason(${s},this)">Season ${s}</button>`).join(''):'';
+public/app.js:1302:  seasonTabsEl.style.display=seasons.length>1?'flex':'none';
+public/app.js:1303:  currentSeason=seasons[0] || 1;
+public/app.js:1304:  if(seasons.length)renderEpisodes(show,currentSeason);
+public/app.js:1307:  renderSeriesMediaInfo(show);
+public/app.js:1308:  renderSeriesAbout(show);
+public/app.js:1310:  loadSeriesOnlineDetails(show, token);
+public/app.js:1311:  document.getElementById('seriesModal').classList.add('open');
+public/app.js:1312:  document.getElementById('seriesModal').scrollTop=0;
+public/app.js:1316:function openSeriesModal(showName){
+public/app.js:1317:  const show=series.find(s=>s.name===showName||esc(s.name)===showName);
+public/app.js:1318:  if(show)showSeriesDetail(show);
+public/app.js:1322:  recordWatchHistory(show.id||show.name, show.name, show.genre||'', 'series');
+public/app.js:1335:  const seasons=Object.keys(show.seasons).map(Number).sort((a,b)=>a-b);
+public/app.js:1336:  const firstEp=(show.seasons[seasons[0]]||[])[0];
+public/app.js:1339:    smPlayBtn.onclick=()=>playSeriesEpisode(show.name, seasons[0], 0);
+public/app.js:1344:  const legacySeasonTabsEl=document.getElementById('seasonTabs');
+public/app.js:1345:  legacySeasonTabsEl.innerHTML=seasons.length>1?seasons.map(s=>`<button class="season-tab${s===seasons[0]?' active':''}" onclick="selectSeason(${s},this)">Season ${s}</button>`).join(''):'';
+public/app.js:1346:  legacySeasonTabsEl.style.display=seasons.length>1?'flex':'none';
+public/app.js:1347:  currentSeason=seasons[0];
+public/app.js:1348:  renderEpisodes(show,currentSeason);
+public/app.js:1350:  document.getElementById('seriesModal').classList.add('open');
+public/app.js:1351:  document.getElementById('seriesModal').scrollTop=0;
+public/app.js:1363:  const relSeries = seedGenres.length
+public/app.js:1364:    ? series
+public/app.js:1372:  if(relSeries.length){
+public/app.js:1373:    document.getElementById('smRelatedSeriesTrack').innerHTML = relSeries.map(s=>sCardHTML(s)).join('');
+public/app.js:1374:    document.getElementById('smRelatedSeries').style.display = '';
+public/app.js:1376:    document.getElementById('smRelatedSeries').style.display = 'none';
+public/app.js:1392:  const relSeriesNames = new Set(relSeries.map(s=>s.name));
+public/app.js:1393:  relSeriesNames.add(show.name);
+public/app.js:1394:  const moreSeries = series
+public/app.js:1395:    .filter(s => !relSeriesNames.has(s.name))
+public/app.js:1397:  if(moreSeries.length){
+public/app.js:1398:    document.getElementById('smMoreSeriesTrack').innerHTML = moreSeries.map(s=>sCardHTML(s)).join('');
+public/app.js:1399:    document.getElementById('smMoreSeries').style.display = '';
+public/app.js:1401:    document.getElementById('smMoreSeries').style.display = 'none';
+public/app.js:1405:function selectSeason(n,el){
+public/app.js:1406:  currentSeason=n;
+public/app.js:1407:  document.querySelectorAll('.season-tab').forEach(t=>t.classList.remove('active'));
+public/app.js:1409:  renderEpisodes(currentShow,n);
+public/app.js:1412:function renderEpisodes(show,season){
+public/app.js:1413:  const eps=show.seasons[season]||[];
+public/app.js:1419:    const lbl=`${esc(show.name)} S${String(season).padStart(2,'0')}E${String(ep.episode).padStart(2,'0')}${ep.epTitle?' ΓÇô '+esc(ep.epTitle):''}`;
+public/app.js:1427:    if(!displayTitle) displayTitle = `Episode ${ep.episode}`;
+public/app.js:1428:    const onclick=`playSeriesEpisode('${showName}',${season},${epIdx})`;
+public/app.js:1429:    const epCardId = ep.streamId!=null ? ep.streamId : `s${season}e${ep.episode}`;
+public/app.js:1437:        <div class="ep-num-label">Episode ${ep.episode}</div>
+public/app.js:1444:  const genericCount = eps.filter(ep=>!ep.epTitle||/^Episode \d+$/.test(ep.epTitle)).length;
+public/app.js:1446:    fetchOmdbEpisodeTitles(show.name, season, eps);
+public/app.js:1450:async function fetchOmdbEpisodeTitles(showName, season, eps){
+public/app.js:1452:    const r = await fetchWithTimeout(`/api/episode-titles?show=${encodeURIComponent(showName)}&season=${season}`, {}, 3500);
+public/app.js:1455:    if(!titles.length){ console.log('[TMDB] No episode data for', showName, 'S'+season); return; }
+public/app.js:1456:    console.log('[TMDB] Got', titles.length, 'episodes for', showName, 'S'+season);
+public/app.js:1457:    titles.forEach(({episode, title, overview, thumb})=>{
+public/app.js:1458:      const ep = eps.find(e=>e.episode===episode);
+public/app.js:1464:      const cardId = ep?.streamId!=null ? ep.streamId : `s${season}e${episode}`;
+public/app.js:1480:  }catch(e){ console.warn('[TMDB] Episode fetch failed:', e.message); }
+public/app.js:1483:function playSeriesEpisode(showName, season, epIdx){
+public/app.js:1485:  const show=series.find(s=>s.name===showName||esc(s.name)===showName);
+public/app.js:1487:  const eps=show.seasons[season]||[];
+public/app.js:1490:  const sNum=String(season).padStart(2,'0');
+public/app.js:1491:  const eNum=String(ep.episode).padStart(2,'0');
+public/app.js:1498:  setTimeout(()=>showSeriesPlayerBar(show,season,epIdx),100);
+public/app.js:1501:function closeSeriesModal(){document.getElementById('seriesModal').classList.remove('open');document.body.style.overflow='';}
+public/app.js:1503:function showSeriesPlayerBar(show, season, epIdx){
+public/app.js:1504:  _playerShow=show; _playerSeason=season; _playerEpIdx=epIdx;
+public/app.js:1505:  const bar=document.getElementById('seriesPlayerBar');
+public/app.js:1507:  const eps=show.seasons[season]||[];
+public/app.js:1510:  document.getElementById('seriesEpLabel').textContent=`S${String(season).padStart(2,'0')}E${epNum}${ep&&ep.epTitle?' ΓÇô '+ep.epTitle:''}`;
+public/app.js:1511:  document.getElementById('seriesShowLabel').textContent=show.name;
+public/app.js:1512:  const hasNext = epIdx+1 < eps.length || Object.keys(show.seasons).map(Number).sort((a,b)=>a-b).indexOf(season) < Object.keys(show.seasons).map(Number).sort((a,b)=>a-b).length-1;
+public/app.js:1514:  buildEpisodeDropdown(show, season, epIdx);
+public/app.js:1515:  buildSeriesDropdown(show);
+public/app.js:1518:function hideSeriesPlayerBar(){
+public/app.js:1519:  _playerShow=null;_playerSeason=null;_playerEpIdx=null;
+public/app.js:1520:  document.getElementById('seriesPlayerBar').classList.remove('show');
+public/app.js:1523:function buildEpisodeDropdown(show, activeSeason, activeEpIdx){
+public/app.js:1524:  const seasons=Object.keys(show.seasons).map(Number).sort((a,b)=>a-b);
+public/app.js:1526:  seasons.forEach(s=>{
+public/app.js:1527:    const eps=show.seasons[s]||[];
+public/app.js:1528:    html+=`<div class="spd-series-season-header">Season ${s}</div>`;
+public/app.js:1530:      const isActive=s===activeSeason&&i===activeEpIdx;
+public/app.js:1532:      const title=ep.epTitle||`Episode ${i+1}`;
+public/app.js:1533:      html+=`<div class="spd-series-item${isActive?' active':''}" onclick="switchToEpisode(${s},${i});closeAllSeriesDropdowns()">
+public/app.js:1534:        <span class="spd-series-ep-num">E${epNum}</span>
+public/app.js:1540:  document.getElementById('seriesEpDD').innerHTML=html;
+public/app.js:1543:function buildSeriesDropdown(activeShow){
+public/app.js:1544:  let html='<div class="pd-header" style="padding:12px 16px 8px;font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#444;border-bottom:1px solid rgba(255,255,255,.06)">Switch Series</div>';
+public/app.js:1545:  series.forEach(s=>{
+public/app.js:1547:    html+=`<div class="spd-series-item${isActive?' active':''}" onclick="switchToSeries('${esc(s.name).replace(/'/g,"\\'")}');closeAllSeriesDropdowns()">
+public/app.js:1552:  document.getElementById('seriesShowDD').innerHTML=html;
+public/app.js:1555:function openSeriesDropdown(id, btn){
+public/app.js:1556:  closeAllSeriesDropdowns();
+public/app.js:1571:  setTimeout(()=>document.addEventListener('click',_seriesDDOutside,{once:true}),10);
+public/app.js:1574:function _seriesDDOutside(e){
+public/app.js:1575:  if(!e.target.closest('.spd-series')&&!e.target.closest('.series-ctrl-btn')){
+public/app.js:1576:    closeAllSeriesDropdowns();
+public/app.js:1580:function closeAllSeriesDropdowns(){
+public/app.js:1581:  document.querySelectorAll('.spd-series.open').forEach(d=>d.classList.remove('open'));
+public/app.js:1584:function playNextEpisode(){
+public/app.js:1585:  if(!_playerShow||_playerSeason===null||_playerEpIdx===null)return;
+public/app.js:1586:  const seasons=Object.keys(_playerShow.seasons).map(Number).sort((a,b)=>a-b);
+public/app.js:1587:  const eps=_playerShow.seasons[_playerSeason]||[];
+public/app.js:1589:    switchToEpisode(_playerSeason, _playerEpIdx+1);
+public/app.js:1591:    const sIdx=seasons.indexOf(_playerSeason);
+public/app.js:1592:    if(sIdx+1<seasons.length){
+public/app.js:1593:      const nextSeason=seasons[sIdx+1];
+public/app.js:1594:      switchToEpisode(nextSeason, 0);
+public/app.js:1599:function switchToEpisode(season, epIdx){
+public/app.js:1602:  const eps=_playerShow.seasons[season]||[];
+public/app.js:1606:  const sNum=String(season).padStart(2,'0');
+public/app.js:1614:  setTimeout(()=>showSeriesPlayerBar(show,season,epIdx),100);
+public/app.js:1617:function switchToSeries(showName){
+public/app.js:1619:  const show=series.find(s=>s.name===showName||esc(s.name)===showName);
+public/app.js:1621:  const seasons=Object.keys(show.seasons).map(Number).sort((a,b)=>a-b);
+public/app.js:1622:  const firstSeason=seasons[0];
+public/app.js:1623:  const firstEp=(show.seasons[firstSeason]||[])[0];
+public/app.js:1625:  const sNum=String(firstSeason).padStart(2,'0');
+public/app.js:1632:  setTimeout(()=>showSeriesPlayerBar(show,firstSeason,0),100);
+public/app.js:1935:  for(const show of series || []){
+public/app.js:1936:    const seasons = show?.seasons || {};
+public/app.js:1937:    for(const eps of Object.values(seasons)){
+public/app.js:2500:    closeAllDropdowns(); closeAllSeriesDropdowns(); hideSeriesPlayerBar();
+public/app.js:2734:  closeAllSeriesDropdowns();
+public/app.js:2735:  hideSeriesPlayerBar();
+public/app.js:2737:  if(currentShow)renderEpisodes(currentShow,currentSeason);
+public/app.js:2895:    if(document.getElementById('seriesModal').classList.contains('open')){closeSeriesModal();return;}
+public/app.js:2926:  const sHits=series.filter(s=>s.name.toLowerCase().includes(q.toLowerCase()));
+public/app.js:2969:let _svMoviesFilterTimer=0,_svSeriesFilterTimer=0;
+public/app.js:2974:function debounceSeriesPage(){
+public/app.js:2975:  clearTimeout(_svSeriesFilterTimer);
+public/app.js:2976:  _svSeriesFilterTimer=setTimeout(filterSeriesPage,_svWeakDevice?180:80);
+public/app.js:3109:function filterSeriesPage(){
+public/app.js:3110:  if(!series.length) return;
+public/app.js:3111:  const q        = (document.getElementById('seriesSearchInput')?.value||'').trim().toLowerCase();
+public/app.js:3112:  const genre    = document.getElementById('seriesGenreFilter')?.value||'';
+public/app.js:3113:  const lang     = document.getElementById('seriesLangFilter')?.value||'';
+public/app.js:3114:  const yearRange= document.getElementById('seriesYearFilter')?.value||'';
+public/app.js:3115:  const minRating= document.getElementById('seriesRatingFilter')?.value||'';
+public/app.js:3116:  const sort     = document.getElementById('seriesSortFilter')?.value||'default';
+public/app.js:3118:  let list = series.slice();
+public/app.js:3153:  document.getElementById('seriesCount').textContent =
+public/app.js:3154:    list.length === series.length
+public/app.js:3155:      ? `${series.length.toLocaleString()} shows`
+public/app.js:3156:      : `${list.length.toLocaleString()} of ${series.length.toLocaleString()} shows`;
+public/app.js:3157:  renderSeriesChips({q,genre,lang,yearRange,minRating,sort});
+public/app.js:3158:  const grid = document.getElementById('seriesGrid');
+public/app.js:3160:    grid.innerHTML = '<div class="movies-empty"><h2>No series found</h2><p>Try different filters</p></div>';
+public/app.js:3161:    document.getElementById('seriesLoadMoreWrap').style.display='none';
+public/app.js:3166:  document.getElementById('seriesLoadMoreWrap').style.display =
+public/app.js:3170:function seriesLoadMore(){
+public/app.js:3174:  document.getElementById('seriesGrid').insertAdjacentHTML('beforeend', chunk.map(s=>sCardHTML(s)).join(''));
+public/app.js:3177:    document.getElementById('seriesLoadMoreWrap').style.display='none';
+public/app.js:3181:function renderSeriesChips({q,genre,lang,yearRange,minRating,sort}){
+public/app.js:3183:  if(q)        chips.push({label:`"${q}"`,      clear:()=>{document.getElementById('seriesSearchInput').value=''; filterSeriesPage();}});
+public/app.js:3184:  if(genre)    chips.push({label:genre,          clear:()=>{document.getElementById('seriesGenreFilter').value=''; filterSeriesPage();}});
+public/app.js:3185:  if(lang)     chips.push({label:lang,           clear:()=>{document.getElementById('seriesLangFilter').value='';  filterSeriesPage();}});
+public/app.js:3186:  if(yearRange)chips.push({label:_yearLabels[yearRange]||yearRange, clear:()=>{document.getElementById('seriesYearFilter').value=''; filterSeriesPage();}});
+public/app.js:3187:  if(minRating)chips.push({label:`Γÿà${_ratingLabels[minRating]||minRating}`, clear:()=>{document.getElementById('seriesRatingFilter').value=''; filterSeriesPage();}});
+public/app.js:3188:  if(sort&&sort!=='default') chips.push({label:document.getElementById('seriesSortFilter')?.selectedOptions[0]?.text||sort, clear:()=>{document.getElementById('seriesSortFilter').value='default'; filterSeriesPage();}});
+public/app.js:3189:  const wrap = document.getElementById('seriesActiveFilters');
+public/app.js:3190:  wrap.innerHTML = chips.map((c,i)=>`<div class="filter-chip" onclick="_clearSeriesChip(${i})"><span>${esc(c.label)}</span><span class="filter-chip-x">├ù</span></div>`).join('');
+public/app.js:3193:function _clearSeriesChip(i){
+public/app.js:3194:  const wrap=document.getElementById('seriesActiveFilters');
+public/app.js:3203:  const seasons = s.seasons || {};
+public/app.js:3204:  const sc=s.seasonCount ?? Object.keys(seasons).length;
+public/app.js:3205:  const ep=s.episodeCount ?? Object.values(seasons).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0);
+public/app.js:3207:  const detailKey = registerSeriesForDetail(s);
+public/app.js:3208:  return `<div class="card" role="button" tabindex="0" onclick="openSeriesDetail('${detailKey}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSeriesDetail('${detailKey}')}">${img}<div class="series-badge">SERIES</div><div class="card-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div class="card-overlay"><div class="card-title">${esc(s.name)}</div><div class="card-meta">${s.rating?`<span class="card-rating">&#9733; ${esc(s.rating)}</span>`:''}<span>${sc}S &middot; ${ep}Ep</span></div></div></div>`;
+public/app.js:3361:  const routeType = type === 'tv' || item?.type === 'tv' || item?.type === 'series' ? 'series' : 'movie';
+public/app.js:3394:  const source = type === 'tv' ? series : movies;
+public/app.js:3571:  el.innerHTML = visibleItems.map(item => (item.type === 'tv' || item.seasons) ? sCardHTML(item) : cardHTML(item)).join('');
+public/app.js:3709:  document.getElementById('mdKicker').textContent = movie.type === 'tv' ? 'Series' : 'Movie';
+public/app.js:3791:function setupSeriesOverview(text){
+public/app.js:3803:function toggleSeriesOverview(){
+public/app.js:3812:  if(entry.type==='series')return series.find(s=>String(s.id||s.name)===String(entry.id)||s.name===entry.name);
+public/app.js:3819:  if(kind==='showWatchlist')return seriesWatchlist.map(id=>series.find(s=>String(s.id||s.name)===id)).filter(Boolean);
+public/app.js:3822:    try{ids = JSON.parse(localStorage.getItem('sv_subscribed_series')||'[]');}catch{}
+public/app.js:3823:    return ids.map(id=>series.find(s=>String(s.id||s.name)===String(id)||s.name===id)).filter(Boolean);
+public/app.js:3839:  try{subscribed = JSON.parse(localStorage.getItem('sv_subscribed_series')||'[]');}catch{}
+public/app.js:3863:      ${recent.length ? `<div class="library-row">${recent.map(item=>item.seasons?sCardHTML(item):cardHTML(item)).join('')}</div>` : '<div class="movies-empty"><h2>No recent activity</h2><p>Start watching to fill your library.</p></div>'}
+public/app.js:3881:    ${items.length ? `<div class="movies-grid">${items.map(item=>item.seasons?sCardHTML(item):cardHTML(item)).join('')}</div>` : '<div class="movies-empty"><h2>Nothing here yet</h2><p>Add titles to see them in this collection.</p></div>'}
+public/app.js:3895:      ? recent.map(item=>item.seasons?sCardHTML(item):cardHTML(item)).join('')
+public/app.js:3900:  const sHits=series.filter(s=>`${s.name||''} ${s.overview||''} ${s.genre||''} ${s.language||''}`.toLowerCase().includes(query));
+public/app.js:3913:  const sig=`${movies.length}:${series.length}`;
+public/app.js:3917:    ...(series||[]).map(s=>({item:s,isSeries:true,text:`${s.name||''} ${s.overview||''} ${s.genre||''} ${s.language||''}`.toLowerCase()})),
+public/app.js:3918:    ...(movies||[]).map(m=>({item:m,isSeries:false,text:`${m.name||''} ${m.overview||''} ${m.genre||''} ${m.language||''}`.toLowerCase()}))
+public/app.js:3930:      (entry.isSeries?sHits:mHits).push(entry.item);
+public/app.js:3961:    document.getElementById('seriesSection').style.display='none';
+public/app.js:3982:  if(text.includes('series'))return 'Binge-ready shows from your vault';
+public/app.js:4428:  if(kind==='series'){
+public/app.js:4434:function svOptimizedCardFallbackSeriesHTML(s){
+public/app.js:4435:  const seasons = s.seasons || {};
+public/app.js:4436:  const sc=Object.keys(seasons).length;
+public/app.js:4437:  const ep=Object.values(seasons).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0);
+public/app.js:4441:    : `<div class="card-placeholder"><div class="icon">${svPlaceholderIcon('series')}</div><div class="pname">${esc(s.name || '')}</div></div>`;
+public/app.js:4442:  const detailKey = registerSeriesForDetail(s);
+public/app.js:4443:  return `<div class="card" role="button" tabindex="0" onclick="openSeriesDetail('${detailKey}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSeriesDetail('${detailKey}')}">${img}<div class="series-badge">SERIES</div><div class="card-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div class="card-overlay"><div class="card-title">${esc(s.name || '')}</div><div class="card-meta">${s.rating?`<span class="card-rating">&#9733; ${esc(s.rating)}</span>`:''}<span>${sc}S &middot; ${ep}Ep</span></div></div></div>`;
+public/app.js:4465:  if(rowId === 'seriesRow')return mobile ? 8 : 12;
+public/app.js:4470:    item?.type || (item?.seasons ? 'series' : 'movie'),
+public/app.js:4645:  const sList = series.filter(predicate).map(s => ({...s, _isSeries: true}));
+public/app.js:4666:    (item,i)=>item._isSeries?sCardHTML({...item,_priorityImage:i<2}):cardHTML({...item,_wideStudio:true,_priorityImage:i<2}),
+public/app.js:4728:  'liveHomeRow','netflixRow','marvelRow','dcRow','trendingRow','seriesRow','newRow',
+public/app.js:4737:  seriesRow:    ['Series','seriesTrack'],
+public/app.js:4879:    ...(series||[]).map(s=>({...s,_isSeries:true})),
+public/app.js:4889:  if(rowId==='seriesRow')return (series||[]).slice(0,50).map(s=>({...s,_isSeries:true}));
+public/app.js:4904:  svRenderLazyTrack(trackId,rowId,items,item=>item._isSeries?sCardHTML(item):cardHTML(item),{limit});
+public/app.js:4906:function svBuildKeywordRow(trackId,rowId,keywords,{includeSeries=true,limit=50}={}){
+public/app.js:4908:  const sList=includeSeries?(series||[]).filter(s=>svAnyKeyword(s,keywords)).map(s=>({...s,_isSeries:true})):[];
+public/app.js:4911:function svBuildPredicateRow(trackId,rowId,pred,{includeSeries=true,limit=50}={}){
+public/app.js:4913:  const sList=includeSeries?(series||[]).filter(pred).map(s=>({...s,_isSeries:true})):[];
+public/app.js:4918:  svBuildPredicateRow('indianTrack','indianRow',item=>svAnyKeyword(item,keys),{includeSeries:true,limit:50});
+public/app.js:4921:  const direct=[...(trendingSeries||[]).map(s=>({...s,_isSeries:true})),...(trendingMovies||[])].filter(i=>i&&i.poster);
+public/app.js:4923:  return svSortItems([...(series||[]).map(s=>({...s,_isSeries:true})),...(movies||[])]).filter(i=>i.poster).slice(0,50);
+public/app.js:4926:  const s=[...(series||[])].slice(-18).reverse().map(x=>({...x,_isSeries:true}));
+public/app.js:4929:  return mixed.length?mixed:svSortItems([...(series||[]).map(x=>({...x,_isSeries:true})),...(movies||[])]).slice(0,30);
+public/app.js:4937:  const isSeries=item.type==='tv'||item.type==='series'||item.seasons;
+public/app.js:4940:    _isSeries:isSeries,
+public/app.js:4946:  if(isSeries&&!normalized.seasons)normalized.seasons={};
+public/app.js:4960:      svRenderLazyTrack(trackId,rowId,items,item=>item._isSeries?sCardHTML(item):cardHTML(item),{limit:50});
+public/app.js:4963:    svRenderLazyTrack(trackId,rowId,items,item=>item._isSeries?sCardHTML(item):cardHTML(item),{limit:50});
+public/app.js:4998:  ],{includeSeries:true,limit:36});
+public/app.js:5010:    ()=>series&&series.length?svRenderLazyTrack('seriesTrack','seriesRow',series,sCardHTML,{limit:50}):hide('seriesRow'),
+public/app.js:5011:    ()=>svBuildKeywordRow('universalTrack','universalRow',['universal','jurassic','fast and furious','fast & furious','minions','despicable me','the mummy','halloween','purge','jason bourne','bourne','king kong','jaws','back to the future','scarface','get out','nope','m3gan'],{includeSeries:false}),
+public/app.js:5012:    ()=>svBuildKeywordRow('disneyTrack','disneyRow',['disney','pixar','aladdin','mulan','moana','encanto','coco','frozen','tangled','brave','ratatouille','wall-e','inside out','soul','luca','lion king'],{includeSeries:true}),
+public/app.js:5013:    ()=>svBuildKeywordRow('warnerTrack','warnerRow',['warner','warner bros','harry potter','lord of the rings','hobbit','matrix','conjuring','dune','mad max','godzilla','king kong','ocean','sherlock holmes','lethal weapon','creed','superman','batman','wonder woman'],{includeSeries:true}),
+public/app.js:5014:    ()=>svBuildKeywordRow('hboTrack','hboRow',['hbo','max original','game of thrones','house of the dragon','the sopranos','euphoria','westworld','succession','the last of us','true detective','chernobyl','band of brothers','the wire','peacemaker'],{includeSeries:true}),
+public/app.js:5015:    ()=>svBuildKeywordRow('appleTvTrack','appleTvRow',['apple tv','apple tv+','ted lasso','severance','silo','foundation','for all mankind','the morning show','slow horses','invasion','servant','shrinking','masters of the air','greyhound','coda','tetris','finch','ghosted','napoleon','killer of the flower moon'],{includeSeries:true}),
+public/app.js:5017:    ()=>svBuildPredicateRow('dramaTrack','dramaRow',item=>svAnyKeyword(item,['drama','emotion','romance','family']),{includeSeries:true}),
+public/app.js:5018:    ()=>svBuildPredicateRow('spanishTrack','spanishRow',item=>svAnyKeyword(item,['spanish','latino','latin','mexico','mexican','argentina','colombia','spain','casa de papel','money heist','narcos']),{includeSeries:true}),
+public/app.js:5019:    ()=>svBuildPredicateRow('highRatedTrack','highRatedRow',item=>item.rating&&parseFloat(item.rating)>=8.0,{includeSeries:true}),
+public/details.js:5:      item && (item.type || (item.seasons ? 'series' : 'movie'))
+public/details.js:21:  registerSeriesForDetail = function(show){
+public/details.js:23:    _seriesDetailRegistry.set(key, show);
+public/details.js:64:    const seasons = s?.seasons || {};
+public/details.js:65:    const sc = s?.seasonCount ?? Object.keys(seasons).length;
+public/details.js:66:    const ep = s?.episodeCount ?? Object.values(seasons).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0);
+public/details.js:70:      : `<div class="card-placeholder"><div class="icon">${svPlaceholderIcon('series')}</div><div class="pname">${esc(s?.name || '')}</div></div>`;
+public/details.js:71:    const detailKey = registerSeriesForDetail(s);
+public/details.js:72:    return `<div class="card" role="button" tabindex="0" onclick="openSeriesDetail('${detailKey}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSeriesDetail('${detailKey}')}">${img}<div class="series-badge">SERIES</div><div class="card-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div class="card-overlay"><div class="card-title">${esc(s?.name || '')}</div><div class="card-meta">${s?.rating?`<span class="card-rating">&#9733; ${esc(s.rating)}</span>`:''}<span>${sc}S &middot; ${ep}Ep</span></div></div></div>`;
+public/details.js:89:  const svOriginalOpenSeriesDetail = openSeriesDetail;
+public/details.js:90:  openSeriesDetail = async function(key){
+public/details.js:91:    const show = _seriesDetailRegistry.get(key);
+public/details.js:92:    if(!show)return svOriginalOpenSeriesDetail?.(key);
+public/details.js:93:    const hasEpisodes = Object.values(show.seasons || {}).some(eps=>Array.isArray(eps) && eps.length);
+public/details.js:94:    if(!show.isSummary && hasEpisodes){
+public/details.js:95:      showSeriesDetail(show);
+public/details.js:99:      showToast('Loading episodes...');
+public/details.js:100:      const r = await fetch(`/api/series/detail?name=${encodeURIComponent(show.name || '')}`);
+public/details.js:104:          _seriesDetailRegistry.set(key, full);
+public/details.js:105:          const idx = series.findIndex(s=>String(s.name||'') === String(full.name||''));
+public/details.js:106:          if(idx >= 0)series[idx] = full;
+public/details.js:107:          else series.push(full);
+public/details.js:108:          showSeriesDetail(full);
+public/details.js:113:      console.warn('[Series] detail load failed:', e.message);
+public/details.js:115:    showSeriesDetail(show);
+public/details.js:128:  const svOriginalCloseSeriesModal = closeSeriesModal;
+public/details.js:129:  closeSeriesModal = function(){
+public/details.js:130:    svOriginalCloseSeriesModal();
+public/details.js:147:    const render = item => (item.type === 'tv' || item.seasons) ? sCardHTML(item) : cardHTML(item);
+public/downloads.js:202:    ['mainSection','hero','discoverIntro','seriesSection','moviesSection','librarySection','liveSection','mobileMp4Section','searchSection'].forEach(id => {
+public/home.js:7:    { rowId:'seriesRow', trackId:'seriesTrack', sectionKey:'series', title:'Series' },
+public/home.js:25:    { rowId:'seriesRow', trackId:'seriesTrack', sectionKey:'series', title:'Series' },
+public/home.js:77:    const isSeries = item?.type === 'tv' || item?.type === 'series' || item?.isSummary || item?.seasons;
+public/home.js:78:    return isSeries ? sCardHTML(item) : cardHTML(item);
+public/home.js:86:      .replace(/\b(tv series|web series|season \d+|s\d{1,2}e\d{1,3})\b/ig,' ')
+public/home.js:115:    const kind = item?.type === 'tv' || item?.type === 'series' || item?.isSummary || item?.seasons ? 'series' : 'movie';
+public/home.js:402:    const type = item?.type || (item?.seasons ? 'series' : 'movie');
+public/home.js:660:    if(item?.tmdbId)keys.push(`tmdb:${item?.type || (item?.seasons ? 'series' : 'movie')}:${item.tmdbId}`);
+public/home.js:703:      .map(m => ({...m, _isSeries:false, _heroSourceRow:'fallback'}));
+public/home.js:704:    const seriesItems = (series || [])
+public/home.js:706:      .map((s,i) => ({...s, _isSeries:true, _heroSourceRow:'fallback', _heroSourceIndex:i}));
+public/home.js:707:    return svExclusiveHeroDedup([...movieItems, ...seriesItems]).slice(0, SV_EXCLUSIVE_HERO_LIMIT);
+public/home.js:722:      const isSeries = next._isSeries || next.type === 'tv' || next.type === 'series' || next.isSummary || next.seasons;
+public/home.js:723:      const html = isSeries ? sCardHTML(next) : cardHTML(next);
+public/home.js:793:        svRenderLazyTrack(meta.trackId,rowId,normalized,item=>item._isSeries?sCardHTML(item):cardHTML(item),{limit:50});
+public/home.js:800:      svRenderLazyTrack(meta.trackId,rowId,normalized,item=>item._isSeries?sCardHTML(item):cardHTML(item),{limit:50});
+public/home.js:852:    ['mainSection','hero','discoverIntro','moviesSection','seriesSection','liveSection','searchSection','librarySection','downloadsSection','mobileMp4Section'].forEach(id=>{
+public/home.js:911:      if(tab !== 'series')document.getElementById('seriesGrid')?.replaceChildren();
+public/index.html:30:    <a onclick="switchTab('series')">Shows</a>
+public/index.html:34:    <a onclick="switchTab('series')">Series</a>
+public/index.html:78:      <input type="search" id="searchInputMobile" placeholder="Search movies &amp; seriesΓÇª" oninput="handleSearch(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+public/index.html:179:  <div class="row" id="seriesRow" style="display:none">
+public/index.html:180:    <div class="row-header"><div class="row-title">Series</div><div class="row-explore" onclick="switchTab('series')">Browse All ΓåÆ</div></div>
+public/index.html:181:    <div class="cards-track" id="seriesTrack"></div>
+public/index.html:449:<div id="seriesSection">
+public/index.html:456:      <div class="movies-count" id="seriesCount"></div>
+public/index.html:459:  <div class="movies-filters" id="seriesFilters">
+public/index.html:462:      <input type="search" id="seriesSearchInput" placeholder="Search seriesΓÇª" oninput="debounceSeriesPage()" autocomplete="off" autocorrect="off" spellcheck="false">
+public/index.html:464:    <button class="filter-toggle-btn" type="button" onclick="toggleFilterPanel('seriesFilters')" aria-label="Show series filters" aria-expanded="false">
+public/index.html:468:    <select class="movies-select" id="seriesGenreFilter" onchange="filterSeriesPage()">
+public/index.html:489:    <select class="movies-select" id="seriesLangFilter" onchange="filterSeriesPage()">
+public/index.html:502:    <select class="movies-select" id="seriesYearFilter" onchange="filterSeriesPage()">
+public/index.html:512:    <select class="movies-select" id="seriesRatingFilter" onchange="filterSeriesPage()">
+public/index.html:519:    <select class="movies-select" id="seriesSortFilter" onchange="filterSeriesPage()">
+public/index.html:529:  <div class="active-filters" id="seriesActiveFilters"></div>
+public/index.html:530:  <div id="seriesGrid"></div>
+public/index.html:531:  <div class="load-more-wrap" id="seriesLoadMoreWrap" style="display:none">
+public/index.html:532:    <button class="load-more-btn" onclick="seriesLoadMore()">Load More</button>
+public/index.html:644:<div class="series-modal" id="seriesModal">
+
+=== HASKELL SERIES RELATED HITS ===
+app/CatalogApi.hs:3:module CatalogApi
+app/CatalogApi.hs:4:  ( CatalogState
+app/CatalogApi.hs:5:  , CatalogCache
+app/CatalogApi.hs:6:  , newCatalogCache
+app/CatalogApi.hs:7:  , loadCatalogState
+app/CatalogApi.hs:8:  , catalogResponseCached
+app/CatalogApi.hs:9:  , catalogResponse
+app/CatalogApi.hs:33:data CatalogState = CatalogState
+app/CatalogApi.hs:35:  , csCatalogMovies :: [Value]
+app/CatalogApi.hs:36:  , csCatalogSeries :: [Value]
+app/CatalogApi.hs:38:  , csLocalSeries   :: [Value]
+app/CatalogApi.hs:42:type CatalogCache = IORef (Maybe CatalogState)
+app/CatalogApi.hs:49:newCatalogCache :: IO CatalogCache
+app/CatalogApi.hs:50:newCatalogCache = newIORef Nothing
+app/CatalogApi.hs:52:loadCatalogState :: FilePath -> IO CatalogState
+app/CatalogApi.hs:53:loadCatalogState root = do
+app/CatalogApi.hs:54:  catalog <- readJsonValue (root </> "catalog.json") (Object KM.empty)
+app/CatalogApi.hs:58:  localSeriesItems <- buildLocalSeries root posterCache
+app/CatalogApi.hs:59:  let catalogMovies = dedupeBy titleYearKey (arrayField "movies" catalog)
+app/CatalogApi.hs:60:      catalogSeries = dedupeBy titleYearKey (arrayField "series" catalog)
+app/CatalogApi.hs:61:  pure CatalogState
+app/CatalogApi.hs:63:    , csCatalogMovies = catalogMovies
+app/CatalogApi.hs:64:    , csCatalogSeries = catalogSeries
+app/CatalogApi.hs:66:    , csLocalSeries = localSeriesItems
+app/CatalogApi.hs:70:catalogResponseCached :: FilePath -> CatalogCache -> Request -> IO (Maybe Response)
+app/CatalogApi.hs:71:catalogResponseCached root cache req
+app/CatalogApi.hs:72:  | requestMethod req == "OPTIONS" && nativeCatalogRoute req =
+app/CatalogApi.hs:74:  | requestMethod req /= "GET" || not (nativeCatalogRoute req) =
+app/CatalogApi.hs:81:          loaded <- try (loadCatalogState root) :: IO (Either SomeException CatalogState)
+app/CatalogApi.hs:86:        Right state -> pure (catalogResponse state req)
+app/CatalogApi.hs:89:nativeCatalogRoute :: Request -> Bool
+app/CatalogApi.hs:90:nativeCatalogRoute req =
+app/CatalogApi.hs:94:    , ["api", "series"]
+app/CatalogApi.hs:98:catalogResponse :: CatalogState -> Request -> Maybe Response
+app/CatalogApi.hs:99:catalogResponse state req
+app/CatalogApi.hs:109:  | pathInfo req == ["api", "series"] =
+app/CatalogApi.hs:110:      Just $ jsonResponse [("X-StreamVault-Haskell", "native-series")]
+app/CatalogApi.hs:111:        (seriesResponse state req)
+app/CatalogApi.hs:219:        [ "cartoon", "anime", "animated", "tv cartoon", "cartoon series"
+app/CatalogApi.hs:277:buildLocalSeries :: FilePath -> KM.KeyMap Value -> IO [Value]
+app/CatalogApi.hs:278:buildLocalSeries root posters = do
+app/CatalogApi.hs:280:  seriesFiles <- listVideoFiles (root </> "series")
+app/CatalogApi.hs:282:      episodes = mapMaybe (uncurry parseLocalEpisode) (zip [offset..] seriesFiles)
+app/CatalogApi.hs:283:      grouped = groupEpisodes episodes
+app/CatalogApi.hs:284:  pure (map (localSeries posters) grouped)
+app/CatalogApi.hs:286:data Episode = Episode
+app/CatalogApi.hs:288:  , epSeason :: Int
+app/CatalogApi.hs:295:parseLocalEpisode :: Int -> FilePath -> Maybe Episode
+app/CatalogApi.hs:296:parseLocalEpisode idx file =
+app/CatalogApi.hs:297:  let clean = cleanupEpisodeBase (T.pack (takeBaseName file))
+app/CatalogApi.hs:300:  in case findEpisodeToken lowerTokens of
+app/CatalogApi.hs:301:       Just (beforeCount, seasonNum, epNum) ->
+app/CatalogApi.hs:305:         in if T.null showName then Nothing else Just Episode
+app/CatalogApi.hs:307:              , epSeason = seasonNum
+app/CatalogApi.hs:315:findEpisodeToken :: [T.Text] -> Maybe (Int, Int, Int)
+app/CatalogApi.hs:316:findEpisodeToken = go 0
+app/CatalogApi.hs:335:groupEpisodes :: [Episode] -> [(T.Text, [Episode])]
+app/CatalogApi.hs:336:groupEpisodes =
+app/CatalogApi.hs:344:localSeries :: KM.KeyMap Value -> (T.Text, [Episode]) -> Value
+app/CatalogApi.hs:345:localSeries posters (showName, eps) =
+app/CatalogApi.hs:346:  let key = "__series__" <> showName
+app/CatalogApi.hs:349:      seasons = seasonsObject eps
+app/CatalogApi.hs:352:        , "seasons" .= seasons
+app/CatalogApi.hs:368:seasonsObject :: [Episode] -> Value
+app/CatalogApi.hs:369:seasonsObject eps =
+app/CatalogApi.hs:371:    [ (fromText (T.pack (show seasonNo)), Array (V.fromList (map episodeValue sorted)))
+app/CatalogApi.hs:372:    | seasonNo <- nub (map epSeason eps)
+app/CatalogApi.hs:373:    , let sorted = sortBy (\a b -> compare (epNumber a) (epNumber b)) [e | e <- eps, epSeason e == seasonNo]
+app/CatalogApi.hs:376:episodeValue :: Episode -> Value
+app/CatalogApi.hs:377:episodeValue ep =
+app/CatalogApi.hs:380:    , "episode" .= epNumber ep
+app/CatalogApi.hs:381:    , "epTitle" .= if T.null (epTitle ep) then T.pack ("Episode " ++ show (epNumber ep)) else epTitle ep
+app/CatalogApi.hs:394:cleanupEpisodeBase :: T.Text -> T.Text
+app/CatalogApi.hs:395:cleanupEpisodeBase =
+app/CatalogApi.hs:396:  trimText . cutAtAny episodeCutTokens . removeBracketContent . cleanupSeparators
+app/CatalogApi.hs:433:episodeCutTokens :: [T.Text]
+app/CatalogApi.hs:434:episodeCutTokens =
+app/CatalogApi.hs:464:  let fp = root </> "data" </> "catalogs" </> "downloads-catalog.json"
+app/CatalogApi.hs:603:downloadsResponse :: CatalogState -> Request -> Value
+app/CatalogApi.hs:628:ftpMovieRouteItems :: CatalogState -> [Value]
+app/CatalogApi.hs:646:  | (i, m) <- zip [(0 :: Int)..] (csCatalogMovies state)
+app/CatalogApi.hs:655:moviesList :: CatalogState -> [Value]
+app/CatalogApi.hs:662:moviesResponse :: CatalogState -> Request -> Value
+app/CatalogApi.hs:674:ftpSeriesRouteItems :: Int -> CatalogState -> [Value]
+app/CatalogApi.hs:675:ftpSeriesRouteItems requestedLimit state =
+app/CatalogApi.hs:677:        then take (max 0 (requestedLimit - length (csLocalSeries state))) (csCatalogSeries state)
+app/CatalogApi.hs:678:        else csCatalogSeries state
+app/CatalogApi.hs:679:  in [seriesRouteValue s | s <- raw, not (isCartoonOrAnime s)]
+app/CatalogApi.hs:681:seriesRouteValue :: Value -> Value
+app/CatalogApi.hs:682:seriesRouteValue s =
+app/CatalogApi.hs:692:    , "type" .= String "series"
+app/CatalogApi.hs:694:    , "seasons" .= ftpSeasonsObject s
+app/CatalogApi.hs:697:ftpSeasonsObject :: Value -> Value
+app/CatalogApi.hs:698:ftpSeasonsObject s =
+app/CatalogApi.hs:700:    [ (fromText (T.pack (show seasonNo)), Array (V.fromList eps))
+app/CatalogApi.hs:701:    | seasonObj <- fieldArray "seasons" s
+app/CatalogApi.hs:702:    , let seasonNo = seasonNumber (fieldText "season" seasonObj)
+app/CatalogApi.hs:703:          eps = [ftpEpisodeValue ep idx | (idx, ep) <- zip [(0 :: Int)..] (fieldArray "episodes" seasonObj)]
+app/CatalogApi.hs:706:seasonNumber :: T.Text -> Int
+app/CatalogApi.hs:707:seasonNumber label =
+app/CatalogApi.hs:712:ftpEpisodeValue :: Value -> Int -> Value
+app/CatalogApi.hs:713:ftpEpisodeValue ep idx =
+app/CatalogApi.hs:715:      parsed = parseEpisodeNumber filename
+app/CatalogApi.hs:719:    , "episode" .= epNum
+app/CatalogApi.hs:720:    , "epTitle" .= T.pack ("Episode " ++ show epNum)
+app/CatalogApi.hs:726:parseEpisodeNumber :: T.Text -> Maybe Int
+app/CatalogApi.hs:727:parseEpisodeNumber filename =
+app/CatalogApi.hs:731:seriesList :: CatalogState -> Request -> [Value]
+app/CatalogApi.hs:732:seriesList state req =
+app/CatalogApi.hs:736:      local = csLocalSeries state
+app/CatalogApi.hs:738:      ftp = filter (\s -> T.toLower (firstText ["name", "title"] s) `notElem` seen) (ftpSeriesRouteItems ftpLimit state)
+app/CatalogApi.hs:741:seriesResponse :: CatalogState -> Request -> Value
+app/CatalogApi.hs:742:seriesResponse state req =
+app/CatalogApi.hs:743:  let allSeries = seriesList state req
+app/CatalogApi.hs:749:         let items = applyBrowseSearch "series" req allSeries
+app/CatalogApi.hs:751:         in object ["series" .= pageItems, "total" .= total, "page" .= page, "pages" .= pages]
+app/CatalogApi.hs:752:       else Array (V.fromList (if requestedLimit > 0 then take requestedLimit allSeries else allSeries))
+app/CatalogApi.hs:779:kindMatches "movie" item = fieldText "type" item /= "series"
+app/CatalogApi.hs:780:kindMatches "series" item = fieldText "type" item == "series" || field "seasons" item /= Null
+app/CatalogApi.hs:804:      source = if field "isMassiveCatalog" item == Bool True then 0 else 260
+app/CatalogApi.hs:842:sectionResponse :: CatalogState -> Request -> T.Text -> Value
+app/CatalogApi.hs:858:sectionList :: CatalogState -> T.Text -> [Value]
+app/CatalogApi.hs:861:      seriesOnly = normalSeriesItems state
+app/CatalogApi.hs:862:      allItems = moviesOnly ++ seriesOnly
+app/CatalogApi.hs:866:        "series" -> homeSort seriesOnly
+app/CatalogApi.hs:913:normalMovieItems :: CatalogState -> [Value]
+app/CatalogApi.hs:937:        | (i, m) <- zip [(0 :: Int)..] (csCatalogMovies state)
+app/CatalogApi.hs:942:normalSeriesItems :: CatalogState -> [Value]
+app/CatalogApi.hs:943:normalSeriesItems state =
+app/CatalogApi.hs:944:  let local = map (insertFields [("type", String "series"), ("_sourceRank", Number 0)]) (csLocalSeries state)
+app/CatalogApi.hs:946:        [ insertFields [("_sourceRank", Number 1), ("id", String (T.pack ("ftp_series_home_" ++ show i))), ("category", textOr "" (field "category" s)), ("language", textOr "" (field "language" s))] (seriesRouteValue s)
+app/CatalogApi.hs:947:        | (i, s) <- zip [(0 :: Int)..] (csCatalogSeries state)
+app/Main.hs:38:import CatalogApi (CatalogCache, catalogResponseCached, newCatalogCache)
+app/Main.hs:66:  catalogCache <- newCatalogCache
+app/Main.hs:71:  runRawServer port (handleClient root catalogCache manager upstream)
+app/Main.hs:82:  putStrLn "nativeRoutesEnabled=/api/downloads,/api/movies,/api/series,/api/section/:key"
+app/Main.hs:101:handleClient :: FilePath -> CatalogCache -> HC.Manager -> String -> Socket.Socket -> Socket.SockAddr -> IO ()
+app/Main.hs:102:handleClient root catalogCache manager upstream conn remote = do
+app/Main.hs:116:          nativeResult <- try (catalogResponseCached root catalogCache waiReq) :: IO (Either SomeException (Maybe Response))
+streamvault-haskell-backend.cabal:10:      CatalogApi
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:13:  let required = map q ["sections", "netflix-originals", "trending-now", "series", "new-to-streamvault", "all-movies", "items", "title", "type", "streamUrl", "filename"]
+tools/home-feed-parity-v1/HomeFeedShadowPager.hs:22:  let requiredIds = ["netflix-originals", "trending-now", "series", "new-to-streamvault", "all-movies"]
+tools/series-parity-v1/SeriesContractFixtureReader.hs:10:  text <- readFile "tools/series-parity-v1/series-contract-fixture.json"
+tools/series-parity-v1/SeriesContractFixtureReader.hs:13:  let required = map q ["items", "series", "title", "type", "filename", "streamUrl", "sourceIndex", "catalogSeriesTotal", "fixtureSeriesTotal"]
+tools/series-parity-v1/SeriesContractFixtureReader.hs:17:  let typeRows = countMatches (q "type" ++ ": " ++ q "series") rows
+tools/series-parity-v1/SeriesContractFixtureReader.hs:18:  putStrLn ("SERIES_READER_ITEMS_BLOCKS=" ++ show itemBlocks)
+tools/series-parity-v1/SeriesContractFixtureReader.hs:19:  putStrLn ("SERIES_READER_TITLE_ROWS=" ++ show titleRows)
+tools/series-parity-v1/SeriesContractFixtureReader.hs:20:  putStrLn ("SERIES_READER_TYPE_ROWS=" ++ show typeRows)
+tools/series-parity-v1/SeriesContractFixtureReader.hs:25:          putStrLn "SERIES_READER_FAIL"
+tools/series-parity-v1/SeriesContractFixtureReader.hs:27:        else putStrLn "SERIES_READER_PASS"
+tools/series-parity-v1/SeriesContractFixtureReader.hs:29:      putStrLn ("SERIES_READER_MISSING=" ++ show bad)
+tools/series-parity-v1/SeriesContractFixtureReader.hs:30:      putStrLn "SERIES_READER_FAIL"
+
+=== RECOMMENDED NEXT SHADOW CONTRACT ===
+1. Add tools/series-parity-v1/SeriesShadowPager.hs.
+2. Keep it base-only first. No Cabal file edit. No Aeson.
+3. Read series-contract-fixture.json.
+4. Validate items, type=series, title, filename, streamUrl, sourceIndex.
+5. Emit route-shaped JSON summary: series, total, page, limit, pages, source.
+6. Do not connect it to server.js or app/Main.hs yet.
+
+============================================================
+RUN: test series fixture schema
+CMD: node tools\series-parity-v1\test-series-fixture-schema.js
+============================================================
+SERIES_SCHEMA_ROWS=120
+SERIES_SCHEMA_BAD=0
+SERIES_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: compile series Haskell contract reader
+CMD: ghc -Wall -o tools\series-parity-v1\series-contract-reader.exe tools\series-parity-v1\SeriesContractFixtureReader.hs
+============================================================
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\series-parity-v1\SeriesContractFixtureReader.hs, tools\series-parity-v1\SeriesContractFixtureReader.o )
+[2 of 2] Linking tools\\series-parity-v1\\series-contract-reader.exe
+EXIT_CODE=0
+
+============================================================
+RUN: run series Haskell contract reader
+CMD: tools\series-parity-v1\series-contract-reader.exe
+============================================================
+SERIES_READER_ITEMS_BLOCKS=1
+SERIES_READER_TITLE_ROWS=120
+SERIES_READER_TYPE_ROWS=120
+SERIES_READER_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: home-feed fixture schema
+CMD: node tools\home-feed-parity-v1\test-home-feed-fixture-schema.js
+============================================================
+HOME_FEED_SCHEMA_SECTIONS=5
+HOME_FEED_SCHEMA_BAD=0
+HOME_FEED_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: home-feed shadow pager compile
+CMD: ghc -Wall -o tools\home-feed-parity-v1\home-feed-shadow-pager.exe tools\home-feed-parity-v1\HomeFeedShadowPager.hs
+============================================================
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\home-feed-parity-v1\HomeFeedShadowPager.hs, tools\home-feed-parity-v1\HomeFeedShadowPager.o )
+[2 of 2] Linking tools\\home-feed-parity-v1\\home-feed-shadow-pager.exe
+EXIT_CODE=0
+
+============================================================
+RUN: home-feed shadow pager run
+CMD: tools\home-feed-parity-v1\home-feed-shadow-pager.exe 24
+============================================================
+HOME_FEED_SHADOW_SECTION_COUNT=5
+HOME_FEED_SHADOW_LIMIT=24
+HOME_FEED_SHADOW_ITEMS_BLOCKS=5
+HOME_FEED_SHADOW_TITLE_ROWS=106
+HOME_FEED_SHADOW_TYPE_ROWS=106
+{"ok":true,"source":"haskell-home-feed-shadow","limit":24,"sectionCount":5,"sections":[]}
+HOME_FEED_SHADOW_PAGER_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: movies fixture schema
+CMD: node tools\movies-parity-v1\test-movies-fixture-schema.js
+============================================================
+MOVIES_SCHEMA_ROWS=120
+MOVIES_SCHEMA_BAD=0
+MOVIES_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: movies shadow pager compile
+CMD: ghc -Wall -o tools\movies-parity-v1\movies-shadow-pager.exe tools\movies-parity-v1\MoviesShadowPager.hs
+============================================================
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\movies-parity-v1\MoviesShadowPager.hs, tools\movies-parity-v1\MoviesShadowPager.o )
+[2 of 2] Linking tools\\movies-parity-v1\\movies-shadow-pager.exe
+EXIT_CODE=0
+
+============================================================
+RUN: movies shadow pager run
+CMD: tools\movies-parity-v1\movies-shadow-pager.exe 0 24
+============================================================
+MOVIES_SHADOW_TOTAL=120
+MOVIES_SHADOW_PAGE=0
+MOVIES_SHADOW_LIMIT=24
+MOVIES_SHADOW_ROWS=24
+MOVIES_SHADOW_PAGES=5
+{"movies":[],"total":120,"page":0,"pages":5}
+MOVIES_SHADOW_PAGER_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture schema
+CMD: node tools\details-parity-v1\validate-details-fixture-schema.js
+============================================================
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details route contract
+CMD: node tools\details-parity-v1\test-details-route-contract.js
+============================================================
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details response snapshot
+CMD: node tools\details-parity-v1\test-details-response-snapshot.js
+============================================================
+RESPONSE_SNAPSHOT_ROWS=120
+RESPONSE_SNAPSHOT_BAD=0
+DETAILS_RESPONSE_SNAPSHOT_PASS
+EXIT_CODE=0
+
+=== CABAL BUILD ALL SAFE CAPTURE ===
+cabal : Configuration is affected by the following files:
+At line:121 char:1
++ cabal build all *> $cabalTmp
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Configuration i...ollowing files::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+- cabal.project
+Up to date
+EXIT_CODE=0
+
+=== FINAL STATUS BEFORE COMMIT ===
+?? tools/series-parity-v1/cabal-build-series-route-readiness-20260610-194808.txt
+?? tools/series-parity-v1/series-route-readiness-audit-20260610-194808.txt

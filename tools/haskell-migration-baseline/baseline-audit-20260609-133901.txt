@@ -1,0 +1,256 @@
+﻿=== HASKELL MIGRATION BASELINE AUDIT ===
+DATE=2026-06-09 13:39:04
+WORK_BRANCH=haskell-migration-baseline-audit-20260609-133901
+BASE_BRANCH=haskell-migration-main
+RESUME_BRANCH=haskell-migration-resume-20260609-131601
+MASTER_COMMIT=0f9bec0dd6c87fab550968fea1bb9507c98e59cd
+WORK_COMMIT_BEFORE_REPORT=05dcbbdc8494daffe9aa774c80cbdad914ec07d3
+
+=== CURRENT BRANCH ===
+haskell-migration-baseline-audit-20260609-133901
+
+=== RECENT COMMITS ===
+05dcbbd Resume Haskell migration from protected backup branch
+1d25cf0 Merge pull request #72 from mahmud2248/haskell-details-8p-fixture-shape-audit-20260609-124609
+21225b9 Add details fixture shape audit summary
+0e9e27f Merge pull request #71 from mahmud2248/haskell-details-8o-source-report-gate-20260609-120024
+9af928b Repair source metadata report and add validation gate
+91f8000 Merge pull request #70 from mahmud2248/haskell-details-8n-source-metadata-dryrun-20260609-112028
+e44d571 Replace fallback source metadata matcher report
+5ec1bd1 Refresh source metadata matcher report
+58d891e Add source metadata fixture matcher dry run
+8e963cf Merge pull request #69 from mahmud2248/haskell-details-8m-review-pack-regenerator-20260609-110247
+ee212a4 Add fixture enrichment review pack regenerator checkpoint
+c1dcb97 Merge pull request #68 from mahmud2248/haskell-details-8l-apply-readiness-decision-20260609-105108
+
+=== HASKELL FILE INVENTORY ===
+app/CatalogApi.hs
+app/CryptoHashCompat.hs
+app/Main.hs
+streamvault-haskell-backend.cabal
+tools/details-parity-v1/DETAILS_7O_SHADOW_ALL_BASELINE.md
+tools/details-parity-v1/DETAILS_7P_POWERSHELL_SAFE_SHADOW_RUNNER.md
+tools/details-parity-v1/DETAILS_7Q_PSSAFE_RUNNER_ROOT_FIX.md
+tools/details-parity-v1/DETAILS_7R_SHADOW_OUTPUT_SUMMARY.md
+tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md
+tools/details-parity-v1/DETAILS_7T_NEGATIVE_SCHEMA_CLASSIFICATION.md
+tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md
+tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md
+tools/details-parity-v1/DETAILS_7W_FIXTURE_ENRICHMENT_SOURCE_AUDIT.md
+tools/details-parity-v1/DETAILS_7X_FIXTURE_GENERATION_HISTORY_AUDIT.md
+tools/details-parity-v1/DETAILS_7Y_FIXTURE_METADATA_ENRICHER.md
+tools/details-parity-v1/DETAILS_7Z_FIXTURE_CACHE_MATCH_AUDIT.md
+tools/details-parity-v1/DETAILS_8A_POSTER_CACHE_METADATA_INVENTORY.md
+tools/details-parity-v1/DETAILS_8B_CACHE_FIXTURE_REAL_MATCH_AUDIT.md
+tools/details-parity-v1/DETAILS_8C_FIXTURE_ENRICHMENT_DECISION.md
+tools/details-parity-v1/DETAILS_8D_FIXTURE_CACHE_DRY_RUN_MATCHER.md
+tools/details-parity-v1/DETAILS_8E_DRY_RUN_MATCH_DECISION.md
+tools/details-parity-v1/DETAILS_8F_FIXTURE_ENRICHMENT_PREVIEW.md
+tools/details-parity-v1/DETAILS_8G_GUARDED_FIXTURE_ENRICHER.md
+tools/details-parity-v1/DETAILS_8H_STRONG_MATCH_ENRICHMENT_PREVIEW.md
+tools/details-parity-v1/DETAILS_8I_TEMP_ENRICHED_FIXTURE_VALIDATION.md
+tools/details-parity-v1/DETAILS_8J_FIXTURE_ENRICHMENT_REVIEW_PACK.md
+tools/details-parity-v1/DETAILS_8K_FIXTURE_ENRICHMENT_REVIEW_GATE.md
+tools/details-parity-v1/DETAILS_8L_APPLY_READINESS_DECISION.md
+tools/details-parity-v1/DETAILS_8M_REVIEW_PACK_REGENERATOR.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7E.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7F.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7G.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7H.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7I.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7K.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7L.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7M.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md
+tools/details-parity-v1/DETAILS_SHADOW_GATES.md
+tools/details-parity-v1/audit-details-fixture-gaps.js
+tools/details-parity-v1/audit-details-fixtures.js
+tools/details-parity-v1/audit-fixture-cache-matches.js
+tools/details-parity-v1/build-details-contract-manifest.js
+tools/details-parity-v1/build-details-response-snapshot.js
+tools/details-parity-v1/build-details-route-snapshot.js
+tools/details-parity-v1/build-expanded-details-fixture.js
+tools/details-parity-v1/check-source-metadata-report.ps1
+tools/details-parity-v1/dry-run-fixture-cache-matcher.ps1
+tools/details-parity-v1/enrich-expanded-details-fixture.js
+tools/details-parity-v1/expanded-details-fixture.json
+tools/details-parity-v1/export-fixture-enrichment-review-pack.ps1
+tools/details-parity-v1/fixture-shape-audit-summary.txt
+tools/details-parity-v1/guarded-fixture-cache-enricher.ps1
+tools/details-parity-v1/out/details-shadow-all-7o-20260608-202843.txt
+tools/details-parity-v1/out/fixture-enrichment-candidates-8m.json
+tools/details-parity-v1/preview-fixture-cache-enrichment.ps1
+tools/details-parity-v1/preview-strong-match-fixture-enrichment.ps1
+tools/details-parity-v1/report-details-gap-priority.js
+tools/details-parity-v1/report-raw-fixture-metadata-coverage.js
+tools/details-parity-v1/run-details-shadow-all-powershell-safe.ps1
+tools/details-parity-v1/source-metadata-match-dry-run.js
+tools/details-parity-v1/source-metadata-match-report.json
+tools/details-parity-v1/source-metadata-match-summary.txt
+tools/details-parity-v1/source-metadata-report-gate-summary.txt
+tools/details-parity-v1/summarize-details-shadow-output.js
+tools/details-parity-v1/test-details-contract-manifest-negative.js
+tools/details-parity-v1/test-details-contract-manifest.js
+tools/details-parity-v1/test-details-fixture-builder-determinism.js
+tools/details-parity-v1/test-details-fixture-coverage-negative.js
+tools/details-parity-v1/test-details-fixture-coverage.js
+tools/details-parity-v1/test-details-fixture-schema-negative.js
+tools/details-parity-v1/test-details-gate-inventory.js
+tools/details-parity-v1/test-details-response-parity-basic.js
+tools/details-parity-v1/test-details-response-parity-negative.js
+tools/details-parity-v1/test-details-response-snapshot-negative.js
+tools/details-parity-v1/test-details-response-snapshot.js
+tools/details-parity-v1/test-details-route-contract-negative.js
+tools/details-parity-v1/test-details-route-contract.js
+tools/details-parity-v1/test-details-route-roundtrip-negative.js
+tools/details-parity-v1/test-details-route-roundtrip.js
+tools/details-parity-v1/test-details-route-snapshot-negative.js
+tools/details-parity-v1/test-details-route-snapshot.js
+tools/details-parity-v1/test-native-details-shadow.js
+tools/details-parity-v1/validate-details-fixture-schema.js
+tools/details-parity-v1/validate-temp-enriched-fixture.ps1
+tools/haskell-api-shape-alignment/.gitignore
+tools/haskell-api-shape-alignment/ApiShapeAlignment.hs
+tools/haskell-api-shape-alignment/README.md
+tools/haskell-api-shape-alignment/run-api-shape-alignment.ps1
+tools/haskell-api-shape-fix/.gitignore
+tools/haskell-api-shape-fix/ApiShapeFix.hs
+tools/haskell-api-shape-fix/README.md
+tools/haskell-api-shape-fix/run-api-shape-fix.ps1
+tools/haskell-details-cache-key-scanner/DetailsCacheKeyScanner.exe
+tools/haskell-details-cache-key-scanner/DetailsCacheKeyScanner.hi
+tools/haskell-details-cache-key-scanner/DetailsCacheKeyScanner.hs
+tools/haskell-details-cache-key-scanner/DetailsCacheKeyScanner.o
+tools/haskell-details-cache-key-scanner/out/details-cache-key-scanner-report.txt
+tools/haskell-details-cache-key-scanner/run-details-cache-key-scanner.ps1
+tools/haskell-details-cache-lookup/.gitignore
+tools/haskell-details-cache-lookup/DetailsCacheLookup.hs
+tools/haskell-details-cache-lookup/out/details-cache-lookup-report.txt
+tools/haskell-details-cache-lookup/run-details-cache-lookup.ps1
+tools/haskell-details-cache-reader/DetailsCacheReader.exe
+tools/haskell-details-cache-reader/DetailsCacheReader.hi
+tools/haskell-details-cache-reader/DetailsCacheReader.hs
+tools/haskell-details-cache-reader/DetailsCacheReader.o
+tools/haskell-details-cache-reader/out/details-cache-reader-report.txt
+tools/haskell-details-cache-reader/run-details-cache-reader.ps1
+tools/haskell-details-catalog-cache-mapper/.gitignore
+tools/haskell-details-catalog-cache-mapper/DetailsCatalogCacheMapper.hs
+tools/haskell-details-catalog-cache-mapper/out/details-catalog-cache-map.tsv
+tools/haskell-details-catalog-cache-mapper/out/details-catalog-cache-mapper-report.txt
+tools/haskell-details-catalog-cache-mapper/out/details-catalog-probes.tsv
+tools/haskell-details-catalog-cache-mapper/run-details-catalog-cache-mapper.ps1
+tools/haskell-details-tmdb-audit/run-details-tmdb-audit.ps1
+tools/haskell-details-tmdb-contract/run-details-tmdb-contract.ps1
+tools/haskell-details-tmdb-scaffold/DETAILS_TMDB_IMPLEMENTATION_PLAN.md
+tools/haskell-details-tmdb-scaffold/DetailsTmdbPrototype.hs
+tools/haskell-details-tmdb-scaffold/run-details-tmdb-prototype.ps1
+tools/haskell-downloads-pager/out/downloads-fixture-expansion-report.txt
+tools/haskell-migration-resume-note.txt
+tools/haskell-movies-param-audit/out/movies-fixture-expansion-report.txt
+tools/haskell-movies-param-audit/run-movies-param-audit.ps1
+tools/haskell-parity/README.md
+tools/haskell-parity/ROUTE_MAP.md
+tools/haskell-parity/compare.js
+tools/haskell-parity/run-parity.ps1
+tools/haskell-safe-suite/SafeSuite.hs
+tools/haskell-search-param-audit/out/search-fixture-expansion-report.txt
+tools/haskell-search-param-audit/run-search-param-audit.ps1
+tools/haskell-section-param-audit/out/section-fixture-expansion-report.txt
+tools/haskell-section-param-audit/run-section-param-audit.ps1
+tools/haskell-series-param-audit/out/series-fixture-expansion-report.txt
+tools/haskell-series-param-audit/run-series-param-audit.ps1
+tools/haskell-shadow-api-comparator/.gitignore
+tools/haskell-shadow-api-comparator/README.md
+tools/haskell-shadow-api-comparator/ShadowApiComparator.hs
+tools/haskell-shadow-api-comparator/run-shadow-compare.ps1
+tools/haskell-shadow-api-server/.gitignore
+tools/haskell-shadow-api-server/README.md
+tools/haskell-shadow-api-server/ShadowApiRouteHint.hs
+tools/haskell-shadow-api-server/run-shadow-api-server.ps1
+tools/haskell-warp-health/HealthOnly.hs
+HASKELL_FILE_COUNT=144
+
+=== ORIGINAL PUBLIC JS FILE CHECK ===
+OK public/app.js
+OK public/boot.js
+OK public/index.html
+OK public/details.js
+OK public/downloads.js
+OK public/home.js
+OK public/livetv.js
+OK public/player.js
+OK public/styles.css
+OK public/search.js
+OK public/sw.js
+OK server.js
+OK package.json
+
+=== RUN: node version ===
+COMMAND=node --version
+v20.20.2
+EXIT_CODE=0
+
+=== RUN: npm version ===
+COMMAND=npm --version
+10.8.2
+EXIT_CODE=0
+
+=== RUN: package json parse ===
+COMMAND=node -e JSON.parse(require('fs').readFileSync('package.json','utf8')); console.log('PACKAGE_JSON_OK')
+PACKAGE_JSON_OK
+EXIT_CODE=0
+
+=== RUN: ghc version ===
+COMMAND=ghc --version
+The Glorious Glasgow Haskell Compilation System, version 9.6.7
+EXIT_CODE=0
+
+=== RUN: cabal version ===
+COMMAND=cabal --version
+cabal-install version 3.14.2.0
+compiled using version 3.14.2.0 of the Cabal library 
+EXIT_CODE=0
+
+=== RUN: cabal build all ===
+COMMAND=cabal build all
+ERROR=Configuration is affected by the following files:
+
+=== RUN: tools\details-parity-v1\validate-details-fixture-schema.js ===
+COMMAND=node tools\details-parity-v1\validate-details-fixture-schema.js
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+EXIT_CODE=0
+
+=== RUN: tools\details-parity-v1\test-details-route-contract.js ===
+COMMAND=node tools\details-parity-v1\test-details-route-contract.js
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+EXIT_CODE=0
+
+=== RUN: tools\details-parity-v1\test-details-response-snapshot.js ===
+COMMAND=node tools\details-parity-v1\test-details-response-snapshot.js
+ERROR=node:internal/modules/cjs/loader:1210
+
+=== RUN: tools\details-parity-v1\test-details-fixture-coverage.js ===
+COMMAND=node tools\details-parity-v1\test-details-fixture-coverage.js
+COVERAGE_ROWS=120
+COVERAGE_MOVIES=80
+COVERAGE_TV=40
+COVERAGE_POSTERS=116
+COVERAGE_OVERVIEWS=115
+DETAILS_FIXTURE_COVERAGE_PASS
+EXIT_CODE=0
+
+=== RUN: tools\details-parity-v1\test-details-fixture-builder-determinism.js ===
+COMMAND=node tools\details-parity-v1\test-details-fixture-builder-determinism.js
+WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+FIXTURE_BUILDER_DETERMINISM_PASS
+EXIT_CODE=0
+
+=== FINAL STATUS BEFORE COMMIT ===
+?? tools/haskell-migration-baseline/

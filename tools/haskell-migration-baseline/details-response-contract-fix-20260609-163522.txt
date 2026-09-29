@@ -1,0 +1,6 @@
+﻿=== DETAILS RESPONSE CONTRACT FIX ===
+DATE=2026-06-09 16:35:48
+BRANCH=haskell-baseline-fix-details-response-contract-20260609-163522
+FIXED=tools\details-parity-v1\details-response-contract.js
+NODE_SNAPSHOT=PASS
+CABAL_BUILD_ALL=PASS

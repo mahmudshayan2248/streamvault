@@ -1,0 +1,28 @@
+BRANCH=haskell-sections-api-audit-20260610-223050
+BASE_BRANCH=haskell-search-shadow-reader-gate-20260610-222904
+SCAN_JSON=tools\sections-parity-v1\sections-api-source-scan-20260610-223050.json
+
+=== SECTIONS API MIGRATION AUDIT ===
+HOME_JS_HAS_MAIN_ROWS=False
+HOME_JS_HAS_LEGACY_ROWS=False
+HOME_JS_HAS_SECTION_KEYS=False
+SERVER_HAS_HOME_FEED_ROUTE=True
+SERVER_HAS_SECTIONS_ROUTE=False
+APP_HAS_MOVIES_SERIES_STATE=False
+CATALOG_EXISTS=True
+CATALOG_BYTES=56075420
+
+=== DISCOVERED SECTION KEYS ===
+
+
+SECTION_KEY_COUNT=0
+
+=== MIGRATION NOTES ===
+Sections migration should preserve existing homepage section keys.
+Frontend row IDs and track IDs should not be renamed.
+Haskell target should first build a standalone section classifier before route wiring.
+No server wiring changed.
+No Cabal edit.
+No generated file over 50MB.
+
+PASS

@@ -1,0 +1,8 @@
+BRANCH=haskell-search-shadow-reader-gate-20260610-222904
+BASE_BRANCH=haskell-search-shadow-reader-20260610-222610
+GATE=tools\search-parity-v1\test-search-shadow-reader.js
+TOOL=tools\search-parity-v1\SearchShadowReader.hs
+MODE=build-and-run smoke gate
+NODE_GATE_EXIT=0
+System.Object[]
+PASS

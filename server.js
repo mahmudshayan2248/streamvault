@@ -12,6 +12,8 @@ const createSystemStatsRouter = require('./routes/system-stats');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+const FFMPEG_BIN = process.env.FFMPEG_BIN || process.env.FFMPEG_PATH || 'ffmpeg';
+const FFPROBE_BIN = process.env.FFPROBE_BIN || process.env.FFPROBE_PATH || 'ffprobe';
 
 // ── Paths ─────────────────────────────────────────────────────────────────────
 const MEDIA_ROOT   = 'C:\\Users\\Mac Mini\\Desktop\\Website Host\\Streaming_Website\\streamvault';
@@ -32,11 +34,14 @@ const MOBILE_HLS_MAX_FPS = Number(process.env.MOBILE_HLS_MAX_FPS || 24);
 const MOBILE_HLS_VIDEO_MAXRATE = String(process.env.MOBILE_HLS_VIDEO_MAXRATE || '1200k');
 const MOBILE_HLS_VIDEO_BUFSIZE = String(process.env.MOBILE_HLS_VIDEO_BUFSIZE || '2400k');
 const MOBILE_HLS_AUDIO_BITRATE = String(process.env.MOBILE_HLS_AUDIO_BITRATE || '96k');
+const MEDIA_FFMPEG_STREAM_MAX = Number(process.env.MEDIA_FFMPEG_STREAM_MAX || 2);
+const MEDIA_FFMPEG_STARTUP_MS = Number(process.env.MEDIA_FFMPEG_STARTUP_MS || 15000);
+let activeMediaFfmpegStreams = 0;
 
 // ── FFmpeg helper for extracting media info ──────────────────────────────────
 function getMediaInfo(filePath) {
   return new Promise((resolve, reject) => {
-    const ffprobe = spawn('ffprobe', [
+    const ffprobe = spawn(FFPROBE_BIN, [
       '-v', 'quiet',
       '-print_format', 'json',
       '-show_streams',
@@ -195,10 +200,18 @@ const VIDEO_EXTS = ['.mp4', '.mkv', '.avi', '.mov', '.webm', '.flv', '.wmv', '.m
 const SUB_EXTS   = ['.srt', '.vtt', '.ass', '.ssa'];
 const MIME = {
   '.mp4':  'video/mp4',
+  '.m4v':  'video/mp4',
   '.mkv':  'video/x-matroska',
   '.avi':  'video/x-msvideo',
   '.mov':  'video/quicktime',
   '.webm': 'video/webm',
+  '.ogv':  'video/ogg',
+  '.ogg':  'video/ogg',
+  '.flv':  'video/x-flv',
+  '.wmv':  'video/x-ms-wmv',
+  '.mpg':  'video/mpeg',
+  '.mpeg': 'video/mpeg',
+  '.3gp':  'video/3gpp',
 };
 
 // ── Quality tiers ─────────────────────────────────────────────────────────────
@@ -1144,6 +1157,133 @@ function remotePlayUrls(srcUrl) {
   };
 }
 
+function remotePlaybackUrls(srcUrl) {
+  const encoded = encodeURIComponent(srcUrl);
+  const directPlayable = isRemoteDirectPlayable(srcUrl);
+  const redirectUrl = `/api/playback/ftp?url=${encoded}&mode=redirect`;
+  const proxyUrl = `/api/playback/ftp?url=${encoded}&mode=proxy`;
+  const legacyProxyUrl = `/api/ftp/proxy?url=${encoded}`;
+  const transcodeUrl = `/api/ftp/stream?url=${encoded}`;
+  return {
+    directPlayable,
+    redirectUrl,
+    proxyUrl,
+    legacyProxyUrl,
+    transcodeUrl,
+    finalPlayUrl: redirectUrl,
+  };
+}
+
+function isTrustedRemotePlaybackUrl(srcUrl, matched) {
+  if (matched) return true;
+  try {
+    const parsed = new URL(srcUrl);
+    const host = parsed.hostname.toLowerCase();
+    return /^172\.16\.50\.\d{1,3}$/.test(host)
+      || /^172\.22\.\d{1,3}\.\d{1,3}$/.test(host)
+      || /^server[\w-]*\.ftpbd\.net$/i.test(host);
+  } catch {
+    return false;
+  }
+}
+
+function playbackAudioMapFromReq(req) {
+  const audioStreamIdx = parseInt(req.query.audioStream ?? '', 10);
+  const audioIdx = Math.max(0, parseInt(req.query.audio || '0', 10) || 0);
+  return Number.isFinite(audioStreamIdx) && audioStreamIdx >= 0 ? `0:${audioStreamIdx}?` : `0:a:${audioIdx}?`;
+}
+
+function playbackStartFromReq(req) {
+  return Math.max(0, parseFloat(req.query.start) || 0);
+}
+
+function normalizePlaybackMode(value, fallback = 'direct') {
+  const mode = String(value || fallback).toLowerCase();
+  if (mode === 'proxy' || mode === 'stream') return 'proxy';
+  if (mode === 'remux') return 'remux';
+  if (mode === 'audio' || mode === 'audio-transcode' || mode === 'audio-copy') return 'audio';
+  if (mode === 'hls' || mode === 'transcode') return 'hls';
+  if (mode === 'redirect' || mode === 'direct') return 'direct';
+  return fallback;
+}
+
+function playbackQueryFromReq(req, extra = {}) {
+  const params = new URLSearchParams();
+  if (req.query.start) params.set('start', String(Math.floor(playbackStartFromReq(req))));
+  if (req.query.audio) params.set('audio', String(req.query.audio));
+  if (req.query.audioStream) params.set('audioStream', String(req.query.audioStream));
+  if (req.query.quality) params.set('quality', String(req.query.quality));
+  for (const [key, value] of Object.entries(extra)) {
+    if (value !== undefined && value !== null && value !== '') params.set(key, String(value));
+  }
+  const query = params.toString();
+  return query ? `?${query}` : '';
+}
+
+function remotePlaybackHlsUrl(srcUrl, req) {
+  const params = new URLSearchParams();
+  params.set('url', srcUrl);
+  if (req.query.start) params.set('start', String(Math.floor(playbackStartFromReq(req))));
+  if (req.query.audio) params.set('audio', String(req.query.audio));
+  if (req.query.audioStream) params.set('audioStream', String(req.query.audioStream));
+  if (req.query.quality) params.set('quality', String(req.query.quality));
+  if (req.query.client) params.set('client', String(req.query.client));
+  return `/api/mobile-hls/ftp/index.m3u8?${params.toString()}`;
+}
+
+function remotePlaybackModeUrl(srcUrl, req, mode) {
+  const params = new URLSearchParams();
+  params.set('url', srcUrl);
+  params.set('mode', mode);
+  if (req.query.start) params.set('start', String(Math.floor(playbackStartFromReq(req))));
+  if (req.query.audio) params.set('audio', String(req.query.audio));
+  if (req.query.audioStream) params.set('audioStream', String(req.query.audioStream));
+  if (req.query.quality) params.set('quality', String(req.query.quality));
+  return `/api/playback/ftp?${params.toString()}`;
+}
+
+function localPlaybackHlsUrl(id, req) {
+  return `/api/mobile-hls/local/${encodeURIComponent(id)}/index.m3u8${playbackQueryFromReq(req, req.query.client ? { client: req.query.client } : {})}`;
+}
+
+function playbackUrlHasUnsupportedVideoHint(srcUrl) {
+  return /(x265|h265|hevc|10bit|10-bit|av1|vp9|vp8)/i.test(String(srcUrl || ''));
+}
+
+function readTrustedRemotePlaybackMedia(req, res, errorAsJson = true) {
+  let media;
+  try {
+    media = readRemoteUrlParam(req, ['url', 'streamUrl', 'movie', 'movieUrl', 'src']);
+  } catch (e) {
+    if (errorAsJson) {
+      jsonError(res, e.status || 400, e.code || 'INVALID_URL', e.message, {
+        requestedUrl: e.requestedUrl,
+        decodedUrl: e.decodedUrl,
+      });
+    } else {
+      res.status(e.status || 400).send(e.message);
+    }
+    return null;
+  }
+
+  const srcUrl = media.decodedUrl;
+  const matched = findCatalogItemByStreamUrl(srcUrl);
+  if (!isTrustedRemotePlaybackUrl(srcUrl, matched)) {
+    if (errorAsJson) {
+      jsonError(res, 403, 'REMOTE_MEDIA_NOT_ALLOWED', 'Remote media host is not allowed for browser playback', {
+        requestedUrl: media.requestedUrl,
+        decodedUrl: srcUrl,
+        matchedCatalogItem: matched,
+      });
+    } else {
+      res.status(403).send('Remote media host is not allowed for browser playback');
+    }
+    return null;
+  }
+
+  return { media, srcUrl, matched };
+}
+
 function remoteVideoCanCopy(srcUrl) {
   const clean = String(srcUrl || '').split('?')[0].toLowerCase();
   const ext = path.extname(clean);
@@ -1162,12 +1302,12 @@ function ffmpegFilterEscape(value) {
     .replace(/\]/g, '\\]');
 }
 
-function remoteProbe(srcUrl, method, headers) {
+function remoteProbe(srcUrl, method, headers, timeoutMs = 8000) {
   return new Promise((resolve, reject) => {
     let settled = false;
     const parsed = new URL(srcUrl);
     const mod = parsed.protocol === 'https:' ? https : http;
-    const req = mod.request(parsed, { method, headers, timeout: 8000 }, probeRes => {
+    const req = mod.request(parsed, { method, headers, timeout: timeoutMs }, probeRes => {
       const result = {
         status: probeRes.statusCode || 0,
         headers: probeRes.headers || {},
@@ -1219,6 +1359,145 @@ async function checkRemoteAvailability(srcUrl, req) {
       head: headResult,
       error: e.message,
     };
+  }
+}
+
+function remoteSubtitleCandidateUrls(srcUrl) {
+  let parsed;
+  try { parsed = new URL(srcUrl); } catch { return []; }
+  if (!/^https?:$/i.test(parsed.protocol)) return [];
+  const ext = path.posix.extname(parsed.pathname);
+  if (!ext) return [];
+  const basePath = parsed.pathname.slice(0, -ext.length);
+  const suffixes = [
+    '.en.vtt', '.eng.vtt', '.english.vtt', '.vtt',
+    '.en.srt', '.eng.srt', '.english.srt', '.srt',
+    '.en.ass', '.eng.ass', '.english.ass', '.ass',
+    '.en.ssa', '.eng.ssa', '.english.ssa', '.ssa'
+  ];
+  const out = [];
+  const seen = new Set();
+  for (const suffix of suffixes) {
+    const next = new URL(parsed.href);
+    next.pathname = `${basePath}${suffix}`;
+    const href = next.href;
+    if (!seen.has(href)) {
+      seen.add(href);
+      out.push(href);
+    }
+  }
+  return out;
+}
+
+function remoteSubtitleLabel(sidecarUrl, index) {
+  let file = '';
+  try { file = decodeURIComponent(path.posix.basename(new URL(sidecarUrl).pathname)); } catch {}
+  const lower = file.toLowerCase();
+  if (/\b(eng|english|en)\b/.test(lower) || /\.(eng|english|en)\./i.test(file)) return 'English';
+  if (/\b(hin|hindi|hi)\b/.test(lower) || /\.(hin|hindi|hi)\./i.test(file)) return 'Hindi';
+  if (/\b(ben|bengali|bangla|bn)\b/.test(lower) || /\.(ben|bengali|bangla|bn)\./i.test(file)) return 'Bengali';
+  return file ? file.replace(/\.(srt|vtt|ass|ssa)$/i, '') : `Subtitle ${index + 1}`;
+}
+
+async function remoteSubtitleExists(sidecarUrl, req) {
+  const headers = {
+    'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
+    Accept: 'text/vtt,text/plain,*/*',
+    'Accept-Encoding': 'identity',
+  };
+  try {
+    const head = await remoteProbe(sidecarUrl, 'HEAD', headers, 2500);
+    if (head.ok) return true;
+    if (![403, 405].includes(head.status)) return false;
+  } catch {}
+  try {
+    const get = await remoteProbe(sidecarUrl, 'GET', { ...headers, Range: 'bytes=0-511' }, 2500);
+    return !!get.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function discoverRemoteSubtitleTracks(srcUrl, req) {
+  const candidates = remoteSubtitleCandidateUrls(srcUrl).slice(0, 16);
+  if (!candidates.length) return [];
+  const checks = await Promise.all(candidates.map(async (candidate, index) => {
+    const ok = await remoteSubtitleExists(candidate, req);
+    if (!ok) return null;
+    const ext = path.posix.extname(new URL(candidate).pathname).toLowerCase();
+    return {
+      index,
+      label: remoteSubtitleLabel(candidate, index),
+      lang: /\.en(?:g|glish)?\./i.test(candidate) ? 'en' : '',
+      src: candidate,
+      ext,
+      sidecar: true
+    };
+  }));
+  return checks.filter(Boolean).slice(0, 8);
+}
+
+function isAllowedRemoteSubtitleSidecar(srcUrl, sidecarUrl) {
+  const candidates = new Set(remoteSubtitleCandidateUrls(srcUrl));
+  return candidates.has(sidecarUrl);
+}
+
+function fetchRemoteText(url, req, maxBytes = 5 * 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const mod = parsed.protocol === 'https:' ? https : http;
+    const chunks = [];
+    let total = 0;
+    const upstream = mod.request(parsed, {
+      method: 'GET',
+      headers: {
+        'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
+        Accept: 'text/vtt,text/plain,*/*',
+        'Accept-Encoding': 'identity',
+      },
+      timeout: 15000,
+    }, upstreamRes => {
+      const status = upstreamRes.statusCode || 0;
+      if (status < 200 || status >= 400) {
+        upstreamRes.resume();
+        reject(new Error(`subtitle request failed ${status}`));
+        return;
+      }
+      upstreamRes.on('data', chunk => {
+        total += chunk.length;
+        if (total > maxBytes) {
+          upstream.destroy(new Error('subtitle too large'));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      upstreamRes.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    });
+    upstream.on('error', reject);
+    upstream.on('timeout', () => upstream.destroy(new Error('subtitle request timed out')));
+    req.on('close', () => upstream.destroy());
+    upstream.end();
+  });
+}
+
+async function sendRemoteSidecarSubtitleAsVtt(req, res, srcUrl, sidecarUrl) {
+  if (!isAllowedRemoteSubtitleSidecar(srcUrl, sidecarUrl)) {
+    return jsonError(res, 403, 'REMOTE_SUBTITLE_NOT_ALLOWED', 'Remote subtitle path is not allowed');
+  }
+  try {
+    const raw = await fetchRemoteText(sidecarUrl, req);
+    const ext = path.posix.extname(new URL(sidecarUrl).pathname).toLowerCase();
+    let body = raw;
+    if (ext === '.srt') body = srtToVtt(raw);
+    else if (ext === '.ass' || ext === '.ssa') body = assToVtt(raw);
+    else if (!/^WEBVTT\b/i.test(body.trim())) body = `WEBVTT\n\n${body}`;
+    res.setHeader('Content-Type', 'text/vtt; charset=utf-8');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(body);
+  } catch (e) {
+    console.error('[FTP Sidecar Subtitle] Error:', e.message);
+    if (!res.headersSent) res.status(502).send('WEBVTT\n\n');
   }
 }
 
@@ -1645,98 +1924,2421 @@ app.post('/api/channels/reload', (req, res) => {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // LIVE TV PROXY
-// ═══════════════════════════════════════════════════════════════════════════════
+// Robust HLS proxy: rewrites segments, nested playlists, keys, and maps.
 
-function fetchBuffer(url) {
+const FIFA_LIVE_COMPETITION = 'FIFA / Football Live';
+const FIFA_LIVE_REAL_UNAVAILABLE = 'Real live football data is unavailable right now';
+const FIFA_LIVE_FAST_CACHE_MS = Math.min(30000, Math.max(20000, Number(process.env.FIFA_LIVE_CACHE_MS || 25000)));
+const FIFA_LIVE_SLOW_CACHE_MS = Math.min(15 * 60 * 1000, Math.max(5 * 60 * 1000, Number(process.env.FIFA_LIVE_SLOW_CACHE_MS || 5 * 60 * 1000)));
+const FIFA_LIVE_UPSTREAM_TIMEOUT_MS = Math.min(12000, Math.max(4000, Number(process.env.FIFA_LIVE_TIMEOUT_MS || 7000)));
+const FIFA_LIVE_API_FOOTBALL_BASE = 'https://v3.football.api-sports.io';
+const FIFA_LIVE_ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer';
+const FIFA_LIVE_NEWS_CACHE_MS = Math.min(15 * 60 * 1000, Math.max(5 * 60 * 1000, Number(process.env.FIFA_LIVE_NEWS_CACHE_MS || 5 * 60 * 1000)));
+const FIFA_LIVE_NEWS_MAX = 8;
+let fifaLiveCache = null;
+let fifaLiveLastGood = null;
+let fifaLiveInFlight = null;
+let fifaLiveLastWarnAt = 0;
+let fifaLiveNewsCache = null;
+let fifaLiveNewsLastGood = null;
+let fifaLiveNewsInFlight = null;
+const fifaMatchDetailCache = new Map();
+const fifaMatchDetailInflight = new Map();
+const FIFA_LIVE_DETAIL_FAST_CACHE_MS = Math.min(30000, Math.max(20000, Number(process.env.FIFA_LIVE_DETAIL_FAST_CACHE_MS || 25000)));
+const FIFA_LIVE_DETAIL_SLOW_CACHE_MS = Math.min(15 * 60 * 1000, Math.max(5 * 60 * 1000, Number(process.env.FIFA_LIVE_DETAIL_SLOW_CACHE_MS || 10 * 60 * 1000)));
+const FIFA_LIVE_DETAIL_UNAVAILABLE = 'Detailed match data is unavailable for this fixture right now.';
+const FIFA_LIVE_DETAIL_PROVIDER_LIMITED = 'Full player lineups and formations require API_FOOTBALL_KEY. ESPN fallback did not provide them for this match.';
+
+function svFifaFirst(...values) {
+  for (const value of values) {
+    if (value === undefined || value === null) continue;
+    const text = String(value).trim();
+    if (!text || text.toLowerCase() === 'undefined' || text.toLowerCase() === 'null') continue;
+    return value;
+  }
+  return '';
+}
+
+function svFifaArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function svFifaNumber(value, fallback = null) {
+  if (value === undefined || value === null || value === '') return fallback;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function svFifaIsoDate(date = new Date()) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  return date.toISOString();
+}
+
+function svFifaApiDate(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function svFifaEspnDate(date = new Date()) {
+  return date.toISOString().slice(0, 10).replace(/-/g, '');
+}
+
+function svFifaTitleCase(value) {
+  return String(value || '').replace(/[-_]+/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase()).trim();
+}
+
+function svFifaWarn(message, err) {
+  const now = Date.now();
+  if (now - fifaLiveLastWarnAt < 60000) return;
+  fifaLiveLastWarnAt = now;
+  console.warn(`[FIFA Live] ${message}${err?.message ? `: ${err.message}` : ''}`);
+}
+
+function svFifaEmptyPayload(message = FIFA_LIVE_REAL_UNAVAILABLE, stale = false, source = 'none') {
+  const payload = {
+    ok: false,
+    generatedAt: new Date().toISOString(),
+    source,
+    stale: !!stale,
+    competition: FIFA_LIVE_COMPETITION,
+    message,
+    liveMatches: [],
+    upcomingMatches: [],
+    recentResults: [],
+    standings: [],
+    headlines: [],
+    apiFootballConfigured: !!svFifaApiFootballKey(),
+    dataIntegrity: {
+      fakeDataUsed: false,
+      cardsAreProviderOnly: true,
+      statsAreProviderOnly: true
+    },
+    providerLimitations: []
+  };
+  payload.fakeDataUsed = false;
+  payload.capabilities = svFifaBuildSummaryCapabilities(payload, source);
+  payload.provider = svFifaProviderMeta(source);
+  return payload;
+}
+
+function svFifaHasRealData(payload) {
+  return !!payload && [
+    payload.liveMatches,
+    payload.upcomingMatches,
+    payload.recentResults,
+    payload.headlines
+  ].some(items => Array.isArray(items) && items.length) || svFifaFilterStandings(payload?.standings).length > 0;
+}
+
+function svFifaFinalizePayload(payload, source, message = '') {
+  const standings = svFifaFilterStandings(payload?.standings);
+  const next = {
+    ok: svFifaHasRealData(payload),
+    generatedAt: new Date().toISOString(),
+    source,
+    stale: false,
+    competition: FIFA_LIVE_COMPETITION,
+    message,
+    liveMatches: svFifaArray(payload?.liveMatches).slice(0, 12),
+    upcomingMatches: svFifaArray(payload?.upcomingMatches).slice(0, 14),
+    recentResults: svFifaArray(payload?.recentResults).slice(0, 10),
+    standings: standings.slice(0, 32),
+    headlines: svFifaArray(payload?.headlines).slice(0, 8),
+    apiFootballConfigured: !!svFifaApiFootballKey(),
+    dataIntegrity: {
+      fakeDataUsed: false,
+      cardsAreProviderOnly: true,
+      statsAreProviderOnly: true
+    },
+    providerLimitations: []
+  };
+  next.fakeDataUsed = false;
+  if (!next.ok && !next.message) next.message = FIFA_LIVE_REAL_UNAVAILABLE;
+  next.capabilities = svFifaBuildSummaryCapabilities(next, source);
+  next.provider = svFifaProviderMeta(source);
+  return next;
+}
+
+function svFifaMarkStale(payload, source) {
+  return {
+    ...payload,
+    ok: true,
+    generatedAt: new Date().toISOString(),
+    source: source || 'cache',
+    stale: true,
+    message: 'Showing last real football update while the live provider reconnects'
+  };
+}
+
+function svFifaCachePayload(payload) {
+  if (!payload || (!payload.ok && payload.source === 'none')) {
+    fifaLiveCache = null;
+    return payload;
+  }
+  const ttl = payload?.liveMatches?.length ? FIFA_LIVE_FAST_CACHE_MS : FIFA_LIVE_SLOW_CACHE_MS;
+  fifaLiveCache = { expiresAt: Date.now() + ttl, payload };
+  if (payload && payload.ok && !payload.stale && payload.source !== 'none') fifaLiveLastGood = payload;
+  return payload;
+}
+
+function svFifaRefreshLiveCache() {
+  if (fifaLiveInFlight) return fifaLiveInFlight;
+  fifaLiveInFlight = svFifaFetchRealPayload()
+    .then(payload => svFifaCachePayload(payload))
+    .catch(err => {
+      svFifaWarn('endpoint fallback', err);
+      if (fifaLiveLastGood) return svFifaCachePayload(svFifaMarkStale(fifaLiveLastGood, 'cache'));
+      return svFifaCachePayload(svFifaEmptyPayload(FIFA_LIVE_REAL_UNAVAILABLE, false, 'none'));
+    })
+    .finally(() => { fifaLiveInFlight = null; });
+
+  return fifaLiveInFlight;
+}
+
+function svFifaFetchJson(rawUrl, options = {}, redirects = 0) {
   return new Promise((resolve, reject) => {
-    const mod = url.startsWith('https://') ? https : http;
-    const req = mod.get(url, { timeout: 10000 }, res => {
+    let parsed;
+    try { parsed = new URL(rawUrl); } catch (e) { return reject(e); }
+    if (!['http:', 'https:'].includes(parsed.protocol)) return reject(new Error('Unsupported football provider URL'));
+
+    const mod = parsed.protocol === 'https:' ? https : http;
+    const headers = {
+      Accept: 'application/json',
+      'User-Agent': 'StreamVault-Football-Live/2.0',
+      ...(options.headers || {})
+    };
+    const timeout = options.timeout || FIFA_LIVE_UPSTREAM_TIMEOUT_MS;
+    const maxBytes = options.maxBytes || 3 * 1024 * 1024;
+
+    const req = mod.request(parsed, { method: 'GET', timeout, headers }, res => {
+      if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location && redirects < 3) {
+        res.resume();
+        resolve(svFifaFetchJson(new URL(res.headers.location, parsed).href, options, redirects + 1));
+        return;
+      }
       const chunks = [];
-      res.on('data', c => chunks.push(c));
-      res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }));
+      let total = 0;
+      res.on('data', chunk => {
+        total += chunk.length;
+        if (total > maxBytes) {
+          req.destroy(new Error('Football provider response too large'));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      res.on('end', () => {
+        const body = Buffer.concat(chunks).toString('utf8');
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          reject(new Error(`Football provider returned ${res.statusCode}`));
+          return;
+        }
+        try { resolve(JSON.parse(body)); }
+        catch (e) { reject(e); }
+      });
     });
     req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+    req.on('timeout', () => req.destroy(new Error('Football provider timeout')));
+    req.end();
   });
 }
 
-function resolveUrl(base, relative) {
-  if (/^https?:\/\//.test(relative)) return relative;
-  const baseDir = base.substring(0, base.lastIndexOf('/') + 1);
-  return baseDir + relative;
+function svFifaHttpUrl(value) {
+  const text = String(value || '').trim();
+  return /^https?:\/\//i.test(text) ? text : '';
 }
 
-function rewriteM3u8(content, channelId, sourceBaseUrl) {
-  const lines = content.split('\n');
-  return lines.map(line => {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) return line;
+function svFifaNewsDate(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+}
 
-    const absoluteUrl = resolveUrl(sourceBaseUrl, trimmed);
+function svFifaNewsSourceLabel(source) {
+  const clean = String(source || '').trim().toLowerCase();
+  if (clean === 'fifa') return 'FIFA';
+  if (clean === 'fox') return 'FOX Sports';
+  if (clean === 'espn') return 'ESPN';
+  return source ? String(source) : '';
+}
 
-    if (trimmed.toLowerCase().includes('.m3u8')) {
-      return `/live/${channelId}/playlist.m3u8?src=${encodeURIComponent(absoluteUrl)}`;
+function svFifaNormalizeNewsItems(items, fallbackSource = '') {
+  const seen = new Set();
+  const normalized = [];
+  svFifaArray(items).forEach((item, index) => {
+    const title = String(svFifaFirst(item?.title, item?.headline, item?.shortLinkText, item?.name, '')).trim();
+    if (!title) return;
+    const url = svFifaHttpUrl(svFifaFirst(item?.url, item?.link, item?.links?.web?.href, item?.links?.api?.self?.href, ''));
+    const source = typeof item?.source === 'string' ? item.source : '';
+    const key = `${title.toLowerCase()}|${url}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    normalized.push({
+      title,
+      url,
+      publishedAt: svFifaNewsDate(svFifaFirst(item?.publishedAt, item?.published, item?.lastModified, item?.time, item?.date, '')),
+      source: String(svFifaFirst(item?.source?.name, item?.source?.displayName, item?.sourceName, source, svFifaNewsSourceLabel(fallbackSource), '')),
+      id: String(svFifaFirst(item?.id, item?.nowId, url, `news-${index}`))
+    });
+  });
+  return normalized.slice(0, FIFA_LIVE_NEWS_MAX);
+}
+
+function svFifaNewsPayload(headlines, source = 'none', stale = false, message = '') {
+  const normalized = svFifaNormalizeNewsItems(headlines, source);
+  return {
+    ok: normalized.length > 0,
+    generatedAt: new Date().toISOString(),
+    source: normalized.length ? source : 'none',
+    stale: !!stale,
+    message: message || '',
+    headlines: normalized.map(({ id, ...item }) => item),
+    apiFootballConfigured: !!svFifaApiFootballKey(),
+    fakeDataUsed: false,
+    dataIntegrity: {
+      fakeDataUsed: false,
+      cardsAreProviderOnly: true,
+      statsAreProviderOnly: true
     }
-    return `/live/${channelId}/segment?url=${encodeURIComponent(absoluteUrl)}`;
+  };
+}
+
+function svFifaMarkNewsStale(payload) {
+  return {
+    ...payload,
+    ok: true,
+    generatedAt: new Date().toISOString(),
+    source: 'cache',
+    stale: true,
+    message: 'Showing last real football news while the news source reconnects'
+  };
+}
+
+function svFifaCacheNewsPayload(payload) {
+  if (!payload) return payload;
+  fifaLiveNewsCache = { expiresAt: Date.now() + FIFA_LIVE_NEWS_CACHE_MS, payload };
+  if (payload.ok && !payload.stale && payload.source !== 'none') fifaLiveNewsLastGood = payload;
+  return payload;
+}
+
+function svFifaDedupeMatches(items) {
+  const seen = new Set();
+  return svFifaArray(items).filter(match => {
+    const key = String(match?.id || `${match?.homeTeam || ''}|${match?.awayTeam || ''}|${match?.startTime || ''}|${match?.status || ''}`);
+    if (!key.trim() || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function svFifaApiFootballKey() {
+  return String(process.env.API_FOOTBALL_KEY || process.env.FOOTBALL_API_KEY || process.env.RAPIDAPI_KEY || '').trim();
+}
+
+function svFifaApiFootballHeaders(apiKey) {
+  return {
+    'x-apisports-key': apiKey,
+    'x-rapidapi-key': apiKey,
+    'x-rapidapi-host': 'v3.football.api-sports.io'
+  };
+}
+
+const FIFA_TEAM_COUNTRY_CODES = {
+  algeria: 'DZ',
+  argentina: 'AR',
+  australia: 'AU',
+  austria: 'AT',
+  belgium: 'BE',
+  'bosnia herzegovina': 'BA',
+  'bosnia-herzegovina': 'BA',
+  bosniaherzegovina: 'BA',
+  brazil: 'BR',
+  canada: 'CA',
+  colombia: 'CO',
+  'congo dr': 'CD',
+  congodr: 'CD',
+  'dr congo': 'CD',
+  drcongo: 'CD',
+  'democratic republic of congo': 'CD',
+  croatia: 'HR',
+  curacao: 'CW',
+  czechia: 'CZ',
+  denmark: 'DK',
+  ecuador: 'EC',
+  egypt: 'EG',
+  england: 'GB-ENG',
+  france: 'FR',
+  germany: 'DE',
+  ghana: 'GH',
+  haiti: 'HT',
+  iraq: 'IQ',
+  iran: 'IR',
+  italy: 'IT',
+  'ivory coast': 'CI',
+  'cote d ivoire': 'CI',
+  japan: 'JP',
+  jordan: 'JO',
+  mexico: 'MX',
+  morocco: 'MA',
+  netherlands: 'NL',
+  'new zealand': 'NZ',
+  norway: 'NO',
+  panama: 'PA',
+  paraguay: 'PY',
+  portugal: 'PT',
+  qatar: 'QA',
+  'saudi arabia': 'SA',
+  scotland: 'GB-SCT',
+  senegal: 'SN',
+  'south africa': 'ZA',
+  southafrica: 'ZA',
+  'south korea': 'KR',
+  southkorea: 'KR',
+  spain: 'ES',
+  sweden: 'SE',
+  switzerland: 'CH',
+  tunisia: 'TN',
+  turkiye: 'TR',
+  turkey: 'TR',
+  'türkiye': 'TR',
+  'united states': 'US',
+  unitedstates: 'US',
+  usa: 'US',
+  uruguay: 'UY',
+  'cape verde': 'CV',
+  wales: 'GB-WLS',
+  uzbekistan: 'UZ'
+};
+
+const FIFA_SUBDIVISION_FLAGS = {
+  'GB-ENG': String.fromCodePoint(0x1f3f4, 0xe0067, 0xe0062, 0xe0065, 0xe006e, 0xe0067, 0xe007f),
+  'GB-SCT': String.fromCodePoint(0x1f3f4, 0xe0067, 0xe0062, 0xe0073, 0xe0063, 0xe0074, 0xe007f),
+  'GB-WLS': String.fromCodePoint(0x1f3f4, 0xe0067, 0xe0062, 0xe0077, 0xe006c, 0xe0073, 0xe007f)
+};
+
+function svFifaTeamKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function svFifaCountryCodeFromName(name) {
+  const key = svFifaTeamKey(name);
+  return FIFA_TEAM_COUNTRY_CODES[key] || FIFA_TEAM_COUNTRY_CODES[key.replace(/\s+/g, '')] || '';
+}
+
+function svFifaFlagEmojiFromCode(code) {
+  const clean = String(code || '').trim().toUpperCase();
+  if (!clean) return '';
+  if (FIFA_SUBDIVISION_FLAGS[clean]) return FIFA_SUBDIVISION_FLAGS[clean];
+  if (!/^[A-Z]{2}$/.test(clean)) return '';
+  return clean
+    .split('')
+    .map(ch => String.fromCodePoint(0x1f1e6 + ch.charCodeAt(0) - 65))
+    .join('');
+}
+
+function svFifaProviderLogo(team) {
+  const logo = svFifaFirst(
+    team?.logo,
+    team?.flag,
+    team?.crest,
+    team?.team?.logo,
+    team?.team?.flag,
+    team?.team?.logos?.[0]?.href,
+    team?.logos?.[0]?.href,
+    team?.logos?.[0]?.url
+  );
+  return /^https?:\/\//i.test(String(logo || '')) ? String(logo) : '';
+}
+
+function svFifaProviderCode(team) {
+  return String(svFifaFirst(
+    team?.countryCode,
+    team?.code,
+    team?.abbreviation,
+    team?.team?.countryCode,
+    team?.team?.abbreviation
+  ) || '').trim();
+}
+
+function svFifaTeamMeta(name, providerTeam = {}) {
+  const code = svFifaProviderCode(providerTeam);
+  const mappedCode = svFifaCountryCodeFromName(name);
+  const countryCode = /^[A-Z]{2}$/i.test(code) ? code.toUpperCase() : mappedCode;
+  return {
+    logo: svFifaProviderLogo(providerTeam),
+    flag: svFifaFlagEmojiFromCode(countryCode) || '',
+    countryCode: countryCode || ''
+  };
+}
+
+function svFifaEnrichMatchTeams(match, homeProvider = {}, awayProvider = {}) {
+  const home = svFifaTeamMeta(match?.homeTeam, homeProvider);
+  const away = svFifaTeamMeta(match?.awayTeam, awayProvider);
+  return {
+    ...match,
+    homeLogo: match?.homeLogo || home.logo,
+    homeFlag: match?.homeFlag || home.flag,
+    homeCountryCode: match?.homeCountryCode || home.countryCode,
+    awayLogo: match?.awayLogo || away.logo,
+    awayFlag: match?.awayFlag || away.flag,
+    awayCountryCode: match?.awayCountryCode || away.countryCode
+  };
+}
+
+function svFifaProviderMeta(source) {
+  const active = svFifaCleanProvider(source) || String(source || 'none');
+  const apiFootballConfigured = !!svFifaApiFootballKey();
+  return {
+    active,
+    apiFootballConfigured,
+    limited: active === 'espn' && !apiFootballConfigured,
+    fallback: active === 'espn' && !apiFootballConfigured
+  };
+}
+
+function svFifaMatchHasRealScore(match) {
+  if (!match?.homeTeam || !match?.awayTeam) return false;
+  const status = String(match.status || '').toUpperCase();
+  const hasScore = match.homeScore === 0 || match.homeScore || match.awayScore === 0 || match.awayScore;
+  return !!(hasScore || status === 'UPCOMING' || status === 'POSTPONED');
+}
+
+function svFifaValidStatRow(row) {
+  return !!(
+    svFifaCleanDetailValue(row?.label) &&
+    (svFifaCleanDetailValue(row?.home) || svFifaCleanDetailValue(row?.away))
+  );
+}
+
+function svFifaFilterStats(rows) {
+  return svFifaArray(rows).filter(svFifaValidStatRow);
+}
+
+function svFifaValidPlayer(player) {
+  return !!svFifaCleanDetailValue(player?.name);
+}
+
+function svFifaCleanPlayers(players) {
+  return svFifaArray(players).filter(svFifaValidPlayer);
+}
+
+function svFifaLineupHasPlayers(lineup) {
+  return svFifaCleanPlayers(lineup?.players).length > 0 || svFifaCleanPlayers(lineup?.substitutes).length > 0;
+}
+
+function svFifaLineupsHavePlayers(lineups) {
+  return svFifaLineupHasPlayers(lineups?.home) || svFifaLineupHasPlayers(lineups?.away);
+}
+
+function svFifaLineupsHaveFormations(lineups) {
+  return !!(svFifaCleanDetailValue(lineups?.home?.formation) || svFifaCleanDetailValue(lineups?.away?.formation));
+}
+
+function svFifaPayloadHasTeamFlags(payload) {
+  const matches = [
+    ...svFifaArray(payload?.liveMatches),
+    ...svFifaArray(payload?.upcomingMatches),
+    ...svFifaArray(payload?.recentResults)
+  ];
+  return matches.some(match => match?.homeFlag || match?.homeLogo || match?.awayFlag || match?.awayLogo);
+}
+
+function svFifaValidEvent(event) {
+  return !!(
+    svFifaCleanDetailValue(event?.type) ||
+    svFifaCleanDetailValue(event?.player) ||
+    svFifaCleanDetailValue(event?.team) ||
+    svFifaCleanDetailValue(event?.detail)
+  );
+}
+
+function svFifaFilterEvents(events) {
+  return svFifaArray(events).filter(svFifaValidEvent);
+}
+
+function svFifaStandingHasTableData(row) {
+  return ['played', 'wins', 'draws', 'losses', 'goalDifference', 'points']
+    .some(key => svFifaCleanDetailValue(row?.[key]) !== '');
+}
+
+function svFifaFilterStandings(rows) {
+  return svFifaArray(rows).filter(row => svFifaCleanDetailValue(row?.team) && svFifaStandingHasTableData(row));
+}
+
+function svFifaBuildSummaryCapabilities(payload, source = '') {
+  const matches = [
+    ...svFifaArray(payload?.liveMatches),
+    ...svFifaArray(payload?.upcomingMatches),
+    ...svFifaArray(payload?.recentResults)
+  ];
+  const standings = svFifaFilterStandings(payload?.standings);
+  return {
+    provider: svFifaCleanProvider(source) || String(source || payload?.source || 'none'),
+    apiFootballConfigured: !!svFifaApiFootballKey(),
+    liveScores: matches.some(svFifaMatchHasRealScore),
+    matchStats: false,
+    lineups: false,
+    formations: false,
+    events: false,
+    standings: standings.length > 0,
+    headlines: svFifaArray(payload?.headlines).length > 0,
+    teamFlags: svFifaPayloadHasTeamFlags(payload)
+  };
+}
+
+function svFifaBuildDetailCapabilities(detail) {
+  const lineups = detail?.lineups || {};
+  return {
+    provider: svFifaCleanProvider(detail?.source) || String(detail?.source || 'none'),
+    apiFootballConfigured: !!svFifaApiFootballKey(),
+    liveScores: svFifaMatchHasRealScore(detail?.match),
+    matchStats: svFifaFilterStats(detail?.statistics).length > 0,
+    lineups: svFifaLineupsHavePlayers(lineups),
+    formations: svFifaLineupsHaveFormations(lineups),
+    events: svFifaFilterEvents(detail?.events).length > 0,
+    standings: svFifaFilterStandings(detail?.standings).length > 0,
+    teamFlags: !!(
+      detail?.match?.homeFlag ||
+      detail?.match?.homeLogo ||
+      detail?.match?.awayFlag ||
+      detail?.match?.awayLogo
+    )
+  };
+}
+
+function svFifaNormalizeApiFootballFixture(item) {
+  const fixture = item?.fixture || {};
+  const league = item?.league || {};
+  const teams = item?.teams || {};
+  const goals = item?.goals || {};
+  const statusInfo = fixture.status || {};
+  const short = String(statusInfo.short || '').toUpperCase();
+  const statusMap = {
+    NS: 'UPCOMING',
+    TBD: 'UPCOMING',
+    '1H': 'LIVE',
+    '2H': 'LIVE',
+    ET: 'LIVE',
+    BT: 'LIVE',
+    P: 'LIVE',
+    SUSP: 'POSTPONED',
+    INT: 'LIVE',
+    HT: 'HT',
+    FT: 'FT',
+    AET: 'FT',
+    PEN: 'FT',
+    PST: 'POSTPONED',
+    CANC: 'POSTPONED',
+    ABD: 'POSTPONED'
+  };
+  const status = statusMap[short] || (statusInfo.elapsed ? 'LIVE' : 'UPCOMING');
+  const isUpcoming = status === 'UPCOMING';
+  const isLive = status === 'LIVE' || status === 'HT';
+  const startTime = svFifaIsoDate(new Date(fixture.date || Date.now()));
+  const match = {
+    id: String(svFifaFirst(fixture.id, `${teams.home?.name || 'home'}-${teams.away?.name || 'away'}-${startTime}`)),
+    status,
+    minute: isLive && statusInfo.elapsed ? `${statusInfo.elapsed}'` : (status === 'HT' ? 'HT' : null),
+    homeTeam: String(teams.home?.name || ''),
+    awayTeam: String(teams.away?.name || ''),
+    homeScore: isUpcoming ? null : svFifaNumber(goals.home),
+    awayScore: isUpcoming ? null : svFifaNumber(goals.away),
+    competition: String(league.name || ''),
+    stage: String(item?.league?.round || ''),
+    group: '',
+    venue: String(fixture.venue?.name || ''),
+    startTime,
+    kickoff: startTime,
+    provider: 'api-football',
+    leagueId: svFifaNumber(league.id),
+    season: svFifaNumber(league.season),
+    providerUrl: ''
+  };
+  return svFifaEnrichMatchTeams(match, teams.home, teams.away);
+}
+
+function svFifaNormalizeApiFootballStandings(raw) {
+  const response = svFifaArray(raw?.response);
+  const groups = response.flatMap(entry => svFifaArray(entry?.league?.standings));
+  const rows = [];
+  groups.forEach(groupRows => {
+    svFifaArray(groupRows).forEach(row => {
+      rows.push({
+        group: String(row?.group || ''),
+        rank: svFifaNumber(row?.rank),
+        team: String(row?.team?.name || ''),
+        logo: svFifaProviderLogo(row?.team),
+        flag: svFifaTeamMeta(row?.team?.name, row?.team).flag,
+        countryCode: svFifaTeamMeta(row?.team?.name, row?.team).countryCode,
+        played: svFifaNumber(row?.all?.played, 0),
+        wins: svFifaNumber(row?.all?.win, 0),
+        draws: svFifaNumber(row?.all?.draw, 0),
+        losses: svFifaNumber(row?.all?.lose, 0),
+        goalDifference: svFifaNumber(row?.goalsDiff, 0),
+        points: svFifaNumber(row?.points, 0)
+      });
+    });
+  });
+  return rows.filter(row => row.team);
+}
+
+async function svFifaFetchApiFootball() {
+  const apiKey = svFifaApiFootballKey();
+  if (!apiKey) return null;
+  const season = String(process.env.FIFA_LIVE_SEASON || new Date().getUTCFullYear());
+  const headers = svFifaApiFootballHeaders(apiKey);
+  const urls = {
+    live: `${FIFA_LIVE_API_FOOTBALL_BASE}/fixtures?live=all`,
+    upcoming: `${FIFA_LIVE_API_FOOTBALL_BASE}/fixtures?next=12`,
+    recent: `${FIFA_LIVE_API_FOOTBALL_BASE}/fixtures?last=8`,
+    standings: `${FIFA_LIVE_API_FOOTBALL_BASE}/standings?league=1&season=${encodeURIComponent(season)}`
+  };
+  const [liveRes, upcomingRes, recentRes, standingsRes] = await Promise.allSettled([
+    svFifaFetchJson(urls.live, { headers }),
+    svFifaFetchJson(urls.upcoming, { headers }),
+    svFifaFetchJson(urls.recent, { headers }),
+    svFifaFetchJson(urls.standings, { headers })
+  ]);
+  const rejected = [liveRes, upcomingRes, recentRes].find(result => result.status === 'rejected');
+  if (rejected) throw rejected.reason;
+  const liveMatches = svFifaArray(liveRes.value?.response).map(svFifaNormalizeApiFootballFixture).filter(match => match.homeTeam && match.awayTeam);
+  const upcomingMatches = svFifaArray(upcomingRes.value?.response)
+    .map(svFifaNormalizeApiFootballFixture)
+    .filter(match => match.homeTeam && match.awayTeam && match.status === 'UPCOMING');
+  const recentResults = svFifaArray(recentRes.value?.response)
+    .map(svFifaNormalizeApiFootballFixture)
+    .filter(match => match.homeTeam && match.awayTeam && match.status === 'FT');
+  const standings = standingsRes.status === 'fulfilled' ? svFifaNormalizeApiFootballStandings(standingsRes.value) : [];
+  return svFifaFinalizePayload({
+    liveMatches: svFifaDedupeMatches(liveMatches),
+    upcomingMatches: svFifaDedupeMatches(upcomingMatches),
+    recentResults: svFifaDedupeMatches(recentResults),
+    standings,
+    headlines: []
+  }, 'api-football');
+}
+
+function svFifaEspnEventStatus(event, competition) {
+  const type = competition?.status?.type || event?.status?.type || {};
+  const state = String(type.state || '').toLowerCase();
+  const detail = String(type.shortDetail || type.detail || type.description || '').toUpperCase();
+  if (state === 'in') return detail.includes('HT') ? 'HT' : 'LIVE';
+  if (type.completed || state === 'post') return 'FT';
+  if (detail.includes('POSTPONED') || detail.includes('PPD')) return 'POSTPONED';
+  return 'UPCOMING';
+}
+
+function svFifaNormalizeEspnEvent(event, leagueSlug = 'fifa.world') {
+  const competition = event?.competitions?.[0] || {};
+  const competitors = svFifaArray(competition.competitors);
+  const home = competitors.find(c => c.homeAway === 'home') || competitors[0] || {};
+  const away = competitors.find(c => c.homeAway === 'away') || competitors[1] || {};
+  const status = svFifaEspnEventStatus(event, competition);
+  const isUpcoming = status === 'UPCOMING';
+  const statusType = competition?.status?.type || event?.status?.type || {};
+  const displayClock = String(competition?.status?.displayClock || event?.status?.displayClock || '');
+  const startTime = svFifaIsoDate(new Date(competition.startDate || competition.date || event.date || Date.now()));
+  const league = event?.league || {};
+  const leagueName = String(svFifaFirst(league.name, event?.season?.displayName, ''));
+  const note = String(competition.altGameNote || '');
+  const group = (note.match(/\bGroup\s+[A-Z0-9]+/i) || [''])[0];
+  const link = svFifaArray(event?.links).find(item => svFifaArray(item?.rel).includes('summary'))?.href || '';
+  const match = {
+    id: String(event?.id || competition?.id || `${home.team?.displayName || 'home'}-${away.team?.displayName || 'away'}-${startTime}`),
+    status,
+    minute: status === 'LIVE' && displayClock ? displayClock : (status === 'HT' ? 'HT' : null),
+    homeTeam: String(home.team?.displayName || home.team?.shortDisplayName || ''),
+    awayTeam: String(away.team?.displayName || away.team?.shortDisplayName || ''),
+    homeScore: isUpcoming ? null : svFifaNumber(home.score),
+    awayScore: isUpcoming ? null : svFifaNumber(away.score),
+    competition: leagueName || note.split(',')[0] || 'Football',
+    stage: svFifaTitleCase(event?.season?.slug || statusType.description || ''),
+    group,
+    venue: String(competition?.venue?.fullName || event?.venue?.displayName || ''),
+    startTime,
+    kickoff: startTime,
+    provider: 'espn',
+    leagueSlug: String(svFifaFirst(event?.league?.slug, leagueSlug, 'fifa.world')),
+    providerUrl: link
+  };
+  return svFifaEnrichMatchTeams(match, home.team || home, away.team || away);
+}
+
+function svFifaNormalizeEspnHeadlines(...sources) {
+  const items = [];
+  sources.flatMap(src => svFifaArray(src)).forEach((item, index) => {
+    const title = svFifaFirst(item?.headline, item?.shortLinkText, item?.title);
+    if (!title) return;
+    items.push({
+      id: String(svFifaFirst(item?.id, item?.nowId, item?.links?.web?.href, `headline-${index}`)),
+      title: String(title),
+      time: String(svFifaFirst(item?.published, item?.lastModified, item?.time, '')),
+      url: String(svFifaFirst(item?.links?.web?.href, item?.link, ''))
+    });
+  });
+  const seen = new Set();
+  return items.filter(item => {
+    const key = item.title.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 8);
+}
+
+async function svFifaFetchEspnNews() {
+  const news = await svFifaFetchJson(`${FIFA_LIVE_ESPN_BASE}/fifa.world/news?limit=12`, {
+    timeout: FIFA_LIVE_UPSTREAM_TIMEOUT_MS,
+    maxBytes: 1024 * 1024
+  });
+  return svFifaNewsPayload(news?.articles, 'espn');
+}
+
+async function svFifaFetchNewsFresh() {
+  const providers = [
+    ['espn', svFifaFetchEspnNews]
+  ];
+  const errors = [];
+  for (const [name, fetcher] of providers) {
+    try {
+      const payload = await fetcher();
+      if (payload?.ok && svFifaArray(payload.headlines).length) return payload;
+      errors.push(new Error(`${name} returned no football headlines`));
+    } catch (e) {
+      errors.push(e);
+      svFifaWarn(`${name} news provider failed`, e);
+    }
+  }
+  if (errors.length) throw errors[0];
+  return svFifaNewsPayload([], 'none');
+}
+
+async function svGetFifaNewsPayload() {
+  const now = Date.now();
+  if (fifaLiveNewsCache && fifaLiveNewsCache.expiresAt > now) return fifaLiveNewsCache.payload;
+  if (fifaLiveNewsInFlight) return fifaLiveNewsInFlight;
+
+  fifaLiveNewsInFlight = svFifaFetchNewsFresh()
+    .then(payload => svFifaCacheNewsPayload(payload))
+    .catch(err => {
+      svFifaWarn('news endpoint fallback', err);
+      if (fifaLiveNewsLastGood) return svFifaCacheNewsPayload(svFifaMarkNewsStale(fifaLiveNewsLastGood));
+      return svFifaCacheNewsPayload(svFifaNewsPayload([], 'none'));
+    })
+    .finally(() => { fifaLiveNewsInFlight = null; });
+
+  return fifaLiveNewsInFlight;
+}
+
+async function svFifaFetchEspnScoreboards(league = 'fifa.world') {
+  const offsets = [-1, 0, 1, 2];
+  const urls = offsets.map(offset => {
+    const date = new Date(Date.now() + offset * 24 * 60 * 60 * 1000);
+    return `${FIFA_LIVE_ESPN_BASE}/${league}/scoreboard?limit=40&dates=${svFifaEspnDate(date)}`;
+  });
+  const results = await Promise.allSettled(urls.map(url => svFifaFetchJson(url, { timeout: FIFA_LIVE_UPSTREAM_TIMEOUT_MS })));
+  const fulfilled = results.filter(result => result.status === 'fulfilled').map(result => result.value);
+  if (!fulfilled.length) throw results.find(result => result.status === 'rejected')?.reason || new Error('ESPN scoreboard unavailable');
+  return fulfilled;
+}
+
+async function svFifaFetchEspn() {
+  let scoreboards = await svFifaFetchEspnScoreboards('fifa.world');
+  let sourceLeague = 'espn';
+  let detailLeague = 'fifa.world';
+  if (!scoreboards.some(board => svFifaArray(board?.events).length)) {
+    scoreboards = await svFifaFetchEspnScoreboards('all');
+    sourceLeague = 'espn';
+    detailLeague = 'all';
+  }
+  const events = svFifaDedupeMatches(scoreboards.flatMap(board => svFifaArray(board?.events).map(event => svFifaNormalizeEspnEvent(event, detailLeague))))
+    .filter(match => match.homeTeam && match.awayTeam);
+  const liveMatches = events.filter(match => match.status === 'LIVE' || match.status === 'HT');
+  const upcomingMatches = events
+    .filter(match => match.status === 'UPCOMING')
+    .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+  const recentResults = events
+    .filter(match => match.status === 'FT')
+    .sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+  const headlines = svFifaNormalizeEspnHeadlines(
+    scoreboards.flatMap(board => svFifaArray(board?.events).flatMap(event => svFifaArray(event?.competitions?.[0]?.headlines)))
+  );
+  return svFifaFinalizePayload({
+    liveMatches,
+    upcomingMatches,
+    recentResults,
+    standings: [],
+    headlines
+  }, sourceLeague);
+}
+
+async function svFifaFetchRealPayload() {
+  const providers = [];
+  if (svFifaApiFootballKey()) providers.push(['api-football', svFifaFetchApiFootball]);
+  providers.push(['espn', svFifaFetchEspn]);
+
+  const errors = [];
+  for (const [name, fetcher] of providers) {
+    try {
+      const payload = await fetcher();
+      if (payload && payload.ok) return payload;
+      if (payload && svFifaHasRealData(payload)) return { ...payload, ok: true };
+      errors.push(new Error(`${name} returned no live football data`));
+    } catch (e) {
+      errors.push(e);
+      svFifaWarn(`${name} provider failed`, e);
+    }
+  }
+  if (fifaLiveLastGood) return svFifaMarkStale(fifaLiveLastGood, 'cache');
+  return svFifaEmptyPayload(FIFA_LIVE_REAL_UNAVAILABLE, false, 'none');
+}
+
+async function svGetFifaLivePayload(options = {}) {
+  const now = Date.now();
+  if (fifaLiveCache && fifaLiveCache.expiresAt > now) return fifaLiveCache.payload;
+  if (options.allowStale && fifaLiveLastGood) {
+    svFifaRefreshLiveCache();
+    return svFifaMarkStale(fifaLiveLastGood, 'cache');
+  }
+  if (fifaLiveInFlight) return fifaLiveInFlight;
+  return svFifaRefreshLiveCache();
+}
+
+function svWarmFifaLiveCache(reason = 'startup') {
+  svFifaRefreshLiveCache()
+    .then(payload => {
+      const total = svFifaArray(payload?.liveMatches).length + svFifaArray(payload?.upcomingMatches).length + svFifaArray(payload?.recentResults).length;
+      console.log(`[FIFA Live] ${reason} cache ready: ${total} matches from ${payload?.source || 'none'}${payload?.stale ? ' (stale)' : ''}`);
+    })
+    .catch(err => svFifaWarn(`${reason} cache warmup failed`, err));
+}
+
+function svFifaCleanProvider(value) {
+  const provider = String(value || '').trim().toLowerCase();
+  if (provider === 'api-football' || provider === 'apifootball' || provider === 'api_sports') return 'api-football';
+  if (provider === 'espn') return 'espn';
+  if (provider === 'cache') return 'cache';
+  return '';
+}
+
+function svFifaCleanDetailValue(value) {
+  if (value === undefined || value === null) return '';
+  const text = String(value).trim();
+  if (!text || text.toLowerCase() === 'null' || text.toLowerCase() === 'undefined') return '';
+  return text;
+}
+
+function svFifaEmptyLineup(team = '') {
+  return {
+    team: String(team || ''),
+    formation: '',
+    coach: '',
+    players: [],
+    substitutes: []
+  };
+}
+
+function svFifaEmptyMatchDetail(matchId = '', message = FIFA_LIVE_DETAIL_UNAVAILABLE, source = 'none', stale = false) {
+  const detail = {
+    ok: false,
+    generatedAt: new Date().toISOString(),
+    source,
+    stale: !!stale,
+    match: {
+      id: String(matchId || ''),
+      status: '',
+      minute: '',
+      homeTeam: '',
+      awayTeam: '',
+      homeScore: null,
+      awayScore: null,
+      competition: '',
+      stage: '',
+      venue: '',
+      startTime: ''
+    },
+    overview: {
+      referee: '',
+      weather: '',
+      attendance: '',
+      round: '',
+      leg: ''
+    },
+    statistics: [],
+    lineups: {
+      home: svFifaEmptyLineup(),
+      away: svFifaEmptyLineup()
+    },
+    events: [],
+    standings: [],
+    message,
+    apiFootballConfigured: !!svFifaApiFootballKey(),
+    dataIntegrity: {
+      fakeDataUsed: false,
+      cardsAreProviderOnly: true,
+      statsAreProviderOnly: true
+    },
+    providerLimitations: []
+  };
+  detail.fakeDataUsed = false;
+  detail.capabilities = svFifaBuildDetailCapabilities(detail);
+  detail.provider = svFifaProviderMeta(source);
+  return detail;
+}
+
+function svFifaMatchDetailHasData(detail) {
+  const lineups = detail?.lineups || {};
+  return !!(
+    svFifaArray(detail?.statistics).length ||
+    svFifaArray(detail?.events).length ||
+    svFifaArray(detail?.standings).length ||
+    svFifaArray(lineups.home?.players).length ||
+    svFifaArray(lineups.home?.substitutes).length ||
+    svFifaArray(lineups.away?.players).length ||
+    svFifaArray(lineups.away?.substitutes).length ||
+    lineups.home?.formation ||
+    lineups.away?.formation ||
+    lineups.home?.coach ||
+    lineups.away?.coach
+  );
+}
+
+function svFifaFinalizeMatchDetail(payload, source, stale = false) {
+  const match = svFifaEnrichMatchTeams(payload?.match || {});
+  const overview = payload?.overview || {};
+  const lineups = payload?.lineups || {};
+  const valueSource = stale || source === 'cache' ? 'cache' : 'provider';
+  const homePlayers = svFifaCleanPlayers(lineups.home?.players).slice(0, 40);
+  const homeSubs = svFifaCleanPlayers(lineups.home?.substitutes).slice(0, 40);
+  const awayPlayers = svFifaCleanPlayers(lineups.away?.players).slice(0, 40);
+  const awaySubs = svFifaCleanPlayers(lineups.away?.substitutes).slice(0, 40);
+  const homeLineupMeta = svFifaTeamMeta(lineups.home?.team || match.homeTeam, lineups.home);
+  const awayLineupMeta = svFifaTeamMeta(lineups.away?.team || match.awayTeam, lineups.away);
+  const enrichEvent = event => {
+    const teamKey = svFifaTeamKey(event?.team);
+    const homeKey = svFifaTeamKey(match.homeTeam);
+    const awayKey = svFifaTeamKey(match.awayTeam);
+    const sideMeta = teamKey && teamKey === homeKey
+      ? { logo: match.homeLogo, flag: match.homeFlag, countryCode: match.homeCountryCode }
+      : (teamKey && teamKey === awayKey ? { logo: match.awayLogo, flag: match.awayFlag, countryCode: match.awayCountryCode } : {});
+    const teamMeta = svFifaTeamMeta(event?.team, event);
+    return {
+      ...event,
+      source: event?.source === 'cache' ? 'cache' : valueSource,
+      teamLogo: event?.teamLogo || sideMeta.logo || teamMeta.logo,
+      teamFlag: event?.teamFlag || sideMeta.flag || teamMeta.flag,
+      teamCountryCode: event?.teamCountryCode || sideMeta.countryCode || teamMeta.countryCode
+    };
+  };
+  const enrichStanding = row => {
+    const meta = svFifaTeamMeta(row?.team, row);
+    return {
+      ...row,
+      source: row?.source === 'cache' ? 'cache' : valueSource,
+      logo: row?.logo || row?.teamLogo || meta.logo,
+      flag: row?.flag || row?.teamFlag || meta.flag,
+      countryCode: row?.countryCode || row?.teamCountryCode || meta.countryCode
+    };
+  };
+  const detail = {
+    ok: !!payload?.ok,
+    generatedAt: new Date().toISOString(),
+    source,
+    stale: !!stale,
+    match: {
+      id: String(match.id || payload?.matchId || ''),
+      status: String(match.status || ''),
+      minute: svFifaCleanDetailValue(match.minute),
+      homeTeam: String(match.homeTeam || ''),
+      awayTeam: String(match.awayTeam || ''),
+      homeScore: match.homeScore === 0 || match.homeScore ? match.homeScore : null,
+      awayScore: match.awayScore === 0 || match.awayScore ? match.awayScore : null,
+      competition: String(match.competition || ''),
+      stage: String(match.stage || match.group || ''),
+      venue: String(match.venue || ''),
+      startTime: String(match.startTime || match.kickoff || ''),
+      homeFlag: match.homeFlag || '',
+      homeLogo: match.homeLogo || '',
+      homeCountryCode: match.homeCountryCode || '',
+      awayFlag: match.awayFlag || '',
+      awayLogo: match.awayLogo || '',
+      awayCountryCode: match.awayCountryCode || ''
+    },
+    overview: {
+      referee: svFifaCleanDetailValue(overview.referee),
+      weather: svFifaCleanDetailValue(overview.weather),
+      attendance: svFifaCleanDetailValue(overview.attendance),
+      round: svFifaCleanDetailValue(overview.round),
+      leg: svFifaCleanDetailValue(overview.leg)
+    },
+    statistics: svFifaFilterStats(payload?.statistics).slice(0, 32).map(row => ({
+      ...row,
+      source: row?.source === 'cache' ? 'cache' : valueSource,
+      homeFlag: row?.homeFlag || match.homeFlag || '',
+      homeLogo: row?.homeLogo || match.homeLogo || '',
+      awayFlag: row?.awayFlag || match.awayFlag || '',
+      awayLogo: row?.awayLogo || match.awayLogo || ''
+    })),
+    lineups: {
+      home: {
+        ...svFifaEmptyLineup(match.homeTeam),
+        ...(lineups.home || {}),
+        formation: svFifaCleanDetailValue(lineups.home?.formation),
+        coach: svFifaCleanDetailValue(lineups.home?.coach),
+        logo: lineups.home?.logo || match.homeLogo || homeLineupMeta.logo,
+        flag: lineups.home?.flag || match.homeFlag || homeLineupMeta.flag,
+        countryCode: lineups.home?.countryCode || match.homeCountryCode || homeLineupMeta.countryCode,
+        players: homePlayers,
+        substitutes: homeSubs
+      },
+      away: {
+        ...svFifaEmptyLineup(match.awayTeam),
+        ...(lineups.away || {}),
+        formation: svFifaCleanDetailValue(lineups.away?.formation),
+        coach: svFifaCleanDetailValue(lineups.away?.coach),
+        logo: lineups.away?.logo || match.awayLogo || awayLineupMeta.logo,
+        flag: lineups.away?.flag || match.awayFlag || awayLineupMeta.flag,
+        countryCode: lineups.away?.countryCode || match.awayCountryCode || awayLineupMeta.countryCode,
+        players: awayPlayers,
+        substitutes: awaySubs
+      }
+    },
+    events: svFifaFilterEvents(payload?.events).slice(0, 80).map(enrichEvent),
+    standings: svFifaFilterStandings(payload?.standings).slice(0, 48).map(enrichStanding),
+    message: String(payload?.message || ''),
+    apiFootballConfigured: !!svFifaApiFootballKey(),
+    dataIntegrity: {
+      fakeDataUsed: false,
+      cardsAreProviderOnly: true,
+      statsAreProviderOnly: true
+    },
+    providerLimitations: []
+  };
+  detail.capabilities = svFifaBuildDetailCapabilities(detail);
+  detail.provider = svFifaProviderMeta(source);
+  if (detail.ok && detail.provider.limited && (!detail.capabilities.lineups || !detail.capabilities.formations)) {
+    detail.providerLimitations.push(FIFA_LIVE_DETAIL_PROVIDER_LIMITED);
+    if (!detail.message && !svFifaMatchDetailHasData(detail)) detail.message = FIFA_LIVE_DETAIL_PROVIDER_LIMITED;
+  }
+  if (detail.ok && !svFifaMatchDetailHasData(detail) && !detail.message) detail.message = FIFA_LIVE_DETAIL_UNAVAILABLE;
+  if (!detail.ok && !detail.message) detail.message = FIFA_LIVE_DETAIL_UNAVAILABLE;
+  return detail;
+}
+
+function svFifaDetailCacheKey(provider, matchId, league = '') {
+  return `${provider || 'auto'}:${String(matchId || '').trim()}:${String(league || '').trim().toLowerCase()}`;
+}
+
+function svFifaDetailCacheTtl(payload) {
+  const status = String(payload?.match?.status || '').toUpperCase();
+  return (status === 'LIVE' || status === 'HT') ? FIFA_LIVE_DETAIL_FAST_CACHE_MS : FIFA_LIVE_DETAIL_SLOW_CACHE_MS;
+}
+
+function svFifaCacheMatchDetail(key, payload) {
+  if (!payload || !payload.ok || payload.source === 'none') return payload;
+  fifaMatchDetailCache.set(key, {
+    expiresAt: Date.now() + svFifaDetailCacheTtl(payload),
+    payload
+  });
+  return payload;
+}
+
+function svFifaMarkDetailStale(payload) {
+  return {
+    ...payload,
+    generatedAt: new Date().toISOString(),
+    source: 'cache',
+    stale: true,
+    message: payload?.message || 'Showing last real match details while the football provider reconnects.'
+  };
+}
+
+function svFifaMatchCollections(payload) {
+  return [
+    ...svFifaArray(payload?.liveMatches),
+    ...svFifaArray(payload?.upcomingMatches),
+    ...svFifaArray(payload?.recentResults)
+  ];
+}
+
+function svFifaFindSummaryMatch(matchId) {
+  const id = String(matchId || '').trim();
+  if (!id) return null;
+  const payloads = [fifaLiveCache?.payload, fifaLiveLastGood].filter(Boolean);
+  for (const payload of payloads) {
+    const found = svFifaMatchCollections(payload).find(match => String(match?.id || '') === id);
+    if (found) return found;
+  }
+  return null;
+}
+
+async function svFifaInferProvider(matchId) {
+  const cached = svFifaFindSummaryMatch(matchId);
+  if (cached?.provider) return cached.provider;
+  try {
+    const payload = await svGetFifaLivePayload();
+    const found = svFifaMatchCollections(payload).find(match => String(match?.id || '') === String(matchId || ''));
+    if (found?.provider) return found.provider;
+  } catch (e) {
+    svFifaWarn('match provider inference failed', e);
+  }
+  return svFifaApiFootballKey() ? 'api-football' : 'espn';
+}
+
+function svFifaStatKey(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function svFifaFriendlyStatLabel(label, name = '') {
+  const key = svFifaStatKey(name || label);
+  const labels = {
+    ballpossession: 'Possession',
+    possessionpct: 'Possession',
+    totalshots: 'Shots',
+    shotsongoal: 'Shots on target',
+    shotsontarget: 'Shots on target',
+    cornerkicks: 'Corners',
+    woncorners: 'Corners',
+    foulscommitted: 'Fouls',
+    fouls: 'Fouls',
+    yellowcards: 'Yellow Cards',
+    redcards: 'Red Cards',
+    offsides: 'Offsides',
+    goalkeepersaves: 'Saves',
+    saves: 'Saves',
+    totalpasses: 'Passes',
+    accuratepasses: 'Pass Accuracy',
+    passaccuracy: 'Pass Accuracy',
+    passcompletion: 'Pass Accuracy',
+    expectedgoals: 'Expected Goals',
+    xg: 'Expected Goals'
+  };
+  return labels[key] || svFifaTitleCase(label || name);
+}
+
+function svFifaProviderStatLabel(label) {
+  const key = svFifaStatKey(label);
+  const labels = {
+    shots: 'Shots',
+    totalshots: 'Shots',
+    shotsongoal: 'Shots on target',
+    shotsontarget: 'Shots on target',
+    sog: 'Shots on target',
+    possession: 'Possession',
+    ballpossession: 'Possession',
+    possessionpct: 'Possession',
+    passes: 'Passes',
+    totalpasses: 'Passes',
+    passaccuracy: 'Pass Accuracy',
+    passcompletion: 'Pass Accuracy',
+    accuratepasses: 'Pass Accuracy',
+    fouls: 'Fouls',
+    foulscommitted: 'Fouls',
+    yellowcards: 'Yellow Cards',
+    redcards: 'Red Cards',
+    offsides: 'Offsides',
+    corners: 'Corners',
+    cornerkicks: 'Corners',
+    woncorners: 'Corners',
+    saves: 'Saves',
+    goalkeepersaves: 'Saves',
+    expectedgoals: 'Expected Goals',
+    xg: 'Expected Goals'
+  };
+  return labels[key] || '';
+}
+
+function svFifaNormalizeStatPairs(homeStats, awayStats) {
+  const rows = new Map();
+  const add = (side, stats) => {
+    svFifaArray(stats).forEach(stat => {
+      const rawLabel = svFifaFirst(stat?.label, stat?.type, stat?.displayName, stat?.name);
+      const rawName = svFifaFirst(stat?.name, stat?.type, rawLabel);
+      const label = svFifaProviderStatLabel(svFifaFriendlyStatLabel(rawLabel, rawName));
+      const key = svFifaStatKey(label);
+      const value = svFifaCleanDetailValue(svFifaFirst(stat?.displayValue, stat?.value));
+      if (!label || !value) return;
+      const row = rows.get(key) || { label, home: '', away: '', source: 'provider' };
+      row[side] = value;
+      rows.set(key, row);
+    });
+  };
+  add('home', homeStats);
+  add('away', awayStats);
+  const order = ['shots', 'shotsontarget', 'possession', 'passes', 'passaccuracy', 'fouls', 'yellowcards', 'redcards', 'offsides', 'corners', 'saves', 'expectedgoals'];
+  return [
+    ...order.map(key => rows.get(key)).filter(Boolean),
+    ...Array.from(rows.entries()).filter(([key]) => !order.includes(key)).map(([, row]) => row)
+  ].filter(row => row.home || row.away);
+}
+
+function svFifaMatchMinute(elapsed, extra) {
+  const base = svFifaNumber(elapsed, null);
+  const added = svFifaNumber(extra, null);
+  if (base === null) return '';
+  return `${base}${added ? `+${added}` : ''}'`;
+}
+
+function svFifaNormalizeApiFootballPlayer(entry, starter) {
+  const player = entry?.player || entry || {};
+  const name = svFifaCleanDetailValue(svFifaFirst(player.name, player.displayName, player.fullName));
+  if (!name) return null;
+  return {
+    number: svFifaNumber(svFifaFirst(player.number, player.jersey), ''),
+    name,
+    position: svFifaCleanDetailValue(svFifaFirst(player.pos, player.position, player.grid)),
+    starter: !!starter,
+    captain: !!player.captain
+  };
+}
+
+function svFifaNormalizeApiFootballLineups(raw, match) {
+  const blocks = svFifaArray(raw?.response);
+  const findBlock = (side, teamName) => blocks.find(block => {
+    const name = String(block?.team?.name || '').toLowerCase();
+    return name && name === String(teamName || '').toLowerCase();
+  }) || blocks[side === 'home' ? 0 : 1] || {};
+  const toLineup = (block, fallbackTeam) => ({
+    team: String(block?.team?.name || fallbackTeam || ''),
+    logo: svFifaProviderLogo(block?.team),
+    flag: svFifaTeamMeta(block?.team?.name || fallbackTeam, block?.team).flag,
+    countryCode: svFifaTeamMeta(block?.team?.name || fallbackTeam, block?.team).countryCode,
+    formation: svFifaCleanDetailValue(block?.formation),
+    coach: svFifaCleanDetailValue(block?.coach?.name),
+    players: svFifaArray(block?.startXI).map(item => svFifaNormalizeApiFootballPlayer(item, true)).filter(Boolean),
+    substitutes: svFifaArray(block?.substitutes).map(item => svFifaNormalizeApiFootballPlayer(item, false)).filter(Boolean)
+  });
+  return {
+    home: toLineup(findBlock('home', match.homeTeam), match.homeTeam),
+    away: toLineup(findBlock('away', match.awayTeam), match.awayTeam)
+  };
+}
+
+function svFifaNormalizeApiFootballStatistics(raw, match) {
+  const blocks = svFifaArray(raw?.response);
+  const homeBlock = blocks.find(block => String(block?.team?.name || '').toLowerCase() === String(match.homeTeam || '').toLowerCase()) || blocks[0] || {};
+  const awayBlock = blocks.find(block => String(block?.team?.name || '').toLowerCase() === String(match.awayTeam || '').toLowerCase()) || blocks[1] || {};
+  return svFifaNormalizeStatPairs(homeBlock.statistics, awayBlock.statistics);
+}
+
+function svFifaNormalizeApiFootballEvents(raw) {
+  return svFifaArray(raw?.response).map(event => ({
+    minute: svFifaMatchMinute(event?.time?.elapsed, event?.time?.extra),
+    team: String(event?.team?.name || ''),
+    teamLogo: svFifaProviderLogo(event?.team),
+    teamFlag: svFifaTeamMeta(event?.team?.name, event?.team).flag,
+    teamCountryCode: svFifaTeamMeta(event?.team?.name, event?.team).countryCode,
+    player: svFifaCleanDetailValue(event?.player?.name),
+    type: svFifaCleanDetailValue(svFifaFirst(event?.type, event?.detail)),
+    detail: svFifaCleanDetailValue(svFifaFirst(event?.detail, event?.comments, event?.assist?.name))
+  })).filter(event => event.type || event.player || event.team);
+}
+
+async function svFifaFetchApiFootballDetail(matchId) {
+  const apiKey = svFifaApiFootballKey();
+  if (!apiKey) return svFifaEmptyMatchDetail(matchId, FIFA_LIVE_DETAIL_UNAVAILABLE, 'none');
+  const headers = svFifaApiFootballHeaders(apiKey);
+  const fixture = await svFifaFetchJson(`${FIFA_LIVE_API_FOOTBALL_BASE}/fixtures?id=${encodeURIComponent(matchId)}`, { headers });
+  const fixtureItem = svFifaArray(fixture?.response)[0];
+  if (!fixtureItem) return svFifaEmptyMatchDetail(matchId, FIFA_LIVE_DETAIL_UNAVAILABLE, 'api-football');
+  const match = svFifaNormalizeApiFootballFixture(fixtureItem);
+  const league = fixtureItem?.league || {};
+  const season = svFifaNumber(league.season, new Date(match.startTime || Date.now()).getUTCFullYear());
+  const urls = [
+    svFifaFetchJson(`${FIFA_LIVE_API_FOOTBALL_BASE}/fixtures/statistics?fixture=${encodeURIComponent(match.id)}`, { headers }),
+    svFifaFetchJson(`${FIFA_LIVE_API_FOOTBALL_BASE}/fixtures/lineups?fixture=${encodeURIComponent(match.id)}`, { headers }),
+    svFifaFetchJson(`${FIFA_LIVE_API_FOOTBALL_BASE}/fixtures/events?fixture=${encodeURIComponent(match.id)}`, { headers })
+  ];
+  if (league.id && season) urls.push(svFifaFetchJson(`${FIFA_LIVE_API_FOOTBALL_BASE}/standings?league=${encodeURIComponent(league.id)}&season=${encodeURIComponent(season)}`, { headers }));
+  const [statsRes, lineupsRes, eventsRes, standingsRes] = await Promise.allSettled(urls);
+  const detail = svFifaFinalizeMatchDetail({
+    ok: true,
+    match,
+    overview: {
+      referee: fixtureItem?.fixture?.referee || '',
+      weather: '',
+      attendance: '',
+      round: league.round || '',
+      leg: ''
+    },
+    statistics: statsRes.status === 'fulfilled' ? svFifaNormalizeApiFootballStatistics(statsRes.value, match) : [],
+    lineups: lineupsRes.status === 'fulfilled' ? svFifaNormalizeApiFootballLineups(lineupsRes.value, match) : {
+      home: svFifaEmptyLineup(match.homeTeam),
+      away: svFifaEmptyLineup(match.awayTeam)
+    },
+    events: eventsRes.status === 'fulfilled' ? svFifaNormalizeApiFootballEvents(eventsRes.value) : [],
+    standings: standingsRes?.status === 'fulfilled' ? svFifaNormalizeApiFootballStandings(standingsRes.value) : []
+  }, 'api-football');
+  return detail;
+}
+
+function svFifaNormalizeEspnPlayer(entry) {
+  const athlete = entry?.athlete || {};
+  const name = svFifaCleanDetailValue(svFifaFirst(athlete.displayName, athlete.fullName, athlete.shortName));
+  if (!name) return null;
+  return {
+    number: svFifaNumber(svFifaFirst(entry?.jersey, athlete.jersey), ''),
+    name,
+    position: svFifaCleanDetailValue(svFifaFirst(entry?.position?.abbreviation, entry?.position?.displayName, entry?.position?.name)),
+    starter: !!entry?.starter,
+    captain: !!entry?.captain
+  };
+}
+
+function svFifaNormalizeEspnLineups(raw, match) {
+  const rosters = svFifaArray(raw?.rosters);
+  const find = side => rosters.find(item => item?.homeAway === side) || rosters[side === 'home' ? 0 : 1] || {};
+  const toLineup = (block, fallbackTeam) => {
+    const roster = svFifaArray(block?.roster).map(svFifaNormalizeEspnPlayer).filter(Boolean);
+    return {
+      team: String(block?.team?.displayName || fallbackTeam || ''),
+      logo: svFifaProviderLogo(block?.team),
+      flag: svFifaTeamMeta(block?.team?.displayName || fallbackTeam, block?.team).flag,
+      countryCode: svFifaTeamMeta(block?.team?.displayName || fallbackTeam, block?.team).countryCode,
+      formation: svFifaCleanDetailValue(block?.formation),
+      coach: svFifaCleanDetailValue(svFifaFirst(block?.coach?.displayName, block?.coach?.name)),
+      players: roster.filter(player => player.starter),
+      substitutes: roster.filter(player => !player.starter)
+    };
+  };
+  return {
+    home: toLineup(find('home'), match.homeTeam),
+    away: toLineup(find('away'), match.awayTeam)
+  };
+}
+
+function svFifaNormalizeEspnStatistics(raw) {
+  const teams = svFifaArray(raw?.boxscore?.teams);
+  const home = teams.find(team => team?.homeAway === 'home') || teams[0] || {};
+  const away = teams.find(team => team?.homeAway === 'away') || teams[1] || {};
+  return svFifaNormalizeStatPairs(home.statistics, away.statistics);
+}
+
+function svFifaNormalizeEspnEvents(raw) {
+  const events = svFifaArray(raw?.keyEvents).length
+    ? svFifaArray(raw?.keyEvents)
+    : svFifaArray(raw?.commentary).map(item => item?.play || item);
+  const important = /goal|card|substitution|kickoff|half|regular time|penalty/i;
+  return events.map(event => {
+    const type = svFifaCleanDetailValue(svFifaFirst(event?.type?.text, event?.type?.description, event?.type?.type));
+    if (!type || !important.test(type)) return null;
+    const participants = svFifaArray(event?.participants);
+    return {
+      minute: svFifaCleanDetailValue(svFifaFirst(event?.clock?.displayValue, event?.time?.displayValue)),
+      team: String(event?.team?.displayName || ''),
+      teamLogo: svFifaProviderLogo(event?.team),
+      teamFlag: svFifaTeamMeta(event?.team?.displayName, event?.team).flag,
+      teamCountryCode: svFifaTeamMeta(event?.team?.displayName, event?.team).countryCode,
+      player: svFifaCleanDetailValue(participants[0]?.athlete?.displayName),
+      type,
+      detail: svFifaCleanDetailValue(svFifaFirst(event?.shortText, event?.text))
+    };
+  }).filter(Boolean);
+}
+
+function svFifaEspnStandingStat(entry, keys) {
+  const wanted = new Set(keys.map(svFifaStatKey));
+  const stats = svFifaArray(entry?.stats);
+  const found = stats.find(stat => {
+    const names = [stat?.name, stat?.displayName, stat?.shortDisplayName, stat?.abbreviation, stat?.type]
+      .map(svFifaStatKey)
+      .filter(Boolean);
+    return names.some(name => wanted.has(name));
+  });
+  return svFifaCleanDetailValue(svFifaFirst(found?.displayValue, found?.value));
+}
+
+function svFifaNormalizeEspnStandings(raw) {
+  const standings = raw?.standings || {};
+  const rows = svFifaArray(standings.groups).flatMap(group => {
+    const groupName = String(group?.header || standings.header || '');
+    return svFifaArray(group?.standings?.entries).map((entry, index) => ({
+      group: groupName,
+      rank: svFifaNumber(svFifaEspnStandingStat(entry, ['rank', 'rk', 'position']), index + 1),
+      team: String(entry?.team?.displayName || entry?.team || ''),
+      logo: svFifaProviderLogo(entry?.team),
+      flag: svFifaTeamMeta(entry?.team?.displayName || entry?.team, entry?.team).flag,
+      countryCode: svFifaTeamMeta(entry?.team?.displayName || entry?.team, entry?.team).countryCode,
+      played: svFifaEspnStandingStat(entry, ['gamesplayed', 'gamesPlayed', 'played', 'matchesplayed', 'mp', 'gp']),
+      wins: svFifaEspnStandingStat(entry, ['wins', 'w']),
+      draws: svFifaEspnStandingStat(entry, ['draws', 'ties', 'd', 't']),
+      losses: svFifaEspnStandingStat(entry, ['losses', 'l']),
+      goalDifference: svFifaEspnStandingStat(entry, ['goaldifference', 'goalDifference', 'goalsdiff', 'gd', 'pointdifferential', 'pd']),
+      points: svFifaEspnStandingStat(entry, ['points', 'pts'])
+    }));
+  });
+  return svFifaFilterStandings(rows);
+}
+
+async function svFifaFetchEspnDetail(matchId, league = '') {
+  const leagues = [...new Set([league, 'fifa.world', 'all'].map(item => String(item || '').trim()).filter(Boolean))];
+  let raw = null;
+  let lastErr = null;
+  let usedLeague = leagues[0] || 'fifa.world';
+  for (const slug of leagues) {
+    try {
+      raw = await svFifaFetchJson(`${FIFA_LIVE_ESPN_BASE}/${encodeURIComponent(slug)}/summary?event=${encodeURIComponent(matchId)}`, {
+        timeout: FIFA_LIVE_UPSTREAM_TIMEOUT_MS,
+        maxBytes: 5 * 1024 * 1024
+      });
+      usedLeague = slug;
+      break;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  if (!raw) throw lastErr || new Error('ESPN match detail unavailable');
+  const header = raw?.header || {};
+  if (!header?.id && !svFifaArray(header?.competitions).length) return svFifaEmptyMatchDetail(matchId, FIFA_LIVE_DETAIL_UNAVAILABLE, 'espn');
+  const match = svFifaNormalizeEspnEvent(header, usedLeague);
+  match.id = String(match.id || matchId);
+  const competition = header?.competitions?.[0] || {};
+  const detail = svFifaFinalizeMatchDetail({
+    ok: true,
+    match,
+    overview: {
+      referee: svFifaArray(competition?.officials).find(item => /referee/i.test(item?.position?.name || item?.role || ''))?.displayName || '',
+      weather: svFifaCleanDetailValue(raw?.gameInfo?.weather?.displayValue),
+      attendance: svFifaCleanDetailValue(competition?.attendance),
+      round: svFifaCleanDetailValue(svFifaFirst(competition?.altGameNote, header?.season?.slug)),
+      leg: ''
+    },
+    statistics: svFifaNormalizeEspnStatistics(raw),
+    lineups: svFifaNormalizeEspnLineups(raw, match),
+    events: svFifaNormalizeEspnEvents(raw),
+    standings: svFifaNormalizeEspnStandings(raw)
+  }, 'espn');
+  return detail;
+}
+
+async function svGetFifaMatchDetail(provider, matchId, options = {}) {
+  const id = String(matchId || '').trim();
+  if (!id) return svFifaEmptyMatchDetail('', FIFA_LIVE_DETAIL_UNAVAILABLE, 'none');
+  const cleanProvider = svFifaCleanProvider(provider) || await svFifaInferProvider(id);
+  const summaryMatch = svFifaFindSummaryMatch(id);
+  const league = svFifaCleanDetailValue(options.league || summaryMatch?.leagueSlug);
+  const key = svFifaDetailCacheKey(cleanProvider, id, league);
+  const cached = fifaMatchDetailCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.payload;
+  if (fifaMatchDetailInflight.has(key)) return fifaMatchDetailInflight.get(key);
+
+  const fetcher = cleanProvider === 'api-football'
+    ? () => svFifaFetchApiFootballDetail(id)
+    : () => svFifaFetchEspnDetail(id, league);
+
+  const inFlight = fetcher()
+    .then(payload => {
+      if (payload?.ok) return svFifaCacheMatchDetail(key, payload);
+      if (cached?.payload?.ok) return svFifaMarkDetailStale(cached.payload);
+      return payload || svFifaEmptyMatchDetail(id, FIFA_LIVE_DETAIL_UNAVAILABLE, 'none');
+    })
+    .catch(err => {
+      svFifaWarn(`${cleanProvider || 'football'} match detail failed`, err);
+      if (cached?.payload?.ok) return svFifaMarkDetailStale(cached.payload);
+      return svFifaEmptyMatchDetail(id, FIFA_LIVE_DETAIL_UNAVAILABLE, 'none');
+    })
+    .finally(() => { fifaMatchDetailInflight.delete(key); });
+
+  fifaMatchDetailInflight.set(key, inFlight);
+  return inFlight;
+}
+
+async function svSendFifaMatchDetail(req, res, provider, matchId) {
+  res.setHeader('Cache-Control', 'no-store, max-age=0, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  try {
+    res.json(await svGetFifaMatchDetail(provider, matchId, { league: req.query?.league }));
+  } catch (e) {
+    svFifaWarn('match detail endpoint response failed', e);
+    res.json(svFifaEmptyMatchDetail(matchId, FIFA_LIVE_DETAIL_UNAVAILABLE, 'none'));
+  }
+}
+
+app.get('/api/fifa-live/match/:provider/:matchId', async (req, res) => {
+  await svSendFifaMatchDetail(req, res, req.params.provider, req.params.matchId);
+});
+
+app.get('/api/fifa-live/match/:matchId', async (req, res) => {
+  await svSendFifaMatchDetail(req, res, '', req.params.matchId);
+});
+
+app.get('/api/fifa-live/news', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, max-age=0, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  try {
+    res.json(await svGetFifaNewsPayload());
+  } catch (e) {
+    svFifaWarn('news endpoint response failed', e);
+    if (fifaLiveNewsLastGood) {
+      res.json(svFifaMarkNewsStale(fifaLiveNewsLastGood));
+      return;
+    }
+    res.json(svFifaNewsPayload([], 'none'));
+  }
+});
+
+app.get('/api/fifa-live', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, max-age=0, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  try {
+    const payload = await svGetFifaLivePayload({ allowStale: true });
+    res.setHeader('X-StreamVault-Fifa-Cache', payload?.stale ? 'stale-refreshing' : 'fresh');
+    res.json(payload);
+  } catch (e) {
+    svFifaWarn('endpoint response failed', e);
+    res.json(svFifaEmptyPayload(FIFA_LIVE_REAL_UNAVAILABLE, false, 'none'));
+  }
+});
+
+const SV_LIVE_DEBUG = process.env.SV_LIVE_DEBUG === '1';
+const SV_LIVE_PLAYLIST_MAX_BYTES = 1024 * 1024;
+const SV_LIVE_MEDIA_SEGMENT_WINDOW = Math.max(5, Number(process.env.SV_LIVE_MEDIA_SEGMENT_WINDOW || 6));
+const SV_LIVE_FAST_MEDIA_SEGMENT_WINDOW = Math.max(2, Number(process.env.SV_LIVE_FAST_MEDIA_SEGMENT_WINDOW || 3));
+const SV_LIVE_PLAYLIST_TIMEOUT_MS = Math.max(2500, Number(process.env.SV_LIVE_PLAYLIST_TIMEOUT_MS || 7000));
+const SV_LIVE_FAST_PLAYLIST_TIMEOUT_MS = Math.max(2000, Number(process.env.SV_LIVE_FAST_PLAYLIST_TIMEOUT_MS || 4500));
+const SV_LIVE_SEGMENT_CACHE_TTL_MS = Math.max(15000, Number(process.env.SV_LIVE_SEGMENT_CACHE_TTL_MS || 60000));
+const SV_LIVE_SEGMENT_CACHE_MAX_PER_CHANNEL = Math.max(4, Number(process.env.SV_LIVE_SEGMENT_CACHE_MAX_PER_CHANNEL || 10));
+const SV_LIVE_SEGMENT_CACHE_MAX_BYTES = Math.max(32 * 1024 * 1024, Number(process.env.SV_LIVE_SEGMENT_CACHE_MAX_BYTES || 192 * 1024 * 1024));
+const SV_LIVE_SEGMENT_CACHE_MAX_SEGMENT_BYTES = Math.max(1024 * 1024, Number(process.env.SV_LIVE_SEGMENT_CACHE_MAX_SEGMENT_BYTES || 20 * 1024 * 1024));
+const SV_LIVE_SEGMENT_ADVANCE_RETRIES = Math.max(0, Number(process.env.SV_LIVE_SEGMENT_ADVANCE_RETRIES || 5));
+const SV_LIVE_RELAY_DIR = path.join(__dirname, 'cache', 'live-relay');
+const SV_LIVE_RELAY_IDLE_MS = Math.max(5 * 60 * 1000, Number(process.env.SV_LIVE_RELAY_IDLE_MS || 10 * 60 * 1000));
+const SV_LIVE_RELAY_STALE_MS = Math.max(15000, Number(process.env.SV_LIVE_RELAY_STALE_MS || 30000));
+const SV_LIVE_RELAY_STARTUP_MS = Math.max(10000, Number(process.env.SV_LIVE_RELAY_STARTUP_MS || 25000));
+const SV_LIVE_RELAY_SEGMENT_WAIT_MS = Math.max(500, Number(process.env.SV_LIVE_RELAY_SEGMENT_WAIT_MS || 2500));
+const svLiveHttpAgent = new http.Agent({ keepAlive: true, maxSockets: 32, keepAliveMsecs: 10000 });
+const svLiveHttpsAgent = new https.Agent({ keepAlive: true, maxSockets: 32, keepAliveMsecs: 10000 });
+const svLiveSegmentCache = new Map();
+const svLiveSegmentInflight = new Map();
+let svLiveSegmentCacheBytes = 0;
+
+function svLiveDebugLog(message, data = {}) {
+  if (!SV_LIVE_DEBUG) return;
+  console.log('[Live Debug]', message, data);
+}
+
+function svLiveHeaders(sourceUrl) {
+  let origin = '';
+  try { origin = new URL(sourceUrl).origin; } catch {}
+  return {
+    'User-Agent': 'Mozilla/5.0 StreamVault-LiveTV/1.0',
+    'Accept': '*/*',
+    ...(origin ? { 'Referer': origin + '/', 'Origin': origin } : {})
+  };
+}
+
+function svLiveSegmentContentType(sourceUrl, upstreamType) {
+  const type = String(upstreamType || '').trim();
+  if (/\.m4s(?:$|[?#])/i.test(sourceUrl)) return type || 'video/iso.segment';
+  if (/\.ts(?:$|[?#])/i.test(sourceUrl)) return 'video/MP2T';
+  return type || 'video/MP2T';
+}
+
+function svLiveSetSegmentHeaders(res, meta = {}, cacheState = 'MISS') {
+  if (res.headersSent) return false;
+  const status = meta.status || 200;
+  res.status(status);
+  res.setHeader('Content-Type', meta.contentType || 'video/MP2T');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length, Content-Type, X-SV-Upstream-Status, X-SV-Upstream-Ms, X-SV-Live-Cache');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.setHeader('X-SV-Live-Cache', cacheState);
+  res.setHeader('X-SV-Upstream-Status', String(meta.upstreamStatus || status));
+  res.setHeader('X-SV-Upstream-Ms', String(meta.upstreamMs ?? 0));
+  if (meta.acceptRanges) res.setHeader('Accept-Ranges', meta.acceptRanges);
+  if (meta.contentLength) res.setHeader('Content-Length', meta.contentLength);
+  if (meta.contentRange) res.setHeader('Content-Range', meta.contentRange);
+  return true;
+}
+
+function svLivePruneSegmentCache() {
+  const now = Date.now();
+  for (const [key, entry] of svLiveSegmentCache) {
+    if (now - entry.createdAt > SV_LIVE_SEGMENT_CACHE_TTL_MS) {
+      svLiveSegmentCache.delete(key);
+      svLiveSegmentCacheBytes -= entry.bytes || 0;
+    }
+  }
+
+  const byChannel = new Map();
+  for (const [key, entry] of svLiveSegmentCache) {
+    if (!byChannel.has(entry.channelId)) byChannel.set(entry.channelId, []);
+    byChannel.get(entry.channelId).push([key, entry]);
+  }
+  for (const entries of byChannel.values()) {
+    entries.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+    for (const [key, entry] of entries.slice(SV_LIVE_SEGMENT_CACHE_MAX_PER_CHANNEL)) {
+      if (svLiveSegmentCache.delete(key)) svLiveSegmentCacheBytes -= entry.bytes || 0;
+    }
+  }
+
+  if (svLiveSegmentCacheBytes > SV_LIVE_SEGMENT_CACHE_MAX_BYTES) {
+    const entries = [...svLiveSegmentCache.entries()].sort((a, b) =>
+      (a[1].lastAccess || a[1].createdAt || 0) - (b[1].lastAccess || b[1].createdAt || 0)
+    );
+    for (const [key, entry] of entries) {
+      if (svLiveSegmentCacheBytes <= SV_LIVE_SEGMENT_CACHE_MAX_BYTES) break;
+      if (svLiveSegmentCache.delete(key)) svLiveSegmentCacheBytes -= entry.bytes || 0;
+    }
+  }
+  if (svLiveSegmentCacheBytes < 0) svLiveSegmentCacheBytes = 0;
+}
+
+function svLiveStoreSegment(channelId, sourceUrl, meta, body) {
+  if (!Buffer.isBuffer(body) || !body.length) return;
+  if (body.length > SV_LIVE_SEGMENT_CACHE_MAX_SEGMENT_BYTES) return;
+  if ((meta.status || 200) < 200 || (meta.status || 200) >= 300) return;
+
+  const key = sourceUrl;
+  const prev = svLiveSegmentCache.get(key);
+  if (prev) svLiveSegmentCacheBytes -= prev.bytes || 0;
+  const entry = {
+    channelId,
+    sourceUrl,
+    body,
+    bytes: body.length,
+    createdAt: Date.now(),
+    lastAccess: Date.now(),
+    meta: {
+      ...meta,
+      contentLength: String(body.length),
+      upstreamMs: meta.upstreamMs || 0
+    }
+  };
+  svLiveSegmentCache.set(key, entry);
+  svLiveSegmentCacheBytes += body.length;
+  svLivePruneSegmentCache();
+}
+
+function svLiveServeCachedSegment(sourceUrl, res) {
+  const entry = svLiveSegmentCache.get(sourceUrl);
+  if (!entry) return false;
+  if (Date.now() - entry.createdAt > SV_LIVE_SEGMENT_CACHE_TTL_MS) {
+    svLiveSegmentCache.delete(sourceUrl);
+    svLiveSegmentCacheBytes -= entry.bytes || 0;
+    return false;
+  }
+  entry.lastAccess = Date.now();
+  svLiveSetSegmentHeaders(res, entry.meta, 'HIT');
+  res.end(entry.body);
+  return true;
+}
+
+function svLiveInflightAddClient(inflight, res, cacheState = 'DEDUP') {
+  if (res.destroyed || res.writableEnded) return;
+  inflight.clients.add(res);
+  res.on('close', () => {
+    inflight.clients.delete(res);
+    if (!inflight.done && inflight.clients.size === 0) {
+      try { inflight.request?.destroy(); } catch {}
+    }
+  });
+  if (inflight.meta && !res.headersSent) {
+    svLiveSetSegmentHeaders(res, inflight.meta, cacheState);
+    for (const chunk of inflight.chunks) {
+      if (res.destroyed || res.writableEnded) break;
+      res.write(chunk);
+    }
+  }
+}
+
+function svAssertHttpUrl(raw) {
+  const u = new URL(String(raw || '').trim());
+  if (!['http:', 'https:'].includes(u.protocol)) throw new Error('Unsupported live URL');
+  return u.href;
+}
+
+function svResolveUrl(base, relative) {
+  return new URL(String(relative || '').trim(), base).href;
+}
+
+function svLiveProxyPath(channelId, upstreamUrl, options = {}) {
+  const isPlaylist = /\.m3u8(?:$|[?#])/i.test(upstreamUrl);
+  return isPlaylist
+    ? `/live/${encodeURIComponent(channelId)}/playlist.m3u8?src=${encodeURIComponent(upstreamUrl)}${options.fast ? '&fast=1' : ''}`
+    : `/live/${encodeURIComponent(channelId)}/segment?url=${encodeURIComponent(upstreamUrl)}`;
+}
+
+function svRewriteLiveUri(channelId, baseUrl, uri, options = {}) {
+  return svLiveProxyPath(channelId, svResolveUrl(baseUrl, uri), options);
+}
+
+async function svFetchBuffer(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    let sourceUrl;
+    try { sourceUrl = svAssertHttpUrl(url); } catch (e) { return reject(e); }
+
+    const startedAt = Date.now();
+    const mod = sourceUrl.startsWith('https://') ? https : http;
+    const timeoutMs = Math.max(1500, Number(options.timeoutMs || 15000));
+    const req = mod.get(sourceUrl, {
+      timeout: timeoutMs,
+      headers: svLiveHeaders(sourceUrl),
+      agent: sourceUrl.startsWith('https://') ? svLiveHttpsAgent : svLiveHttpAgent,
+    }, res => {
+      const chunks = [];
+      let total = 0;
+      res.on('data', c => {
+        total += c.length;
+        if (total > SV_LIVE_PLAYLIST_MAX_BYTES) {
+          req.destroy(new Error('Playlist too large'));
+          return;
+        }
+        chunks.push(c);
+      });
+      res.on('end', () => resolve({
+        status: res.statusCode,
+        headers: res.headers,
+        body: Buffer.concat(chunks),
+        finalUrl: sourceUrl,
+        elapsedMs: Date.now() - startedAt
+      }));
+    });
+
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(new Error('Timeout')); });
+  });
+}
+
+function rewriteM3u8(content, channelId, sourceBaseUrl, options = {}) {
+  return String(content || '').replace(/\r\n/g, '\n').split('\n').map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return line;
+
+    if (trimmed.startsWith('#')) {
+      return line.replace(/\bURI=(?:"([^"]+)"|([^,\s]+))/gi, (_, quotedUri, bareUri) =>
+        `URI="${svRewriteLiveUri(channelId, sourceBaseUrl, quotedUri || bareUri, options)}"`
+      );
+    }
+
+    return svRewriteLiveUri(channelId, sourceBaseUrl, trimmed, options);
   }).join('\n');
+}
+
+function svAddFastLiveStart(content) {
+  const lines = String(content || '').replace(/\r\n/g, '\n').split('\n');
+  if (lines.some(line => line.includes('#EXT-X-START'))) return lines.join('\n');
+  if (lines.some(line => line.includes('#EXT-X-STREAM-INF'))) return lines.join('\n');
+  const insertAt = Math.max(1, lines.findIndex((line, index) => index > 0 && !line.trim().startsWith('#')) - 1);
+  lines.splice(insertAt > 0 ? insertAt : 1, 0, '#EXT-X-START:TIME-OFFSET=-6,PRECISE=NO');
+  return lines.join('\n');
+}
+
+function svLiveSourceCandidates(ch, requestedSource) {
+  const candidates = [];
+  const add = value => {
+    const text = String(value || '').trim();
+    if (text && !candidates.includes(text)) candidates.push(text);
+  };
+  if (requestedSource) add(requestedSource);
+  else {
+    add(ch?.url);
+    if (Array.isArray(ch?.fallbackUrls)) ch.fallbackUrls.forEach(add);
+  }
+  return candidates;
+}
+
+function svTrimLiveMediaPlaylist(content, maxSegments = SV_LIVE_MEDIA_SEGMENT_WINDOW) {
+  const lines = String(content || '').replace(/\r\n/g, '\n').split('\n');
+  if (lines.some(line => line.includes('#EXT-X-STREAM-INF'))) return lines.join('\n');
+  if (lines.some(line => /^#EXT-X-(KEY|MAP)\b/i.test(line.trim()))) return lines.join('\n');
+
+  const segmentTag = line => /^#EXT(?:INF|-X-PROGRAM-DATE-TIME|-X-BYTERANGE|-X-DISCONTINUITY)/i.test(line.trim());
+  const prefix = [];
+  const suffix = [];
+  const segments = [];
+  let pending = [];
+  let sawSegment = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    if (trimmed.startsWith('#')) {
+      if (segmentTag(line)) pending.push(line);
+      else if (sawSegment) suffix.push(line);
+      else prefix.push(line);
+      continue;
+    }
+
+    sawSegment = true;
+    segments.push([...pending, line]);
+    pending = [];
+  }
+
+  if (segments.length <= maxSegments) return lines.join('\n');
+
+  const dropped = segments.length - maxSegments;
+  const adjustedPrefix = prefix.map(line =>
+    line.replace(/^#EXT-X-MEDIA-SEQUENCE:(\d+)/i, (_, n) => `#EXT-X-MEDIA-SEQUENCE:${Number(n) + dropped}`)
+  );
+
+  return [...adjustedPrefix, ...segments.slice(-maxSegments).flat(), ...suffix].join('\n');
+}
+
+
+async function svFetchM3u8Text(url, options = {}) {
+  const result = await svFetchBuffer(url, options);
+  const text = result.body.toString('utf8');
+
+  if (result.status < 200 || result.status >= 300) {
+    throw new Error('Upstream playlist HTTP ' + result.status);
+  }
+
+  if (!text.includes('#EXTM3U')) {
+    throw new Error('Upstream is not an M3U8 playlist');
+  }
+
+  return {
+    status: result.status,
+    url: result.finalUrl || url,
+    text,
+    bytes: result.body.length,
+    elapsedMs: result.elapsedMs || 0
+  };
 }
 
 app.get('/live/:channelId/playlist.m3u8', async (req, res) => {
   const ch = channels.find(c => c.id === req.params.channelId);
-  const sourceUrl = req.query.src || (ch && ch.url);
+  const requestedSource = String(req.query.src || '').trim();
+  const candidates = svLiveSourceCandidates(ch, requestedSource);
+  const fast = req.query.fast !== '0';
 
   const ip2 = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   tracker.trackStreamStart(ip2, req.params.channelId, ch?.name || req.params.channelId, 'live', req.headers['user-agent'] || '');
 
-  if (!sourceUrl) {
-    return res.status(404).send(
-      ch
-        ? `Channel "${ch.name}" has no URL configured. Add the .m3u8 URL to channels.json.`
-        : `Channel "${req.params.channelId}" not found in channels.json`
-    );
-  }
+  if (!candidates.length) return res.status(404).send('Channel URL missing');
 
+  let lastError = null;
   try {
-    const result = await fetchBuffer(sourceUrl);
-    const baseUrl = sourceUrl.substring(0, sourceUrl.lastIndexOf('/') + 1);
-    const rewritten = rewriteM3u8(result.body.toString('utf8'), req.params.channelId, baseUrl);
+    let fetched = null;
+    for (const candidate of candidates) {
+      const attempts = fast ? 2 : 1;
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        try {
+          fetched = await svFetchM3u8Text(candidate, { timeoutMs: fast ? SV_LIVE_FAST_PLAYLIST_TIMEOUT_MS : SV_LIVE_PLAYLIST_TIMEOUT_MS });
+          break;
+        } catch (e) {
+          lastError = e;
+          svLiveDebugLog('playlist candidate failed', { channel: req.params.channelId, candidate, attempt: attempt + 1, error: e.message });
+        }
+      }
+      if (fetched) break;
+    }
+    if (!fetched) throw lastError || new Error('No live playlist candidates worked');
 
-    res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
-    res.setHeader('Cache-Control', 'no-cache, no-store');
+    const isMaster = fetched.text.includes('#EXT-X-STREAM-INF');
+    let playlistText = isMaster ? fetched.text : svTrimLiveMediaPlaylist(fetched.text, fast ? SV_LIVE_FAST_MEDIA_SEGMENT_WINDOW : SV_LIVE_MEDIA_SEGMENT_WINDOW);
+    if (fast && !isMaster) playlistText = svAddFastLiveStart(playlistText);
+    const rewritten = rewriteM3u8(playlistText, req.params.channelId, fetched.url, { fast });
+
+    res.setHeader('Content-Type', 'application/vnd.apple.mpegurl; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('X-SV-Live-Playlist-Type', isMaster ? 'master' : 'media');
+    if (!isMaster) res.setHeader('X-SV-Live-Segment-Window', String(fast ? SV_LIVE_FAST_MEDIA_SEGMENT_WINDOW : SV_LIVE_MEDIA_SEGMENT_WINDOW));
+    res.setHeader('X-SV-Upstream-Status', String(fetched.status || 0));
+    res.setHeader('X-SV-Upstream-Ms', String(fetched.elapsedMs || 0));
+    svLiveDebugLog('playlist', {
+      channel: req.params.channelId,
+      type: isMaster ? 'master' : 'media',
+      source: fetched.url,
+      fetched: fetched.url,
+      status: fetched.status,
+      ms: fetched.elapsedMs,
+      bytes: fetched.bytes
+    });
     res.send(rewritten);
   } catch (e) {
-    console.error(`[Live] Playlist fetch error for ${req.params.channelId}:`, e.message);
-    res.status(502).send('Cannot reach channel source. Make sure the server is on the ISP network.');
+    console.error('[Live] Playlist fetch error for ' + req.params.channelId + ':', e.message);
+    res.status(502).send('Cannot reach channel source: ' + e.message);
   }
 });
+
+function svLiveAdvanceDatedSegmentUrl(sourceUrl) {
+  try {
+    const parsed = new URL(sourceUrl);
+    const match = parsed.pathname.match(/^(.*\/)(\d{4})\/(\d{2})\/(\d{2})\/(\d{2})\/(\d{2})\/(\d{2})-(\d{5})\.([a-z0-9]+)$/i);
+    if (!match) return '';
+    const [, prefix, yyyy, mm, dd, hh, min, ss, durText, ext] = match;
+    const durationMs = Math.max(1000, Math.round((Number(durText) || 6000) / 1000) * 1000);
+    const next = new Date(Date.UTC(Number(yyyy), Number(mm) - 1, Number(dd), Number(hh), Number(min), Number(ss)));
+    if (Number.isNaN(next.getTime())) return '';
+    next.setUTCMilliseconds(next.getUTCMilliseconds() + durationMs);
+    const pad = value => String(value).padStart(2, '0');
+    parsed.pathname = `${prefix}${next.getUTCFullYear()}/${pad(next.getUTCMonth() + 1)}/${pad(next.getUTCDate())}/${pad(next.getUTCHours())}/${pad(next.getUTCMinutes())}/${pad(next.getUTCSeconds())}-${durText}.${ext}`;
+    return parsed.href;
+  } catch {
+    return '';
+  }
+}
+
+function svStreamLiveSegmentWithRetry(channelId, sourceUrl, res, attempt = 0, redirectsLeft = 5) {
+  svLivePruneSegmentCache();
+  if (svLiveServeCachedSegment(sourceUrl, res)) return;
+
+  const existing = svLiveSegmentInflight.get(sourceUrl);
+  if (existing) {
+    svLiveInflightAddClient(existing, res, 'DEDUP');
+    return;
+  }
+
+  const mod = sourceUrl.startsWith('https://') ? https : http;
+  const startedAt = Date.now();
+  const chunks = [];
+  const inflight = {
+    channelId,
+    sourceUrl,
+    clients: new Set(),
+    chunks,
+    cachedBytes: 0,
+    meta: null,
+    request: null,
+    done: false
+  };
+  svLiveSegmentInflight.set(sourceUrl, inflight);
+  svLiveInflightAddClient(inflight, res, 'MISS');
+
+  const retryClients = (nextUrl = sourceUrl, nextAttempt = attempt + 1, delay = 250) => {
+    const clients = [...inflight.clients].filter(client => !client.destroyed && !client.writableEnded);
+    inflight.clients.clear();
+    inflight.done = true;
+    svLiveSegmentInflight.delete(sourceUrl);
+    setTimeout(() => {
+      for (const client of clients) {
+        if (!client.headersSent) svStreamLiveSegmentWithRetry(channelId, nextUrl, client, nextAttempt, redirectsLeft);
+        else {
+          try { client.destroy(); } catch {}
+        }
+      }
+    }, delay);
+  };
+
+  const failClients = (status, message, err) => {
+    inflight.done = true;
+    svLiveSegmentInflight.delete(sourceUrl);
+    for (const client of [...inflight.clients]) {
+      if (client.destroyed || client.writableEnded) continue;
+      if (!client.headersSent) client.status(status).end(message);
+      else {
+        try { client.destroy(err); } catch {}
+      }
+    }
+    inflight.clients.clear();
+  };
+
+  const proxyReq = mod.get(sourceUrl, {
+    timeout: 45000,
+    agent: sourceUrl.startsWith('https://') ? svLiveHttpsAgent : svLiveHttpAgent,
+    headers: {
+      ...svLiveHeaders(sourceUrl),
+      'Connection': 'keep-alive',
+      'Cache-Control': 'no-cache'
+    }
+  }, proxyRes => {
+    const status = proxyRes.statusCode || 502;
+    const location = proxyRes.headers.location;
+
+    if ([301, 302, 303, 307, 308].includes(status) && location && redirectsLeft > 0 && !res.headersSent) {
+      proxyRes.resume();
+      const nextUrl = new URL(location, sourceUrl).href;
+      inflight.done = true;
+      svLiveSegmentInflight.delete(sourceUrl);
+      for (const client of [...inflight.clients]) {
+        if (!client.destroyed && !client.writableEnded && !client.headersSent) {
+          svStreamLiveSegmentWithRetry(channelId, nextUrl, client, attempt, redirectsLeft - 1);
+        }
+      }
+      inflight.clients.clear();
+      return;
+    }
+
+    const advancedSegmentUrl = (status === 404 || status === 410) ? svLiveAdvanceDatedSegmentUrl(sourceUrl) : '';
+    if (advancedSegmentUrl && attempt < SV_LIVE_SEGMENT_ADVANCE_RETRIES) {
+      proxyRes.resume();
+      svLiveDebugLog('advance expired segment', { status, attempt: attempt + 1, from: sourceUrl, to: advancedSegmentUrl });
+      retryClients(advancedSegmentUrl, attempt + 1, 80);
+      return;
+    }
+
+    if (status >= 400 && attempt < 2) {
+      proxyRes.resume();
+      svLiveDebugLog('retry segment status', { status, attempt: attempt + 1, url: sourceUrl });
+      retryClients(sourceUrl, attempt + 1);
+      return;
+    }
+
+    const meta = {
+      status,
+      contentType: svLiveSegmentContentType(sourceUrl, proxyRes.headers['content-type']),
+      acceptRanges: proxyRes.headers['accept-ranges'],
+      contentLength: proxyRes.headers['content-length'],
+      contentRange: proxyRes.headers['content-range'],
+      upstreamStatus: status,
+      upstreamMs: Date.now() - startedAt
+    };
+    inflight.meta = meta;
+    for (const client of [...inflight.clients]) svLiveSetSegmentHeaders(client, meta, client === res ? 'MISS' : 'DEDUP');
+
+    svLiveDebugLog('segment', {
+      status,
+      ms: Date.now() - startedAt,
+      bytes: proxyRes.headers['content-length'] || '',
+      url: sourceUrl
+    });
+
+    proxyRes.on('error', e => {
+      console.error('[Live] upstream segment stream error:', e.message);
+      failClients(502, 'Segment stream failed', e);
+    });
+
+    proxyRes.on('data', chunk => {
+      if ((status >= 200 && status < 300) && inflight.cachedBytes + chunk.length <= SV_LIVE_SEGMENT_CACHE_MAX_SEGMENT_BYTES) {
+        chunks.push(chunk);
+        inflight.cachedBytes += chunk.length;
+      }
+      for (const client of [...inflight.clients]) {
+        if (client.destroyed || client.writableEnded) {
+          inflight.clients.delete(client);
+          continue;
+        }
+        client.write(chunk);
+      }
+    });
+
+    proxyRes.on('end', () => {
+      inflight.done = true;
+      svLiveSegmentInflight.delete(sourceUrl);
+      if (status >= 200 && status < 300 && chunks.length) {
+        svLiveStoreSegment(channelId, sourceUrl, meta, Buffer.concat(chunks));
+      }
+      for (const client of [...inflight.clients]) {
+        if (!client.destroyed && !client.writableEnded) client.end();
+      }
+      inflight.clients.clear();
+    });
+  });
+  inflight.request = proxyReq;
+
+  proxyReq.on('error', e => {
+    const advancedSegmentUrl = svLiveAdvanceDatedSegmentUrl(sourceUrl);
+    if (advancedSegmentUrl && attempt < SV_LIVE_SEGMENT_ADVANCE_RETRIES) {
+      svLiveDebugLog('advance segment after error', { error: e.message, attempt: attempt + 1, from: sourceUrl, to: advancedSegmentUrl });
+      retryClients(advancedSegmentUrl, attempt + 1, 80);
+      return;
+    }
+
+    if (attempt < 2) {
+      svLiveDebugLog('retry segment error', { error: e.message, attempt: attempt + 1, url: sourceUrl });
+      retryClients(sourceUrl, attempt + 1);
+      return;
+    }
+
+    console.error('[Live] Segment fetch error:', e.message);
+    failClients(502, 'Segment fetch failed', e);
+  });
+
+  proxyReq.on('timeout', () => {
+    proxyReq.destroy(new Error('Segment timeout'));
+  });
+}
 
 app.get('/live/:channelId/segment', (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send('Missing url param');
 
-  const mod = url.startsWith('https://') ? https : http;
-  const proxyReq = mod.get(url, { timeout: 15000 }, proxyRes => {
-    res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'video/mp2t');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 'no-cache');
-    proxyRes.pipe(res);
-  });
-  proxyReq.on('error', e => {
-    console.error(`[Live] Segment fetch error:`, e.message);
-    if (!res.headersSent) res.status(502).end();
-  });
-  proxyReq.on('timeout', () => {
-    proxyReq.destroy();
-    if (!res.headersSent) res.status(504).end();
-  });
-  res.on('close', () => proxyReq.destroy());
+  let sourceUrl;
+  try {
+    sourceUrl = svAssertHttpUrl(url);
+  } catch (e) {
+    return res.status(400).send(e.message);
+  }
+
+  svStreamLiveSegmentWithRetry(req.params.channelId, sourceUrl, res, 0);
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
+
+
+const svLiveRelaySessions = new Map();
+const svLiveRelayRetiredDirs = new Map();
+
+function svLiveRelayLog(channelId, message, data = {}) {
+  if (channelId !== 'tsports' && !SV_LIVE_DEBUG) return;
+  console.log(`[Live Relay:${channelId}] ${message}`, data);
+}
+
+function svLiveRelayChannel(channelId) {
+  if (!/^[a-z0-9_-]+$/i.test(String(channelId || ''))) return null;
+  return channels.find(channel => channel.id === channelId) || null;
+}
+
+function svLiveRelayRememberDir(channelId, dir) {
+  if (!dir) return;
+  const retired = svLiveRelayRetiredDirs.get(channelId) || [];
+  retired.push({ dir, expiresAt: Date.now() + 60000 });
+  svLiveRelayRetiredDirs.set(channelId, retired.slice(-3));
+}
+
+function svLiveRelayPlaylistState(session) {
+  try {
+    const stat = fs.statSync(session.playlistPath);
+    const text = fs.readFileSync(session.playlistPath, 'utf8');
+    const lines = text.split(/\r?\n/);
+    const segments = lines.map(line => line.trim()).filter(line => line && !line.startsWith('#'));
+    const readySegments = segments.filter(file => fs.existsSync(path.join(session.dir, path.basename(file))));
+    const normalizedText = lines.map(line => line.trim() && !line.trim().startsWith('#') ? path.basename(line.trim()) : line).join('\n');
+    return { ready: text.includes('#EXTM3U') && readySegments.length >= 2, stat, text: normalizedText, segments: readySegments.length };
+  } catch {
+    return { ready: false, stat: null, text: '', segments: 0 };
+  }
+}
+
+function svStopLiveRelay(session, reason) {
+  if (!session) return;
+  if (session.restartTimer) clearTimeout(session.restartTimer);
+  session.restartTimer = null;
+  try { session.process?.kill('SIGKILL'); } catch {}
+  session.process = null;
+  svLiveRelayLog(session.channelId, 'stopped', { reason });
+}
+
+function svStartLiveRelay(channelId, reason = 'start', candidateIndex = 0) {
+  const channel = svLiveRelayChannel(channelId);
+  if (!channel) return null;
+  const candidates = [channel.url, ...(Array.isArray(channel.fallbackUrls) ? channel.fallbackUrls : [])]
+    .map(value => String(value || '').trim())
+    .filter((value, index, list) => value && list.indexOf(value) === index);
+  if (!candidates.length) return null;
+
+  const previous = svLiveRelaySessions.get(channelId);
+  const lastAccess = previous?.lastAccess || Date.now();
+  if (previous) {
+    svLiveRelayRememberDir(channelId, previous.dir);
+    svStopLiveRelay(previous, reason);
+  }
+
+  fs.mkdirSync(SV_LIVE_RELAY_DIR, { recursive: true });
+  const generation = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+  const dir = path.join(SV_LIVE_RELAY_DIR, `${channelId}-${generation}`);
+  fs.mkdirSync(dir, { recursive: true });
+  const playlistPath = path.join(dir, 'index.m3u8');
+  const selectedIndex = ((candidateIndex % candidates.length) + candidates.length) % candidates.length;
+  const source = candidates[selectedIndex];
+  const ffmpegArgs = [
+    '-hide_banner', '-loglevel', 'warning', '-nostdin',
+    '-reconnect', '1', '-reconnect_at_eof', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5',
+    '-rw_timeout', '15000000', '-fflags', '+genpts+discardcorrupt',
+    '-i', source,
+    '-map', '0:v:0?', '-map', '0:a:0?', '-c', 'copy', '-max_muxing_queue_size', '2048',
+    '-f', 'hls', '-hls_time', '4', '-hls_list_size', '8',
+    '-hls_flags', 'delete_segments+omit_endlist+independent_segments+temp_file',
+    '-hls_segment_filename', path.join(dir, 'segment_%09d.ts'),
+    playlistPath,
+  ];
+  const relayProcess = spawn(FFMPEG_BIN, ffmpegArgs, { stdio: ['ignore', 'ignore', 'pipe'] });
+  const session = {
+    channelId,
+    channelName: channel.name || channelId,
+    process: relayProcess,
+    dir,
+    playlistPath,
+    source,
+    candidateIndex: selectedIndex,
+    startedAt: Date.now(),
+    lastAccess,
+    restartTimer: null,
+    stderrTail: '',
+  };
+  svLiveRelaySessions.set(channelId, session);
+  svLiveRelayLog(channelId, reason === 'start' ? 'start' : 'restart', { reason, source, pid: relayProcess.pid });
+
+  relayProcess.stderr.on('data', chunk => {
+    session.stderrTail = (session.stderrTail + chunk.toString()).slice(-2000);
+  });
+  relayProcess.on('error', error => {
+    svLiveRelayLog(channelId, 'FFmpeg error', { error: error.message });
+  });
+  relayProcess.on('close', code => {
+    if (svLiveRelaySessions.get(channelId) !== session) return;
+    session.process = null;
+    svLiveRelayLog(channelId, 'FFmpeg exited', { code, stderr: session.stderrTail.trim().slice(-500) });
+    if (Date.now() - session.lastAccess < SV_LIVE_RELAY_IDLE_MS) {
+      session.restartTimer = setTimeout(() => {
+        if (svLiveRelaySessions.get(channelId) === session && !session.process) {
+          svStartLiveRelay(channelId, 'dead relay', session.candidateIndex + 1);
+        }
+      }, 1200);
+      session.restartTimer.unref?.();
+    }
+  });
+  return session;
+}
+
+function svEnsureLiveRelay(channelId) {
+  let session = svLiveRelaySessions.get(channelId);
+  if (!session) return svStartLiveRelay(channelId, 'start', 0);
+  session.lastAccess = Date.now();
+  const state = svLiveRelayPlaylistState(session);
+  const processDead = !session.process || session.process.exitCode !== null || session.process.killed;
+  const stale = state.stat && Date.now() - state.stat.mtimeMs > SV_LIVE_RELAY_STALE_MS;
+  const startupStuck = !state.stat && Date.now() - session.startedAt > SV_LIVE_RELAY_STARTUP_MS;
+  if (processDead || stale || startupStuck) {
+    const reason = processDead ? 'dead relay' : (stale ? 'stale playlist' : 'startup stalled');
+    session = svStartLiveRelay(channelId, reason, session.candidateIndex + 1);
+  }
+  return session;
+}
+
+async function svWaitForLiveRelayPlaylist(session, timeoutMs = SV_LIVE_RELAY_STARTUP_MS) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (svLiveRelaySessions.get(session.channelId) !== session) return null;
+    const state = svLiveRelayPlaylistState(session);
+    if (state.ready) return state;
+    if (!session.process || session.process.exitCode !== null) return null;
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+  return null;
+}
+
+async function svWaitForLiveRelaySegment(channelId, filename) {
+  const deadline = Date.now() + SV_LIVE_RELAY_SEGMENT_WAIT_MS;
+  while (Date.now() <= deadline) {
+    const current = svLiveRelaySessions.get(channelId);
+    const dirs = [current?.dir, ...(svLiveRelayRetiredDirs.get(channelId) || []).map(entry => entry.dir)].filter(Boolean);
+    for (const dir of dirs) {
+      const filePath = path.join(dir, filename);
+      if (fs.existsSync(filePath)) return filePath;
+    }
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  return '';
+}
+
+app.get('/live-relay/:channelId/index.m3u8', async (req, res) => {
+  const channelId = req.params.channelId;
+  const channel = svLiveRelayChannel(channelId);
+  if (!channel) return res.status(404).send('Channel not found');
+  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  tracker.trackStreamStart(ip, channelId, channel.name || channelId, 'live-relay', req.headers['user-agent'] || '');
+
+  let session = svEnsureLiveRelay(channelId);
+  if (!session) return res.status(404).send('Channel URL missing');
+  session.lastAccess = Date.now();
+  let state = await svWaitForLiveRelayPlaylist(session);
+  if (!state) {
+    session = svStartLiveRelay(channelId, 'playlist readiness timeout', session.candidateIndex + 1);
+    state = session ? await svWaitForLiveRelayPlaylist(session) : null;
+  }
+  if (!state) {
+    svLiveRelayLog(channelId, 'playlist unavailable after retry');
+    res.setHeader('Retry-After', '1');
+    return res.status(503).send('Live relay is starting');
+  }
+
+  res.setHeader('Content-Type', 'application/vnd.apple.mpegurl; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('X-SV-Live-Relay-Segments', String(state.segments));
+  res.send(state.text);
+});
+
+app.get('/live-relay/:channelId/:segment', async (req, res) => {
+  const channelId = req.params.channelId;
+  const filename = path.basename(String(req.params.segment || ''));
+  if (!svLiveRelayChannel(channelId)) return res.status(404).send('Channel not found');
+  if (!/^segment_\d+\.ts$/i.test(filename)) return res.status(400).send('Invalid relay segment');
+  const session = svLiveRelaySessions.get(channelId);
+  if (session) session.lastAccess = Date.now();
+  const filePath = await svWaitForLiveRelaySegment(channelId, filename);
+  if (!filePath) {
+    svLiveRelayLog(channelId, 'segment missing after wait', { filename });
+    return res.status(404).send('Segment not ready');
+  }
+  res.setHeader('Content-Type', 'video/MP2T');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.sendFile(filePath);
+});
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [channelId, session] of svLiveRelaySessions) {
+    if (now - session.lastAccess > SV_LIVE_RELAY_IDLE_MS) {
+      svStopLiveRelay(session, 'idle timeout');
+      svLiveRelaySessions.delete(channelId);
+      svLiveRelayRememberDir(channelId, session.dir);
+      continue;
+    }
+    svEnsureLiveRelay(channelId);
+  }
+  for (const [channelId, entries] of svLiveRelayRetiredDirs) {
+    const keep = [];
+    for (const entry of entries) {
+      if (entry.expiresAt > now) keep.push(entry);
+      else fs.rm(entry.dir, { recursive: true, force: true }, () => {});
+    }
+    if (keep.length) svLiveRelayRetiredDirs.set(channelId, keep);
+    else svLiveRelayRetiredDirs.delete(channelId);
+  }
+}, 30000).unref?.();
+
+app.get('/api/live-test/:channelId', async (req, res) => {
+  const ch = channels.find(c => c.id === req.params.channelId);
+  const sourceUrl = req.query.src || (ch && ch.url);
+  if (!sourceUrl) return res.status(404).json({ ok:false, error:'Channel missing' });
+
+  try {
+    const result = await svFetchBuffer(sourceUrl);
+    const text = result.body.toString('utf8');
+    res.json({
+      ok: true,
+      channel: ch?.name || req.params.channelId,
+      status: result.status,
+      bytes: result.body.length,
+      hasM3U: text.includes('#EXTM3U'),
+      mediaLines: text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#')).length,
+      keyLines: text.split('\n').filter(l => l.includes('#EXT-X-KEY')).length,
+      mapLines: text.split('\n').filter(l => l.includes('#EXT-X-MAP')).length,
+      preview: rewriteM3u8(text, req.params.channelId, result.finalUrl || sourceUrl).split('\n').slice(0, 15)
+    });
+  } catch (e) {
+    res.status(502).json({ ok:false, error:e.message });
+  }
+});
+
 // API: MOVIES (with cartoon filter applied)
 // ═══════════════════════════════════════════════════════════════════════════════
 const mobileHlsSessions = new Map();
+
+function mobileHlsPresetFromQuality(quality) {
+  const q = String(quality || '').toLowerCase();
+  if (q === '720p' || q === '1080p' || q === 'high') {
+    return {
+      key: '1280-2200k-128k',
+      maxWidth: 1280,
+      maxFps: MOBILE_HLS_MAX_FPS,
+      videoMaxrate: '2200k',
+      videoBufsize: '4400k',
+      audioBitrate: '128k',
+      crf: '29',
+    };
+  }
+  return {
+    key: `${MOBILE_HLS_MAX_WIDTH}-${MOBILE_HLS_VIDEO_MAXRATE}-${MOBILE_HLS_AUDIO_BITRATE}`,
+    maxWidth: MOBILE_HLS_MAX_WIDTH,
+    maxFps: MOBILE_HLS_MAX_FPS,
+    videoMaxrate: MOBILE_HLS_VIDEO_MAXRATE,
+    videoBufsize: MOBILE_HLS_VIDEO_BUFSIZE,
+    audioBitrate: MOBILE_HLS_AUDIO_BITRATE,
+    crf: '32',
+  };
+}
 
 function hlsSessionKey(scope, source, startSec, audioKey = '') {
   return crypto
@@ -1790,10 +4392,12 @@ function cleanupMobileHlsSessions(reason = 'idle') {
 
 setInterval(() => cleanupMobileHlsSessions(), Math.min(MOBILE_HLS_IDLE_MS, 30000)).unref?.();
 
-function waitForHlsPlaylist(playlistPath, timeoutMs = 15000) {
+function waitForHlsPlaylist(playlistPath, timeoutMs = 15000, sessionId = '') {
   const started = Date.now();
   return new Promise((resolve, reject) => {
     const check = () => {
+      const session = sessionId ? mobileHlsSessions.get(sessionId) : null;
+      if (session?.error) return reject(new Error(session.error));
       if (fs.existsSync(playlistPath)) {
         const content = fs.readFileSync(playlistPath, 'utf8');
         if (content.includes('.ts')) return resolve(content);
@@ -1805,7 +4409,15 @@ function waitForHlsPlaylist(playlistPath, timeoutMs = 15000) {
   });
 }
 
-function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:a:0?', clientId = '' }) {
+function startMobileHlsSession({
+  scope,
+  key,
+  input,
+  startSec = 0,
+  audioMap = '0:a:0?',
+  clientId = '',
+  preset = mobileHlsPresetFromQuality(),
+}) {
   fs.mkdirSync(MOBILE_HLS_DIR, { recursive: true });
   const sessionDir = path.join(MOBILE_HLS_DIR, scope, key);
   const playlistPath = path.join(sessionDir, 'index.m3u8');
@@ -1837,7 +4449,7 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
     '-map', '0:v:0',
     '-map', audioMap,
     '-sn', '-dn',
-    '-vf', `scale=w=min(${MOBILE_HLS_MAX_WIDTH}\\,iw):h=-2,fps=${MOBILE_HLS_MAX_FPS}`,
+    '-vf', `scale=w=min(${preset.maxWidth}\\,iw):h=-2,fps=${preset.maxFps}`,
     '-c:v', 'libx264',
     '-preset', 'ultrafast',
     '-tune', 'zerolatency',
@@ -1845,15 +4457,15 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
     '-filter_threads', '1',
     '-profile:v', 'baseline',
     '-level', '3.1',
-    '-crf', '32',
-    '-maxrate', MOBILE_HLS_VIDEO_MAXRATE,
-    '-bufsize', MOBILE_HLS_VIDEO_BUFSIZE,
+    '-crf', preset.crf,
+    '-maxrate', preset.videoMaxrate,
+    '-bufsize', preset.videoBufsize,
     '-pix_fmt', 'yuv420p',
     '-g', '48',
     '-keyint_min', '48',
     '-sc_threshold', '0',
     '-c:a', 'aac',
-    '-b:a', MOBILE_HLS_AUDIO_BITRATE,
+    '-b:a', preset.audioBitrate,
     '-ar', '48000',
     '-ac', '2',
     '-f', 'hls',
@@ -1865,26 +4477,34 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
   );
 
   console.log(`[Mobile HLS] start ${sessionId} input=${input}`);
-  const process = spawn('ffmpeg', ffmpegArgs);
+  const process = spawn(FFMPEG_BIN, ffmpegArgs);
+  const session = { process, dir: sessionDir, createdAt: Date.now(), lastAccess: Date.now(), clientId, error: null };
+  mobileHlsSessions.set(sessionId, session);
   process.stderr.on('data', d => console.log('[Mobile HLS FFmpeg]', d.toString().trim()));
   process.on('close', code => {
     console.log(`[Mobile HLS] ended ${sessionId} code=${code}`);
     const current = mobileHlsSessions.get(sessionId);
-    if (current?.process === process) mobileHlsSessions.delete(sessionId);
+    if (current?.process === process) {
+      if (current.error) current.ended = true;
+      else mobileHlsSessions.delete(sessionId);
+    }
   });
-  process.on('error', err => console.error('[Mobile HLS] spawn error:', err.message));
-  mobileHlsSessions.set(sessionId, { process, dir: sessionDir, createdAt: Date.now(), lastAccess: Date.now(), clientId });
+  process.on('error', err => {
+    session.error = err.message;
+    console.error('[Mobile HLS] spawn error:', err.message);
+  });
   return playlistPath;
 }
 
 function sendMobileHlsPlaylist(res, scope, key, playlistPath) {
   touchMobileHlsSession(scope, key);
-  waitForHlsPlaylist(playlistPath)
+  waitForHlsPlaylist(playlistPath, 15000, hlsSessionId(scope, key))
     .then(content => {
       touchMobileHlsSession(scope, key);
       const rewritten = content.replace(/^(seg_[^\r\n]+\.ts)$/gm, `/api/mobile-hls/${scope}/${key}/$1`);
       res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
-      res.setHeader('Cache-Control', 'no-cache, no-store');
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('Access-Control-Allow-Origin', '*');
       res.send(rewritten);
     })
     .catch(err => {
@@ -1900,9 +4520,10 @@ app.get('/api/mobile-hls/local/:id/index.m3u8', (req, res) => {
   const filePath = entryPath(entry);
   if (!fs.existsSync(filePath)) return res.status(404).send('File missing');
   const startSec = parseFloat(req.query.start) || 0;
-  const key = hlsSessionKey('local', filePath, startSec);
+  const preset = mobileHlsPresetFromQuality(req.query.quality);
+  const key = hlsSessionKey('local', filePath, startSec, preset.key);
   const clientId = /^[a-zA-Z0-9_-]{8,80}$/.test(String(req.query.client || '')) ? String(req.query.client) : '';
-  const playlistPath = startMobileHlsSession({ scope: 'local', key, input: filePath, startSec, clientId });
+  const playlistPath = startMobileHlsSession({ scope: 'local', key, input: filePath, startSec, clientId, preset });
   sendMobileHlsPlaylist(res, 'local', key, playlistPath);
 });
 
@@ -2018,6 +4639,88 @@ function looseTitleScore(a, b) {
   aw.forEach(w => { if (bw.has(w)) overlap++; });
   return overlap / Math.max(aw.size, bw.size);
 }
+
+function playbackTitleYear(value) {
+  return String(value || '').match(/(?:19|20)\d{2}/)?.[0] || '';
+}
+
+function findPlaybackCatalogItem(items, requestedId, requestedTitle, requestedYear, isPlayable) {
+  const available = (items || []).filter(item => item && isPlayable(item));
+  const id = String(requestedId || '');
+  const direct = available.find(item => String(item.id || '') === id);
+  if (direct) return direct;
+
+  const title = String(requestedTitle || '').trim();
+  if (!title) return null;
+  const key = normalizedTitleKey(title);
+  const year = playbackTitleYear(requestedYear || title);
+  const exact = available.filter(item => normalizedTitleKey(item.name || item.title || item.file) === key);
+  if (exact.length) {
+    return exact.find(item => !year || playbackTitleYear(item.year || item.name || item.title) === year) || exact[0];
+  }
+
+  let best = null;
+  let bestScore = 0;
+  for (const item of available) {
+    const score = looseTitleScore(title, item.name || item.title || item.file)
+      + (year && playbackTitleYear(item.year || item.name || item.title) === year ? 0.08 : 0);
+    if (score > bestScore) {
+      best = item;
+      bestScore = score;
+    }
+  }
+  return bestScore >= 0.72 ? best : null;
+}
+
+// Lightweight home cards intentionally omit stream URLs. Resolve the trusted
+// catalog source only after the user presses Watch, keeping the home feed small.
+app.get('/api/playback/movie/:id', (req, res) => {
+  const movie = findPlaybackCatalogItem(
+    allApiMoviesForDetails(),
+    req.params.id,
+    req.query.title,
+    req.query.year,
+    item => !!item.streamUrl
+  );
+  if (!movie) return jsonError(res, 404, 'MOVIE_PLAYBACK_NOT_FOUND', 'Playable movie source was not found');
+  res.setHeader('Cache-Control', 'private, max-age=300');
+  return res.json({
+    ok: true,
+    id: req.params.id,
+    title: movie.name || movie.title || '',
+    streamUrl: movie.streamUrl,
+    isFtp: true,
+    streamAvailable: true,
+    hasStream: true,
+  });
+});
+
+// Series summaries contain counts only. Hydrate seasons and episode URLs on
+// detail click instead of putting the full series catalog back in home-feed.json.
+app.get('/api/series/detail', (req, res) => {
+  const show = findPlaybackCatalogItem(
+    allApiSeriesForDetails(),
+    req.query.id,
+    req.query.name || req.query.title,
+    req.query.year,
+    item => Object.values(item.seasons || {}).some(eps => Array.isArray(eps) && eps.some(ep => ep.streamUrl || ep.streamId != null))
+  );
+  if (!show) return jsonError(res, 404, 'SERIES_PLAYBACK_NOT_FOUND', 'Playable series episodes were not found');
+  const seasons = show.seasons || {};
+  const episodeCount = Object.values(seasons).reduce((total, eps) => total + (Array.isArray(eps) ? eps.length : 0), 0);
+  res.setHeader('Cache-Control', 'private, max-age=300');
+  return res.json({
+    ...show,
+    id: req.query.id || show.id,
+    type: 'series',
+    isFtp: !!show.isFtp,
+    isSummary: false,
+    streamAvailable: episodeCount > 0,
+    hasStream: episodeCount > 0,
+    seasonCount: Object.keys(seasons).length,
+    episodeCount,
+  });
+});
 
 function localSimilarForDetails(item, mediaType) {
   const genres = splitDetailGenres(item?.genre);
@@ -2260,20 +4963,15 @@ app.post('/api/details/cache/clear', (req, res) => {
 });
 
 app.get('/api/mobile-hls/ftp/index.m3u8', (req, res) => {
-  let media;
-  try {
-    media = readRemoteUrlParam(req, ['url', 'streamUrl', 'movie', 'movieUrl', 'src']);
-  } catch (e) {
-    return res.status(e.status || 400).send(e.message);
-  }
-  const srcUrl = media.decodedUrl;
+  const trusted = readTrustedRemotePlaybackMedia(req, res, false);
+  if (!trusted) return;
+  const srcUrl = trusted.srcUrl;
   const startSec = parseFloat(req.query.start) || 0;
-  const audioStreamIdx = parseInt(req.query.audioStream ?? '', 10);
-  const audioIdx = Math.max(0, parseInt(req.query.audio || '0', 10) || 0);
-  const audioMap = Number.isFinite(audioStreamIdx) && audioStreamIdx >= 0 ? `0:${audioStreamIdx}?` : `0:a:${audioIdx}?`;
-  const key = hlsSessionKey('ftp', srcUrl, startSec, audioMap);
+  const audioMap = playbackAudioMapFromReq(req);
+  const preset = mobileHlsPresetFromQuality(req.query.quality);
+  const key = hlsSessionKey('ftp', srcUrl, startSec, `${audioMap}|${preset.key}`);
   const clientId = /^[a-zA-Z0-9_-]{8,80}$/.test(String(req.query.client || '')) ? String(req.query.client) : '';
-  const playlistPath = startMobileHlsSession({ scope: 'ftp', key, input: srcUrl, startSec, audioMap, clientId });
+  const playlistPath = startMobileHlsSession({ scope: 'ftp', key, input: srcUrl, startSec, audioMap, clientId, preset });
   sendMobileHlsPlaylist(res, 'ftp', key, playlistPath);
 });
 
@@ -2284,8 +4982,9 @@ app.get('/api/mobile-hls/:scope/:key/:file', (req, res) => {
   touchMobileHlsSession(req.params.scope, req.params.key);
   const filePath = path.join(MOBILE_HLS_DIR, req.params.scope, req.params.key, req.params.file);
   if (!fs.existsSync(filePath)) return res.status(404).end();
-  res.setHeader('Content-Type', 'video/mp2t');
-  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.setHeader('Content-Type', 'video/MP2T');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   const stream = fs.createReadStream(filePath);
   res.on('close', () => stream.destroy());
   stream.on('error', err => {
@@ -2317,6 +5016,128 @@ app.post('/api/mobile-hls/stop', (req, res) => {
   res.json({ ok: true, stopped });
 });
 
+function ffmpegMp4Args({ input, mode = 'remux', startSec = 0, audioMap = '0:a:0?', remote = false }) {
+  const args = ['-hide_banner', '-loglevel', 'warning', '-nostdin'];
+  if (startSec > 0) args.push('-ss', String(Math.floor(startSec)));
+  if (remote) {
+    args.push(
+      '-fflags', '+genpts',
+      '-probesize', '1048576',
+      '-analyzeduration', '1000000',
+      '-rw_timeout', '15000000'
+    );
+  }
+  args.push('-i', input, '-map', '0:v:0', '-map', audioMap, '-sn', '-dn');
+  if (mode === 'audio') {
+    args.push('-c:v', 'copy', '-c:a', 'aac', '-b:a', '128k', '-ar', '48000', '-ac', '2');
+  } else {
+    args.push('-c', 'copy');
+  }
+  args.push(
+    '-avoid_negative_ts', 'make_zero',
+    '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
+    '-f', 'mp4',
+    'pipe:1'
+  );
+  return args;
+}
+
+function streamFfmpegMp4(req, res, options) {
+  const mode = options.mode === 'audio' ? 'audio' : 'remux';
+  const label = options.label || options.input;
+  if (activeMediaFfmpegStreams >= MEDIA_FFMPEG_STREAM_MAX) {
+    return jsonError(res, 429, 'MEDIA_FFMPEG_BUSY', 'Media fallback workers are busy; try again in a moment', {
+      active: activeMediaFfmpegStreams,
+      limit: MEDIA_FFMPEG_STREAM_MAX,
+    });
+  }
+
+  const args = ffmpegMp4Args({ ...options, mode });
+  console.log(`[Media FFmpeg] ${mode} start ${label}`);
+  activeMediaFfmpegStreams += 1;
+  const ffmpeg = spawn(FFMPEG_BIN, args);
+  let started = false;
+  let closed = false;
+  let stderr = '';
+  const headers = {
+    'Content-Type': 'video/mp4',
+    'Accept-Ranges': 'none',
+    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 'no-store',
+  };
+
+  const startupTimer = setTimeout(() => {
+    if (started || closed) return;
+    console.error(`[Media FFmpeg] ${mode} startup timeout ${label}`);
+    try { ffmpeg.kill('SIGKILL'); } catch {}
+    if (!res.headersSent) {
+      jsonError(res, 504, 'MEDIA_FFMPEG_STARTUP_TIMEOUT', 'Media fallback did not start in time', {
+        mode,
+        details: stderr.slice(-1000),
+      });
+    } else if (!res.writableEnded) {
+      res.end();
+    }
+  }, MEDIA_FFMPEG_STARTUP_MS);
+
+  ffmpeg.stdout.on('data', chunk => {
+    if (closed || res.writableEnded) return;
+    if (!started) {
+      started = true;
+      clearTimeout(startupTimer);
+      res.writeHead(200, headers);
+    }
+    if (!res.write(chunk)) {
+      ffmpeg.stdout.pause();
+      res.once('drain', () => ffmpeg.stdout.resume());
+    }
+  });
+
+  ffmpeg.stdout.on('end', () => {
+    if (started && !res.writableEnded) res.end();
+  });
+
+  ffmpeg.stderr.on('data', data => {
+    stderr += data.toString();
+    if (stderr.length > 4000) stderr = stderr.slice(-4000);
+  });
+
+  ffmpeg.on('error', err => {
+    console.error(`[Media FFmpeg] ${mode} spawn error ${label}:`, err.message);
+    clearTimeout(startupTimer);
+    if (!started && !res.headersSent) {
+      jsonError(res, 500, 'MEDIA_FFMPEG_SPAWN_FAILED', 'Could not start media fallback', {
+        mode,
+        details: err.message,
+      });
+    }
+  });
+
+  ffmpeg.on('close', code => {
+    closed = true;
+    clearTimeout(startupTimer);
+    activeMediaFfmpegStreams = Math.max(0, activeMediaFfmpegStreams - 1);
+    if (code !== 0 && !started && !res.headersSent) {
+      console.error(`[Media FFmpeg] ${mode} failed ${label}:`, stderr.trim());
+      jsonError(res, 502, 'MEDIA_FFMPEG_FAILED', 'Media fallback failed before playback started', {
+        mode,
+        details: stderr.slice(-1000),
+      });
+    } else if (code !== 0) {
+      console.error(`[Media FFmpeg] ${mode} ended code=${code} ${label}:`, stderr.slice(-1000));
+      if (started && !res.writableEnded) res.end();
+    } else {
+      console.log(`[Media FFmpeg] ${mode} ended ${label}`);
+    }
+  });
+
+  req.on('close', () => {
+    if (!closed) {
+      try { ffmpeg.kill('SIGKILL'); } catch {}
+    }
+  });
+}
+
 
 // ── Homepage section APIs restored/protected ─────────────────────────────────
 // These use ONLY the normal catalog. Massive 500k catalog is never used here.
@@ -2329,7 +5150,6 @@ const SV_HOME_SECTIONS = [
   ['warnerRow','warner','Warner Bros'],
   ['hboRow','hbo','HBO'],
   ['appleTvRow','apple','Apple TV+'],
-  ['trendingRow','trending','🔥 Trending Now'], ['seriesRow','series','Series'], ['newRow','new','New to StreamVault'],
   ['indianRow','indian','Indian Movies & Drama'],
   ['animeRow','anime','Anime'], ['koreanRow','koreanDrama','Korean Drama'], ['horrorRow','horrorNights','Horror Nights'],
   ['scifiRow','cyberpunkScifi','Cyberpunk & Sci-Fi'], ['mindfuckRow','mindfuck','Mindfuck Movies'],
@@ -2343,10 +5163,51 @@ const SV_HOME_SECTIONS = [
   ['liveConcertsRow','liveConcerts','Live Concerts'], ['documentaryRow','documentaryVault','Documentary Vault'],
   ['ghibliRow','ghibli','Studio Ghibli'], ['romanticRow','romanceMidnight','Romance After Midnight'], ['comingSoonRow','comingSoon','Coming Soon'],
   ['dramaRow','drama','Drama & Emotion'], ['spanishRow','spanish','Spanish & Latino'], ['highRatedRow','topRated','⭐ Top Rated (8+)'],
-  ['allRow','allMovies','All Movies'], ['recentlyAddedRow','recentlyAdded','Recently Added'], ['mostWatchedTodayRow','mostWatchedToday','Most Watched Today']
+  ['allRow','allMovies','All Movies'], ['recentlyAddedRow','recentlyAdded','Recently Added'], ['mostWatchedTodayRow','mostWatchedToday','Most Watched Today'],
+  ['trendingRow','trending','🔥 Trending Now'], ['seriesRow','series','Series'], ['newRow','new','New to StreamVault']
 ];
 
+const SV_PREBUILT_HOME_FEED_FILE = path.join(__dirname, 'home-feed.json');
+const SV_PREBUILT_HOME_FEED = loadJSON(SV_PREBUILT_HOME_FEED_FILE, null);
+const SV_PREBUILT_HOME_ROWS = new Map(
+  (Array.isArray(SV_PREBUILT_HOME_FEED?.rows) ? SV_PREBUILT_HOME_FEED.rows : [])
+    .filter(row => row?.rowId && Array.isArray(row.items))
+    .map(row => [row.rowId, row])
+);
+const svPrebuiltHomeJsonCache = new Map();
+const SV_HOME_MIN_PREBUILT_ITEMS = 8;
+const SV_DYNAMIC_HOME_SECTION_KEYS = new Set(['warner','hbo']);
+
+function svPrebuiltHomePayload(limit) {
+  if (!SV_PREBUILT_HOME_ROWS.size) return null;
+  const rows = SV_HOME_SECTIONS.map(([rowId, sectionKey, title]) => {
+    const cached = SV_PREBUILT_HOME_ROWS.get(rowId);
+    let items = Array.isArray(cached?.items) ? cached.items : [];
+    if (SV_DYNAMIC_HOME_SECTION_KEYS.has(sectionKey) || (items.length > 0 && items.length < Math.min(limit, SV_HOME_MIN_PREBUILT_ITEMS))) {
+      const fresh = svSectionList(sectionKey);
+      if (fresh.length > items.length) items = fresh;
+    }
+    if (!items.length) return null;
+    return { rowId, sectionKey, title, items:items.slice(0, limit) };
+  }).filter(Boolean);
+  const hero = (rows.find(row => row.rowId === 'newRow')?.items || rows[0]?.items || [])
+    .filter(item => item.poster || item.backdrop)
+    .slice(0, 10);
+  return {
+    ok:true,
+    generatedAt:SV_PREBUILT_HOME_FEED.generatedAt || null,
+    source:`${SV_PREBUILT_HOME_FEED.source || 'prebuilt-home-feed'}:cached`,
+    hero,
+    rows
+  };
+}
+
+let svNormalMovieItemsCache = null;
+let svNormalSeriesItemsCache = null;
+const svSectionListCache = new Map();
+
 function svNormalMovieItems() {
+  if (svNormalMovieItemsCache) return svNormalMovieItemsCache;
   const localMovies = (_movieList || buildMovieListSync()).map(m => ({ ...m, type:'movie', _sourceRank:0 }));
   const ftpMovies = getCachedMovies()
     .filter(m => !isCartoonOrAnime(m))
@@ -2357,15 +5218,17 @@ function svNormalMovieItems() {
       language:m.language || '', productionCompanies:m.productionCompanies || [], streamUrl:m.streamUrl, isFtp:true, _sourceRank:1
     }));
   const seen = new Set();
-  return [...localMovies, ...ftpMovies].filter(item => {
+  svNormalMovieItemsCache = [...localMovies, ...ftpMovies].filter(item => {
     const key = `${String(item.name || item.title || '').toLowerCase()}|${item.year || ''}|${item.tmdbId || ''}|${item.streamUrl || ''}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+  return svNormalMovieItemsCache;
 }
 
 function svNormalSeriesItems() {
+  if (svNormalSeriesItemsCache) return svNormalSeriesItemsCache;
   const localSeries = (_seriesList || buildSeriesListSync()).map(s => ({ ...s, type:'series', _sourceRank:0 }));
   const ftpSeries = getCachedSeries()
     .filter(s => !isCartoonOrAnime(s))
@@ -2383,12 +5246,13 @@ function svNormalSeriesItems() {
       _sourceRank:1
     }));
   const seen = new Set();
-  return [...localSeries, ...ftpSeries].filter(item => {
+  svNormalSeriesItemsCache = [...localSeries, ...ftpSeries].filter(item => {
     const key = `${String(item.name || item.title || '').toLowerCase()}|${item.year || ''}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+  return svNormalSeriesItemsCache;
 }
 
 function svHomeText(item) {
@@ -2583,7 +5447,7 @@ function svUpgradeTmdbImage(url, wide = false) {
 }
 
 function svFeaturedHdStudioItem(item) {
-  const next = { ...item, _wideStudio: true };
+  const next = { ...item };
   if (next.poster) next.poster = svUpgradeTmdbImage(next.poster, false);
   if (next.backdrop) next.backdrop = svUpgradeTmdbImage(next.backdrop, true);
   if (!next.backdrop && next.poster) next.backdrop = next.poster;
@@ -2647,55 +5511,60 @@ function svLatestNetflixSection(all) {
 
 
 function svSectionList(key) {
+  const cacheKey = String(key || 'allMovies');
+  if (svSectionListCache.has(cacheKey)) return svSectionListCache.get(cacheKey);
   const moviesOnly = svNormalMovieItems();
   const seriesOnly = svNormalSeriesItems();
   const all = [...moviesOnly, ...seriesOnly];
+  let list;
   const pick = (list, fn) => svHomeSort(list.filter(item => fn(svHomeText(item), item)));
   switch (key) {
-    case 'series': return svHomeSort(seriesOnly);
-    case 'allMovies': return svHomeSort(moviesOnly);
-    case 'topRated': return svHomeSort(all.filter(i => svRatingNum(i) >= 8));
-    case 'new': case 'recentlyAdded': return svHomeSort(all).sort((a,b)=>svYearNum(b)-svYearNum(a));
-    case 'trending': case 'mostWatchedToday': return svHomeSort(all).slice(0, 300);
-    case 'netflix': return svLatestNetflixSection(all);
-    case 'marvel': return svPopularFeaturedSection(all, 'marvel');
-    case 'dc': return svPopularFeaturedSection(all, 'dc');
-    case 'universal': return svStudioSection(all, 'universal');
-    case 'disney': return svStudioSection(all, 'disney');
-    case 'warner': return svStudioSection(all, 'warner');
-    case 'hbo': return svStudioSection(all, 'hbo');
-    case 'apple': return svStudioSection(all, 'apple');
-    case 'indian': return pick(all, t => svHasAny(t, ['hindi','bangla','bengali','kolkata','tamil','telugu','malayalam','kannada','punjabi','bollywood','south indian','india']));
-    case 'anime': return pick(all, t => svHasAny(t, ['anime','animation','japanese','demon slayer','naruto','one piece','jujutsu','attack on titan']));
-    case 'koreanDrama': return pick(all, t => svHasAny(t, ['korean','k-drama','k drama','korea']));
-    case 'horrorNights': return pick(all, t => svHasAny(t, ['horror','ghost','haunt','demon','evil','conjuring','scream','strangers']));
-    case 'cyberpunkScifi': return pick(all, t => svHasAny(t, ['sci-fi','science fiction','cyberpunk','space','alien','robot','ai','future','matrix','blade runner']));
-    case 'mindfuck': return pick(all, t => svHasAny(t, ['mind','dream','memory','loop','inception','tenet','shutter island','memento','black mirror']));
-    case 'cultClassics': return pick(all, t => svHasAny(t, ['cult','classic','pulp fiction','fight club','trainspotting','big lebowski']));
-    case 'a24': return pick(all, t => svHasAny(t, ['a24','hereditary','midsommar','moonlight','lady bird','ex machina','uncut gems','everything everywhere']));
-    case 'nostalgia90s': return pick(all, (t,i) => svYearNum(i) >= 1990 && svYearNum(i) <= 1999);
-    case 'midnightCinema': return pick(all, t => svHasAny(t, ['midnight','neon','noir','cult','horror','thriller']));
-    case 'trueCrime': return pick(all, t => svHasAny(t, ['true crime','crime documentary','serial killer','murder','detective']));
-    case 'psychThriller': return pick(all, t => svHasAny(t, ['psychological','thriller','mystery','suspense','obsession']));
-    case 'adultAnimation': return pick(all, t => svHasAny(t, ['adult animation','rick and morty','family guy','south park','bojack']));
-    case 'postApocalyptic': return pick(all, t => svHasAny(t, ['apocalypse','post-apocalyptic','zombie','wasteland','last of us','walking dead']));
-    case 'feelGood': return pick(all, t => svHasAny(t, ['comedy','family','feel good','romance','adventure']));
-    case 'darkComedy': return pick(all, t => svHasAny(t, ['dark comedy','black comedy','satire']));
-    case 'timeTravel': return pick(all, t => svHasAny(t, ['time travel','time loop','back to the future','timeline']));
-    case 'spaceAi': return pick(all, t => svHasAny(t, ['space','artificial intelligence',' ai ','robot','mars','moon','interstellar']));
-    case 'crimeSyndicates': return pick(all, t => svHasAny(t, ['crime','mafia','gang','cartel','syndicate','godfather','peaky blinders']));
-    case 'zombie': return pick(all, t => svHasAny(t, ['zombie','undead','walking dead','resident evil']));
-    case 'indieGems': return pick(all, t => svHasAny(t, ['indie','festival','independent']));
-    case 'hiddenMasterpieces': return svHomeSort(all.filter(i => svRatingNum(i) >= 7 && (i.poster || i.backdrop))).slice(0, 500);
-    case 'liveConcerts': return pick(all, t => svHasAny(t, ['concert','music','live','documentary']));
-    case 'documentaryVault': return pick(all, t => svHasAny(t, ['documentary','docu','nature','history','biography']));
-    case 'ghibli': return pick(all, t => svHasAny(t, ['ghibli','miyazaki','spirited away','totoro','howl']));
-    case 'romanceMidnight': return pick(all, t => svHasAny(t, ['romance','romantic','love','relationship']));
-    case 'comingSoon': return svHomeSort(all.filter(i => svYearNum(i) >= new Date().getFullYear()));
-    case 'drama': return pick(all, t => svHasAny(t, ['drama','emotion','life','family']));
-    case 'spanish': return pick(all, t => svHasAny(t, ['spanish','latino','latin','mexico','argentina','colombia']));
-    default: return svHomeSort(all);
+    case 'series': list = svHomeSort(seriesOnly); break;
+    case 'allMovies': list = svHomeSort(moviesOnly); break;
+    case 'topRated': list = svHomeSort(all.filter(i => svRatingNum(i) >= 8)); break;
+    case 'new': case 'recentlyAdded': list = svHomeSort(all).sort((a,b)=>svYearNum(b)-svYearNum(a)); break;
+    case 'trending': case 'mostWatchedToday': list = svHomeSort(all).slice(0, 300); break;
+    case 'netflix': list = svLatestNetflixSection(all); break;
+    case 'marvel': list = svPopularFeaturedSection(all, 'marvel'); break;
+    case 'dc': list = svPopularFeaturedSection(all, 'dc'); break;
+    case 'universal': list = svStudioSection(all, 'universal'); break;
+    case 'disney': list = svStudioSection(all, 'disney'); break;
+    case 'warner': list = svStudioSection(all, 'warner'); break;
+    case 'hbo': list = svStudioSection(all, 'hbo'); break;
+    case 'apple': list = svStudioSection(all, 'apple'); break;
+    case 'indian': list = pick(all, t => svHasAny(t, ['hindi','bangla','bengali','kolkata','tamil','telugu','malayalam','kannada','punjabi','bollywood','south indian','india'])); break;
+    case 'anime': list = pick(all, t => svHasAny(t, ['anime','animation','japanese','demon slayer','naruto','one piece','jujutsu','attack on titan'])); break;
+    case 'koreanDrama': list = pick(all, t => svHasAny(t, ['korean','k-drama','k drama','korea'])); break;
+    case 'horrorNights': list = pick(all, t => svHasAny(t, ['horror','ghost','haunt','demon','evil','conjuring','scream','strangers'])); break;
+    case 'cyberpunkScifi': list = pick(all, t => svHasAny(t, ['sci-fi','science fiction','cyberpunk','space','alien','robot','ai','future','matrix','blade runner'])); break;
+    case 'mindfuck': list = pick(all, t => svHasAny(t, ['mind','dream','memory','loop','inception','tenet','shutter island','memento','black mirror'])); break;
+    case 'cultClassics': list = pick(all, t => svHasAny(t, ['cult','classic','pulp fiction','fight club','trainspotting','big lebowski'])); break;
+    case 'a24': list = pick(all, t => svHasAny(t, ['a24','hereditary','midsommar','moonlight','lady bird','ex machina','uncut gems','everything everywhere'])); break;
+    case 'nostalgia90s': list = pick(all, (t,i) => svYearNum(i) >= 1990 && svYearNum(i) <= 1999); break;
+    case 'midnightCinema': list = pick(all, t => svHasAny(t, ['midnight','neon','noir','cult','horror','thriller'])); break;
+    case 'trueCrime': list = pick(all, t => svHasAny(t, ['true crime','crime documentary','serial killer','murder','detective'])); break;
+    case 'psychThriller': list = pick(all, t => svHasAny(t, ['psychological','thriller','mystery','suspense','obsession'])); break;
+    case 'adultAnimation': list = pick(all, t => svHasAny(t, ['adult animation','rick and morty','family guy','south park','bojack'])); break;
+    case 'postApocalyptic': list = pick(all, t => svHasAny(t, ['apocalypse','post-apocalyptic','zombie','wasteland','last of us','walking dead'])); break;
+    case 'feelGood': list = pick(all, t => svHasAny(t, ['comedy','family','feel good','romance','adventure'])); break;
+    case 'darkComedy': list = pick(all, t => svHasAny(t, ['dark comedy','black comedy','satire'])); break;
+    case 'timeTravel': list = pick(all, t => svHasAny(t, ['time travel','time loop','back to the future','timeline'])); break;
+    case 'spaceAi': list = pick(all, t => svHasAny(t, ['space','artificial intelligence',' ai ','robot','mars','moon','interstellar'])); break;
+    case 'crimeSyndicates': list = pick(all, t => svHasAny(t, ['crime','mafia','gang','cartel','syndicate','godfather','peaky blinders'])); break;
+    case 'zombie': list = pick(all, t => svHasAny(t, ['zombie','undead','walking dead','resident evil'])); break;
+    case 'indieGems': list = pick(all, t => svHasAny(t, ['indie','festival','independent'])); break;
+    case 'hiddenMasterpieces': list = svHomeSort(all.filter(i => svRatingNum(i) >= 7 && (i.poster || i.backdrop))).slice(0, 500); break;
+    case 'liveConcerts': list = pick(all, t => svHasAny(t, ['concert','music','live','documentary'])); break;
+    case 'documentaryVault': list = pick(all, t => svHasAny(t, ['documentary','docu','nature','history','biography'])); break;
+    case 'ghibli': list = pick(all, t => svHasAny(t, ['ghibli','miyazaki','spirited away','totoro','howl'])); break;
+    case 'romanceMidnight': list = pick(all, t => svHasAny(t, ['romance','romantic','love','relationship'])); break;
+    case 'comingSoon': list = svHomeSort(all.filter(i => svYearNum(i) >= new Date().getFullYear())); break;
+    case 'drama': list = pick(all, t => svHasAny(t, ['drama','emotion','life','family'])); break;
+    case 'spanish': list = pick(all, t => svHasAny(t, ['spanish','latino','latin','mexico','argentina','colombia'])); break;
+    default: list = svHomeSort(all); break;
   }
+  svSectionListCache.set(cacheKey, list);
+  return list;
 }
 
 app.get('/api/section/:key', (req, res) => {
@@ -2703,6 +5572,15 @@ app.get('/api/section/:key', (req, res) => {
     const key = String(req.params.key || 'allMovies');
     const page = Math.max(0, parseInt(req.query.page || '0', 10) || 0);
     const limit = Math.min(120, Math.max(1, parseInt(req.query.limit || '24', 10) || 24));
+    const prebuilt = req.query.summary === '1' && page === 0
+      ? Array.from(SV_PREBUILT_HOME_ROWS.values()).find(row => row.sectionKey === key)
+      : null;
+    if (!SV_DYNAMIC_HOME_SECTION_KEYS.has(key) && prebuilt?.items?.length >= Math.min(limit, SV_HOME_MIN_PREBUILT_ITEMS)) {
+      const items = prebuilt.items.slice(0, limit);
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+      res.setHeader('X-StreamVault-Section', 'prebuilt');
+      return res.json({ key, items, total:prebuilt.items.length, page:0, pages:1 });
+    }
     const list = svSectionList(key);
     const start = page * limit;
     res.setHeader('Cache-Control', 'public, max-age=60');
@@ -2716,6 +5594,17 @@ app.get('/api/section/:key', (req, res) => {
 app.get('/api/home-feed', (req, res) => {
   try {
     const limit = Math.min(50, Math.max(6, parseInt(req.query.limit || '18', 10) || 18));
+    const prebuilt = svPrebuiltHomePayload(limit);
+    if (prebuilt) {
+      let json = svPrebuiltHomeJsonCache.get(limit);
+      if (!json) {
+        json = JSON.stringify(prebuilt);
+        svPrebuiltHomeJsonCache.set(limit, json);
+      }
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+      res.setHeader('X-StreamVault-Feed', 'prebuilt');
+      return res.type('application/json').send(json);
+    }
     const rows = SV_HOME_SECTIONS.map(([rowId, sectionKey, title]) => {
       const items = svSectionList(sectionKey).slice(0, limit);
       return { rowId, sectionKey, title, items };
@@ -3750,6 +6639,72 @@ app.get('/api/refresh-poster/:id', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // DIRECT STREAM ENDPOINT (NO HLS FOR NOW - FASTEST)
 // ═══════════════════════════════════════════════════════════════════════════════
+function localPlaybackPlan(id, req, entry, filePath) {
+  const requestedMode = req.query.forceHls === '1' ? 'hls' : normalizePlaybackMode(req.query.mode, 'direct');
+  const startSec = playbackStartFromReq(req);
+  const query = playbackQueryFromReq(req);
+  let src;
+  let mode = requestedMode;
+
+  if (mode === 'hls') {
+    src = localPlaybackHlsUrl(id, req);
+  } else if (mode === 'remux' || mode === 'audio') {
+    src = `/api/playback/local/${encodeURIComponent(id)}/stream${playbackQueryFromReq(req, { mode })}`;
+  } else {
+    mode = 'direct';
+    src = `/stream/${encodeURIComponent(id)}${query}`;
+  }
+
+  return {
+    ok: true,
+    id,
+    filename: entry.file,
+    directPlayable: isRemoteDirectPlayable(filePath),
+    unsupportedVideoHint: playbackUrlHasUnsupportedVideoHint(entry.file),
+    mode,
+    transport: mode,
+    src,
+    playUrl: src,
+    finalPlayUrl: src,
+    remuxUrl: `/api/playback/local/${encodeURIComponent(id)}/stream${playbackQueryFromReq(req, { mode: 'remux' })}`,
+    audioTranscodeUrl: `/api/playback/local/${encodeURIComponent(id)}/stream${playbackQueryFromReq(req, { mode: 'audio' })}`,
+    hlsUrl: localPlaybackHlsUrl(id, req),
+    duration: 0,
+    start: startSec,
+  };
+}
+
+app.get('/api/playback/local/:id', (req, res) => {
+  const idx = parseInt(req.params.id, 10);
+  const entry = fileIndex[idx];
+  if (!entry) return jsonError(res, 404, 'LOCAL_MEDIA_NOT_FOUND', 'Local media was not found');
+  const filePath = entryPath(entry);
+  if (!fs.existsSync(filePath)) return jsonError(res, 404, 'LOCAL_MEDIA_MISSING', 'Local media file is missing');
+  return res.json(localPlaybackPlan(String(idx), req, entry, filePath));
+});
+
+app.get('/api/playback/local/:id/stream', (req, res) => {
+  const idx = parseInt(req.params.id, 10);
+  const entry = fileIndex[idx];
+  if (!entry) return jsonError(res, 404, 'LOCAL_MEDIA_NOT_FOUND', 'Local media was not found');
+  const filePath = entryPath(entry);
+  if (!fs.existsSync(filePath)) return jsonError(res, 404, 'LOCAL_MEDIA_MISSING', 'Local media file is missing');
+
+  const mode = normalizePlaybackMode(req.query.mode, 'remux');
+  if (mode !== 'remux' && mode !== 'audio') {
+    return jsonError(res, 400, 'INVALID_PLAYBACK_MODE', 'Local stream mode must be remux or audio');
+  }
+
+  return streamFfmpegMp4(req, res, {
+    input: filePath,
+    mode,
+    startSec: playbackStartFromReq(req),
+    audioMap: playbackAudioMapFromReq(req),
+    remote: false,
+    label: entry.file,
+  });
+});
+
 app.get('/stream/:id', async (req, res) => {
   const idx = parseInt(req.params.id, 10);
   const entry = fileIndex[idx];
@@ -3764,8 +6719,12 @@ app.get('/stream/:id', async (req, res) => {
   const forceTranscode = audioIdx > 0 || subtitleIdx >= 0;
 
   try {
-    const mediaInfo = await getCachedMediaInfo(filePath);
     const mobilePlayback = isMobilePlaybackRequest(req);
+    if (!forceTranscode && !mobilePlayback) {
+      console.log(`[Stream] Direct: ${entry.file}`);
+      return directStream(req, res, filePath, entry);
+    }
+    const mediaInfo = await getCachedMediaInfo(filePath);
     if (forceTranscode || (mobilePlayback && needsTranscode(mediaInfo, userAgent))) {
       console.log(`[Stream] Transcoding: ${entry.file}`);
       return transcodeStream(req, res, filePath, mediaInfo, entry);
@@ -3798,7 +6757,7 @@ app.get('/api/stream-seek/:id', async (req, res) => {
     ffmpegArgs.push('-movflags', 'frag_keyframe+empty_moov+default_base_moof');
     ffmpegArgs.push('-f', 'mp4', 'pipe:1');
 
-    const ffmpeg = spawn('ffmpeg', ffmpegArgs);
+    const ffmpeg = spawn(FFMPEG_BIN, ffmpegArgs);
     res.setHeader('Content-Type', 'video/mp4');
     res.setHeader('Accept-Ranges', 'none');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -3808,6 +6767,29 @@ app.get('/api/stream-seek/:id', async (req, res) => {
     res.status(500).send('Error: ' + e.message);
   }
 });
+
+function parseSingleByteRange(header, fileSize) {
+  const value = String(header || '').trim();
+  const match = /^bytes=(\d*)-(\d*)$/i.exec(value);
+  if (!match || (!match[1] && !match[2])) return null;
+
+  let start;
+  let end;
+  if (!match[1]) {
+    const suffixLength = Number(match[2]);
+    if (!Number.isSafeInteger(suffixLength) || suffixLength <= 0) return null;
+    start = Math.max(0, fileSize - suffixLength);
+    end = fileSize - 1;
+  } else {
+    start = Number(match[1]);
+    end = match[2] ? Number(match[2]) : fileSize - 1;
+    if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end)) return null;
+    end = Math.min(end, fileSize - 1);
+  }
+
+  if (start < 0 || start >= fileSize || end < start) return null;
+  return { start, end };
+}
 
 function directStream(req, res, filePath, entry) {
   const ext = path.extname(filePath).toLowerCase();
@@ -3834,20 +6816,17 @@ function directStream(req, res, filePath, entry) {
   res.setHeader('Cache-Control', mobilePlayback ? 'no-cache, no-store, must-revalidate' : 'private, max-age=0, must-revalidate');
   
   if (range) {
-    // Parse range header (supports both "bytes=start-end" and "bytes=start-")
-    const matches = range.replace(/bytes=/, '').split('-');
-    const start = parseInt(matches[0], 10);
-    const end = matches[1] ? parseInt(matches[1], 10) : fileSize - 1;
-    const chunkSize = (end - start) + 1;
-    
-    // Validate range
-    if (start >= fileSize || start > end) {
+    const parsedRange = parseSingleByteRange(range, fileSize);
+    if (!parsedRange) {
       res.writeHead(416, {
         'Content-Range': `bytes */${fileSize}`,
+        'Content-Length': '0',
         'Content-Type': contentType
       });
       return res.end();
     }
+    const { start, end } = parsedRange;
+    const chunkSize = (end - start) + 1;
     
     // Send partial content
     res.writeHead(206, {
@@ -3855,6 +6834,8 @@ function directStream(req, res, filePath, entry) {
       'Content-Length': chunkSize,
       'Content-Type': contentType
     });
+
+    if (req.method === 'HEAD') return res.end();
     
     const stream = fs.createReadStream(filePath, { ...readOptions, start, end });
     if (bytesPerSec) {
@@ -3874,6 +6855,8 @@ function directStream(req, res, filePath, entry) {
       'Content-Length': fileSize,
       'Content-Type': contentType
     });
+
+    if (req.method === 'HEAD') return res.end();
     
     const stream = fs.createReadStream(filePath, readOptions);
     if (bytesPerSec) {
@@ -3940,7 +6923,7 @@ function remuxStream(req, res, filePath, entry) {
     'pipe:1'
   );
 
-  const ffmpeg = spawn('ffmpeg', ffmpegArgs);
+  const ffmpeg = spawn(FFMPEG_BIN, ffmpegArgs);
   
   res.setHeader('Content-Type', 'video/mp4');
   res.setHeader('Cache-Control', 'no-cache');
@@ -4026,7 +7009,7 @@ function transcodeStream(req, res, filePath, mediaInfo, entry) {
     'pipe:1'
   );
 
-  const ffmpeg = spawn('ffmpeg', ffmpegArgs);
+  const ffmpeg = spawn(FFMPEG_BIN, ffmpegArgs);
 
   res.setHeader('Content-Type', 'video/mp4');
   res.setHeader('Cache-Control', 'no-cache');
@@ -4076,7 +7059,7 @@ app.get('/subtitles/:id/embedded/:streamIdx.vtt', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'public, max-age=3600');
 
-  const ffmpeg = spawn('ffmpeg', [
+  const ffmpeg = spawn(FFMPEG_BIN, [
     '-hide_banner',
     '-loglevel', 'error',
     '-nostdin',
@@ -4247,6 +7230,163 @@ function broadcast(room, data) {
 //         1-2s+ delays on every FTP video start and broke seek bar behaviour.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+function streamRemotePlaybackProxy(req, res, media, matched, srcUrl = media.decodedUrl, redirectsLeft = 5) {
+  const headers = {
+    'User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
+    Accept: '*/*',
+    'Accept-Encoding': 'identity',
+  };
+  if (req.headers.range) headers.Range = req.headers.range;
+
+  const mod = srcUrl.startsWith('https://') ? https : http;
+  const proxyReq = mod.request(srcUrl, {
+    method: req.method === 'HEAD' ? 'HEAD' : 'GET',
+    headers,
+    timeout: 20000,
+  }, proxyRes => {
+    try { req.socket?.setNoDelay?.(true); res.socket?.setNoDelay?.(true); proxyRes.socket?.setNoDelay?.(true); } catch {}
+    const status = proxyRes.statusCode || 200;
+    const location = proxyRes.headers.location;
+
+    if ([301, 302, 303, 307, 308].includes(status) && location && redirectsLeft > 0 && !res.headersSent) {
+      proxyRes.resume();
+      const nextUrl = new URL(location, srcUrl).href;
+      return streamRemotePlaybackProxy(req, res, media, matched, nextUrl, redirectsLeft - 1);
+    }
+
+    if (status >= 400) {
+      proxyRes.resume();
+      return jsonError(res, status, 'REMOTE_MEDIA_REQUEST_FAILED', 'Remote media request failed', {
+        requestedUrl: media.requestedUrl,
+        decodedUrl: media.decodedUrl,
+        matchedCatalogItem: matched,
+        upstreamStatus: status,
+      });
+    }
+
+    const upstreamType = String(proxyRes.headers['content-type'] || '').toLowerCase();
+    const contentType = !upstreamType || upstreamType.includes('octet-stream')
+      ? mimeForMediaPath(srcUrl)
+      : proxyRes.headers['content-type'];
+    const passHeaders = {
+      'Content-Type': contentType,
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length, Content-Type',
+      'Cache-Control': 'no-store',
+    };
+    const acceptsBytes = String(proxyRes.headers['accept-ranges'] || '').toLowerCase() === 'bytes'
+      || (status === 206 && !!proxyRes.headers['content-range']);
+    if (acceptsBytes) passHeaders['Accept-Ranges'] = 'bytes';
+    if (proxyRes.headers['content-length']) passHeaders['Content-Length'] = proxyRes.headers['content-length'];
+    if (proxyRes.headers['content-range']) passHeaders['Content-Range'] = proxyRes.headers['content-range'];
+
+    res.writeHead(status, passHeaders);
+    if (req.method === 'HEAD') {
+      proxyRes.resume();
+      return res.end();
+    }
+    proxyRes.pipe(res);
+  });
+
+  proxyReq.on('error', e => {
+    console.error('[FTP Playback Proxy] Error:', e.message);
+    if (!res.headersSent) {
+      jsonError(res, 502, 'REMOTE_PROXY_FAILED', 'Could not reach remote media source', {
+        decodedUrl: media.decodedUrl,
+        details: e.message,
+      });
+    }
+  });
+  proxyReq.on('timeout', () => {
+    proxyReq.destroy();
+    if (!res.headersSent) {
+      jsonError(res, 504, 'REMOTE_PROXY_TIMEOUT', 'Remote media source timed out', {
+        decodedUrl: media.decodedUrl,
+      });
+    }
+  });
+  res.on('close', () => proxyReq.destroy());
+  proxyReq.end();
+}
+
+app.get('/api/playback/ftp', (req, res) => {
+  const trusted = readTrustedRemotePlaybackMedia(req, res, true);
+  if (!trusted) return;
+  const { media, srcUrl, matched } = trusted;
+
+  const requestedMode = req.query.forceHls === '1' ? 'hls' : normalizePlaybackMode(req.query.mode, 'direct');
+  const mode = requestedMode === 'direct' ? 'redirect' : requestedMode;
+  const planRequested = req.query.plan === '1' || req.query.json === '1' || req.query.format === 'json';
+  const urls = remotePlaybackUrls(srcUrl);
+
+  console.log(`[FTP Playback] requested URL: ${media.requestedUrl}`);
+  console.log(`[FTP Playback] decoded URL: ${srcUrl}`);
+  console.log(`[FTP Playback] matched catalog item: ${catalogLogLabel(matched)}`);
+  console.log(`[FTP Playback] mode: ${planRequested ? 'plan:' : ''}${mode}`);
+
+  if (planRequested) {
+    let playUrl = urls.redirectUrl;
+    if (mode === 'proxy') playUrl = urls.proxyUrl;
+    else if (mode === 'remux' || mode === 'audio') {
+      playUrl = remotePlaybackModeUrl(srcUrl, req, mode);
+    } else if (mode === 'hls') {
+      playUrl = remotePlaybackHlsUrl(srcUrl, req);
+    }
+    return res.json({
+      ok: true,
+      requestedUrl: media.requestedUrl,
+      decodedUrl: srcUrl,
+      matchedCatalogItem: matched,
+      directPlayable: urls.directPlayable,
+      unsupportedVideoHint: playbackUrlHasUnsupportedVideoHint(srcUrl),
+      mode: mode === 'redirect' ? 'direct' : mode,
+      transport: mode,
+      src: playUrl,
+      playUrl,
+      finalPlayUrl: playUrl,
+      redirectUrl: urls.redirectUrl,
+      proxyUrl: urls.proxyUrl,
+      fallbackProxyUrl: urls.proxyUrl,
+      legacyProxyUrl: urls.legacyProxyUrl,
+      remuxUrl: remotePlaybackModeUrl(srcUrl, req, 'remux'),
+      audioTranscodeUrl: remotePlaybackModeUrl(srcUrl, req, 'audio'),
+      hlsUrl: remotePlaybackHlsUrl(srcUrl, req),
+      transcodeUrl: urls.transcodeUrl,
+      duration: 0,
+    });
+  }
+
+  if (mode === 'proxy') {
+    return streamRemotePlaybackProxy(req, res, media, matched);
+  }
+
+  if (mode === 'remux' || mode === 'audio') {
+    return streamFfmpegMp4(req, res, {
+      input: srcUrl,
+      mode,
+      startSec: playbackStartFromReq(req),
+      audioMap: playbackAudioMapFromReq(req),
+      remote: true,
+      label: remoteFilename(srcUrl),
+    });
+  }
+
+  if (mode === 'hls') {
+    const startSec = playbackStartFromReq(req);
+    const audioMap = playbackAudioMapFromReq(req);
+    const preset = mobileHlsPresetFromQuality(req.query.quality);
+    const key = hlsSessionKey('ftp', srcUrl, startSec, `${audioMap}|${preset.key}`);
+    const clientId = /^[a-zA-Z0-9_-]{8,80}$/.test(String(req.query.client || '')) ? String(req.query.client) : '';
+    const playlistPath = startMobileHlsSession({ scope: 'ftp', key, input: srcUrl, startSec, audioMap, clientId, preset });
+    return sendMobileHlsPlaylist(res, 'ftp', key, playlistPath);
+  }
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Cache-Control', 'no-store');
+  return res.redirect(302, srcUrl);
+});
+
 app.get('/api/play-url', async (req, res) => {
   let media;
   try {
@@ -4308,7 +7448,10 @@ app.get(['/api/ftp/media-info', '/api/ftp/info'], async (req, res) => {
   console.log(`[FTP Media Info] final play URL: ${urls.finalPlayUrl}`);
 
   try {
-    const info = await getCachedMediaInfo(media.decodedUrl);
+    const [info, sidecarSubtitleTracks] = await Promise.all([
+      getCachedMediaInfo(media.decodedUrl),
+      discoverRemoteSubtitleTracks(media.decodedUrl, req).catch(() => [])
+    ]);
     res.json({
       ok: true,
       requestedUrl: media.requestedUrl,
@@ -4317,6 +7460,7 @@ app.get(['/api/ftp/media-info', '/api/ftp/info'], async (req, res) => {
       playUrl: urls.finalPlayUrl,
       finalPlayUrl: urls.finalPlayUrl,
       ...info,
+      sidecarSubtitleTracks,
       duration: Number(info.duration) || 0,
     });
   } catch (e) {
@@ -4344,6 +7488,14 @@ app.get('/api/ftp/subtitle/:track.vtt', (req, res) => {
   }
 
   const srcUrl = media.decodedUrl;
+  const sidecarRaw = String(req.query.sidecar || '').trim();
+  if (sidecarRaw) {
+    let sidecarUrl;
+    try { sidecarUrl = new URL(sidecarRaw, srcUrl).href; } catch {
+      return jsonError(res, 400, 'INVALID_SUBTITLE_URL', 'Invalid remote subtitle URL');
+    }
+    return sendRemoteSidecarSubtitleAsVtt(req, res, srcUrl, sidecarUrl);
+  }
   const trackIdx = Math.max(0, parseInt(req.params.track || '0', 10) || 0);
   const streamIdx = parseInt(req.query.stream ?? '', 10);
   const mapTarget = Number.isFinite(streamIdx) && streamIdx >= 0 ? `0:${streamIdx}` : `0:s:${trackIdx}`;
@@ -4372,7 +7524,7 @@ app.get('/api/ftp/subtitle/:track.vtt', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'public, max-age=3600');
 
-  const ffmpeg = spawn('ffmpeg', ffmpegArgs);
+  const ffmpeg = spawn(FFMPEG_BIN, ffmpegArgs);
   const watchdog = setTimeout(() => {
     try { ffmpeg.kill('SIGKILL'); } catch {}
     if (!res.headersSent) res.status(504).end('WEBVTT\n\n');
@@ -4397,18 +7549,9 @@ app.get('/api/ftp/subtitle/:track.vtt', (req, res) => {
 });
 
 app.get('/api/ftp/stream', async (req, res) => {
-  let media;
-  try {
-    media = readRemoteUrlParam(req, ['url', 'streamUrl', 'movie', 'movieUrl', 'src']);
-  } catch (e) {
-    return jsonError(res, e.status || 400, e.code || 'INVALID_URL', e.message, {
-      requestedUrl: e.requestedUrl,
-      decodedUrl: e.decodedUrl,
-    });
-  }
-
-  const srcUrl = media.decodedUrl;
-  const matched = findCatalogItemByStreamUrl(srcUrl);
+  const trusted = readTrustedRemotePlaybackMedia(req, res, true);
+  if (!trusted) return;
+  const { media, srcUrl, matched } = trusted;
   const urls = remotePlayUrls(srcUrl);
   console.log(`[FTP Stream] requested URL: ${media.requestedUrl}`);
   console.log(`[FTP Stream] decoded URL: ${srcUrl}`);
@@ -4485,7 +7628,7 @@ app.get('/api/ftp/stream', async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-cache');
 
-  const ffmpeg = spawn('ffmpeg', ffmpegArgs);
+  const ffmpeg = spawn(FFMPEG_BIN, ffmpegArgs);
   ffmpeg.stdout.pipe(res);
   ffmpeg.stderr.on('data', d => console.log('[FTP FFmpeg]', d.toString().trim()));
   ffmpeg.on('error', err => {
@@ -4644,7 +7787,7 @@ app.get('/api/ftp/test', async (req, res) => {
 
   console.log('[TEST] FFmpeg args:', ffmpegArgs.join(' '));
 
-  const ffmpeg = spawn('ffmpeg', ffmpegArgs);
+  const ffmpeg = spawn(FFMPEG_BIN, ffmpegArgs);
   let stderrOutput = '';
   let bytesReceived = 0;
 
@@ -4895,10 +8038,13 @@ app.use((err, req, res, next) => { console.error('Unhandled error:', err.message
 buildFileIndex();
 buildInstantLists();                                   // ⚡ instant — sync, ~10ms
 filterCartoonsAndAnime();                              // 🧹 remove cartoons/anime (with logging)
-setTimeout(() => {
-  try { svGetFastSearchIndex(); }
-  catch (e) { console.warn('⚠ Search index warmup failed:', e.message); }
-}, 2000);                                             // ⚡ build massive search index before user searches
+if (process.env.SV_SEARCH_WARMUP === '1') {
+  const searchWarmupDelay = Math.max(30000, parseInt(process.env.SV_SEARCH_WARMUP_DELAY_MS || '120000', 10) || 120000);
+  setTimeout(() => {
+    try { svGetFastSearchIndex(); }
+    catch (e) { console.warn('⚠ Search index warmup failed:', e.message); }
+  }, searchWarmupDelay);
+}
 setTimeout(() => runBackgroundEnrichment(), 60000);    // 🔄 fill missing posters after startup settles
 
 const os = require('os');
@@ -4924,4 +8070,8 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n📲 Using DIRECT STREAMING (fastest playback, no HLS delay)`);
   console.log(`✨ Seeking, pausing, and all controls work instantly\n`);
   console.log(`🧹 Cartoon/Anime filter active — only real movies & series are shown`);
+  setTimeout(() => svWarmFifaLiveCache('startup'), 750);
+  setTimeout(() => {
+    svGetFifaNewsPayload().catch(err => svFifaWarn('startup news warmup failed', err));
+  }, 2500);
 });

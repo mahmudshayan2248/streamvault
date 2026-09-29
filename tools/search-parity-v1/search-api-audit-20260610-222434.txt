@@ -1,0 +1,28 @@
+BRANCH=haskell-search-api-audit-20260610-222434
+BASE_BRANCH=haskell-series-shadow-pager-gate-20260610-222257
+SCAN_JSON=tools\search-parity-v1\search-api-source-scan-20260610-222434.json
+
+=== SEARCH API MIGRATION AUDIT ===
+SEARCH_JS_EXISTS=False
+APP_JS_EXISTS=False
+SERVER_JS_EXISTS=True
+CATALOG_EXISTS=True
+CATALOG_BYTES=56075420
+
+=== CURRENT SEARCH SHAPE ===
+FRONTEND_SEARCH_INDEX=False
+FRONTEND_SEARCH_ITEMS=False
+SEARCH_PAGE_RENDER=False
+HANDLE_SEARCH=False
+MOVIES_SERIES_GLOBAL_STATE=False
+SERVER_SEARCH_ROUTE=True
+
+=== MIGRATION NOTES ===
+Current search appears frontend-driven when svBuildSearchIndex/svSearchItems are present.
+Haskell migration target should preserve query behavior before route wiring.
+Recommended next artifact: standalone base Haskell catalog search reader.
+No server wiring changed.
+No Cabal edit.
+No generated file over 50MB.
+
+PASS

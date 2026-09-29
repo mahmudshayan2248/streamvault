@@ -1,0 +1,12 @@
+BRANCH=haskell-search-shadow-reader-20260610-222610
+TOOL=tools\search-parity-v1\SearchShadowReader.hs
+BUILD_LOG=tools\search-parity-v1\ghc-build-search-shadow-reader-20260610-222610.txt
+SAMPLE_JSON=tools\search-parity-v1\search-shadow-reader-sample-20260610-222610.json
+QUERY=the
+SAMPLE_COUNT=12
+ESTIMATED_TITLE_FIELDS=25602
+MODE=base-only standalone Haskell
+NO_CABAL_EDIT=YES
+NO_AESON=YES
+NO_SERVER_WIRING=YES
+PASS

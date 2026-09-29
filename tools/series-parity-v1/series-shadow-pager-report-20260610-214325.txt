@@ -1,0 +1,13 @@
+BRANCH=haskell-series-shadow-pager-20260610-214325
+TOOL=tools\series-parity-v1\SeriesShadowPager.hs
+BUILD_LOG=tools\series-parity-v1\ghc-build-series-shadow-pager-20260610-214325.txt
+SAMPLE_JSON=tools\series-parity-v1\series-shadow-pager-sample-20260610-214325.json
+SERIES_TOTAL=3431
+SAMPLE_COUNT=12
+PAGE=1
+LIMIT=12
+MODE=base-only standalone Haskell
+NO_CABAL_EDIT=YES
+NO_AESON=YES
+NO_SERVER_WIRING=YES
+PASS

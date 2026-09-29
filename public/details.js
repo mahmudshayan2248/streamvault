@@ -97,7 +97,11 @@
     }
     try{
       showToast('Loading episodes...');
-      const r = await fetch(`/api/series/detail?name=${encodeURIComponent(show.name || '')}`);
+      const params = new URLSearchParams();
+      params.set('name', show.name || '');
+      if(show.id != null)params.set('id', show.id);
+      if(show.year)params.set('year', show.year);
+      const r = await fetch(`/api/series/detail?${params.toString()}`);
       if(r.ok){
         const full = await r.json();
         if(full && full.name){

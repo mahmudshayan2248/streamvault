@@ -1,0 +1,10 @@
+BRANCH=haskell-sections-shadow-classifier-20260610-223224
+TOOL=tools\sections-parity-v1\SectionsShadowClassifier.hs
+BUILD_LOG=tools\sections-parity-v1\ghc-build-sections-shadow-classifier-20260610-223224.txt
+SAMPLE_JSON=tools\sections-parity-v1\sections-shadow-classifier-sample-20260610-223224.json
+SECTION_COUNT=18
+MODE=base-only standalone Haskell
+NO_CABAL_EDIT=YES
+NO_AESON=YES
+NO_SERVER_WIRING=YES
+PASS

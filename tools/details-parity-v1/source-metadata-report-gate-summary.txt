@@ -1,0 +1,3 @@
+﻿Status: PASS
+fixture rows: 120
+source candidates: 122154

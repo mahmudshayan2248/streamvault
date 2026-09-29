@@ -1,0 +1,5 @@
+﻿Status: source metadata matcher dry-run only
+fixture rows: 120
+source candidates: 122154
+Runtime/frontend/playback files changed: no
+expanded-details-fixture.json mutated: no

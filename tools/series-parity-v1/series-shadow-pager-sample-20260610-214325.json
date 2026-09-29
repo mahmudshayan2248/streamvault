@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "source": "base-haskell-series-shadow-pager",
+  "page": 1,
+  "limit": 12,
+  "count": 12,
+  "total": 3431,
+  "totalPages": 286,
+  "items": []
+}

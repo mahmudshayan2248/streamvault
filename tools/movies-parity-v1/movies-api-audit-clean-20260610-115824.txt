@@ -1,0 +1,458 @@
+﻿=== MOVIES API CLEAN AUDIT ===
+DATE=2026-06-10 11:58:25
+WORK_BRANCH=haskell-movies-api-audit-clean-20260610-115824
+BASE_BRANCH=origin/haskell-downloads-contract-fixture-20260609-182029
+MASTER_LEFT_AT=0f9bec0dd6c87fab550968fea1bb9507c98e59cd
+HEAD=cc95638f06e95b517cc68e3c5eca42975784a563
+MASTER_NOT_TOUCHED=YES
+
+=== MOVIE-RELATED TRACKED FILE NAMES ONLY ===
+app/CatalogApi.hs
+build-clean-catalog.js
+catalog.json
+data/home-feed.json
+home-feed.json
+lib/catalog-cleaner.js
+lib/catalog-dedupe.js
+lib/catalog-index.js
+lib/home-sections.js
+public/details.js
+public/home.js
+public/movies-page-fix.js
+public/posters/games/homefront-the-revolution.webp
+public/posters/games/homefront-ultimate-edition.webp
+public/posters/games/homeworld-3-fleet-command-edition.webp
+public/posters/games/homeworld-deserts-of-kharak.webp
+public/posters/games/homeworld-remastered-collection.webp
+public/posters/games/last-train-home-deluxe-edition.webp
+public/posters/games/silent-hill-homecoming.webp
+public/posters/games/the-lego-movie-2-videogame.webp
+public/posters/games/the-lego-movie-videogame-03-1-971-apkmoddataobb.webp
+public/posters/games/the-lego-ninjago-movie-video-game.webp
+public/search.js
+scan-media-catalogs.js
+scripts/maintenance/convert-catalog.js
+scripts/maintenance/enrich-catalog.js
+scripts/maintenance/split-catalog.js
+section-catalog.json
+tools/details-parity-v1/DETAILS_7O_SHADOW_ALL_BASELINE.md
+tools/details-parity-v1/DETAILS_7P_POWERSHELL_SAFE_SHADOW_RUNNER.md
+tools/details-parity-v1/DETAILS_7Q_PSSAFE_RUNNER_ROOT_FIX.md
+tools/details-parity-v1/DETAILS_7R_SHADOW_OUTPUT_SUMMARY.md
+tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md
+tools/details-parity-v1/DETAILS_7T_NEGATIVE_SCHEMA_CLASSIFICATION.md
+tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md
+tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md
+tools/details-parity-v1/DETAILS_7W_FIXTURE_ENRICHMENT_SOURCE_AUDIT.md
+tools/details-parity-v1/DETAILS_7X_FIXTURE_GENERATION_HISTORY_AUDIT.md
+tools/details-parity-v1/DETAILS_7Y_FIXTURE_METADATA_ENRICHER.md
+tools/details-parity-v1/DETAILS_7Z_FIXTURE_CACHE_MATCH_AUDIT.md
+tools/details-parity-v1/DETAILS_8A_POSTER_CACHE_METADATA_INVENTORY.md
+tools/details-parity-v1/DETAILS_8B_CACHE_FIXTURE_REAL_MATCH_AUDIT.md
+tools/details-parity-v1/DETAILS_8C_FIXTURE_ENRICHMENT_DECISION.md
+tools/details-parity-v1/DETAILS_8D_FIXTURE_CACHE_DRY_RUN_MATCHER.md
+tools/details-parity-v1/DETAILS_8E_DRY_RUN_MATCH_DECISION.md
+tools/details-parity-v1/DETAILS_8F_FIXTURE_ENRICHMENT_PREVIEW.md
+tools/details-parity-v1/DETAILS_8G_GUARDED_FIXTURE_ENRICHER.md
+tools/details-parity-v1/DETAILS_8H_STRONG_MATCH_ENRICHMENT_PREVIEW.md
+tools/details-parity-v1/DETAILS_8I_TEMP_ENRICHED_FIXTURE_VALIDATION.md
+tools/details-parity-v1/DETAILS_8J_FIXTURE_ENRICHMENT_REVIEW_PACK.md
+tools/details-parity-v1/DETAILS_8K_FIXTURE_ENRICHMENT_REVIEW_GATE.md
+tools/details-parity-v1/DETAILS_8L_APPLY_READINESS_DECISION.md
+tools/details-parity-v1/DETAILS_8M_REVIEW_PACK_REGENERATOR.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7E.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7F.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7G.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7H.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7I.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7K.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7L.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7M.md
+tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md
+tools/details-parity-v1/DETAILS_SHADOW_GATES.md
+tools/details-parity-v1/audit-details-fixture-gaps.js
+tools/details-parity-v1/audit-details-fixtures.js
+tools/details-parity-v1/audit-fixture-cache-matches.js
+tools/details-parity-v1/build-details-contract-manifest.js
+tools/details-parity-v1/build-details-response-snapshot.js
+tools/details-parity-v1/build-details-route-snapshot.js
+tools/details-parity-v1/build-expanded-details-fixture.js
+tools/details-parity-v1/check-source-metadata-report.ps1
+tools/details-parity-v1/details-response-contract.js
+tools/details-parity-v1/dry-run-fixture-cache-matcher.ps1
+tools/details-parity-v1/enrich-expanded-details-fixture.js
+tools/details-parity-v1/expanded-details-fixture.json
+tools/details-parity-v1/export-fixture-enrichment-review-pack.ps1
+tools/details-parity-v1/fixture-shape-audit-summary.txt
+tools/details-parity-v1/guarded-fixture-cache-enricher.ps1
+tools/details-parity-v1/out/details-shadow-all-7o-20260608-202843.txt
+tools/details-parity-v1/out/fixture-enrichment-candidates-8m.json
+tools/details-parity-v1/preview-fixture-cache-enrichment.ps1
+tools/details-parity-v1/preview-strong-match-fixture-enrichment.ps1
+tools/details-parity-v1/report-details-gap-priority.js
+tools/details-parity-v1/report-raw-fixture-metadata-coverage.js
+tools/details-parity-v1/run-details-shadow-all-powershell-safe.ps1
+tools/details-parity-v1/source-metadata-match-dry-run.js
+tools/details-parity-v1/source-metadata-match-report.json
+tools/details-parity-v1/source-metadata-match-summary.txt
+tools/details-parity-v1/source-metadata-report-gate-summary.txt
+tools/details-parity-v1/summarize-details-shadow-output.js
+tools/details-parity-v1/test-details-contract-manifest-negative.js
+tools/details-parity-v1/test-details-contract-manifest.js
+tools/details-parity-v1/test-details-fixture-builder-determinism.js
+tools/details-parity-v1/test-details-fixture-coverage-negative.js
+tools/details-parity-v1/test-details-fixture-coverage.js
+tools/details-parity-v1/test-details-fixture-schema-negative.js
+tools/details-parity-v1/test-details-gate-inventory.js
+tools/details-parity-v1/test-details-response-parity-basic.js
+tools/details-parity-v1/test-details-response-parity-negative.js
+tools/details-parity-v1/test-details-response-snapshot-negative.js
+tools/details-parity-v1/test-details-response-snapshot.js
+tools/details-parity-v1/test-details-route-contract-negative.js
+tools/details-parity-v1/test-details-route-contract.js
+tools/details-parity-v1/test-details-route-roundtrip-negative.js
+tools/details-parity-v1/test-details-route-roundtrip.js
+tools/details-parity-v1/test-details-route-snapshot-negative.js
+tools/details-parity-v1/test-details-route-snapshot.js
+tools/details-parity-v1/test-native-details-shadow.js
+tools/details-parity-v1/validate-details-fixture-schema.js
+tools/details-parity-v1/validate-temp-enriched-fixture.ps1
+tools/haskell-migration-baseline/details-response-contract-fix-20260609-163522.txt
+
+=== MOVIES API / ROUTE HITS FROM SOURCE FILES ONLY ===
+lib/catalog-cleaner.js:97:function cacheMetadataFor(raw, posterCache = {}, type = 'movie') {
+lib/catalog-cleaner.js:132:  const type = options.type || raw.type || 'movie';
+lib/catalog-cleaner.js:137:  const validation = validateMediaItem({ ...merged, filename, streamUrl }, { kind: type === 'series' ? 'series' : 'movie', allowFolders: type === 'series' });
+lib/catalog-cleaner.js:179:    type: type === 'series' ? 'tv' : 'movie',
+lib/catalog-cleaner.js:204:function toFinalMovie(item = {}) {
+lib/catalog-cleaner.js:222:    type: item.type || 'movie',
+lib/catalog-cleaner.js:237:  data.movies = dedupeCatalog(data.movies || [], { kind: 'movie', allowMetadataOnly: true });
+lib/catalog-cleaner.js:240:    movies: data.movies.filter(item => item.approvedForHome),
+lib/catalog-cleaner.js:243:  data.home.sections = buildHomeSections({ movies: data.home.movies, series: data.home.series });
+lib/catalog-cleaner.js:244:  data.finalMovies = data.movies.filter(item => item.approvedForSearch).map(toFinalMovie);
+lib/catalog-cleaner.js:246:    movies: data.movies.length,
+lib/catalog-cleaner.js:248:    homeMovies: data.home.movies.length,
+lib/catalog-cleaner.js:250:    finalMovies: data.finalMovies.length
+lib/catalog-cleaner.js:261:    movies: toArray(rawCatalog.movies).map(item => cleanOne(item, { posterCache, type: 'movie' })).filter(Boolean),
+lib/catalog-cleaner.js:326:        const enrichmentCandidates = [...next.movies, ...next.series]
+lib/catalog-cleaner.js:331:          const byId = new Map([...next.movies, ...next.series].map(item => [item.id, item]));
+lib/catalog-cleaner.js:333:          next.movies = Array.from(byId.values()).filter(item => item.type !== 'tv');
+lib/catalog-cleaner.js:355:    const all = [...toArray(data.movies), ...toArray(data.series)].filter(item => item.approvedForSearch || item.approvedForHome);
+lib/catalog-index.js:27:  allMovies: 'newItems'
+lib/catalog-index.js:59:  const type = typeOverride || row.type || 'movie';
+lib/catalog-index.js:127:  const moviesFile = path.join(catalogDir, 'movies.ndjson');
+lib/catalog-index.js:164:    return `${SEARCH_SCHEMA_VERSION}|${fileMtime(moviesFile)}|${fileMtime(seriesFile)}`;
+lib/catalog-index.js:177:    await run(`CREATE TABLE IF NOT EXISTS movies (
+lib/catalog-index.js:193:    await run('CREATE INDEX IF NOT EXISTS idx_movies_sort ON movies(sortYear DESC, rating DESC)');
+lib/catalog-index.js:198:async function insertMovie(stmt, ftsStmt, raw) {
+lib/catalog-index.js:202:    const valid = validateMediaItem({ ...raw, filename, streamUrl }, { kind: 'movie' });
+lib/catalog-index.js:214:    await ftsStmt.run([id, 'movie', name, searchText]);
+lib/catalog-index.js:222:    const count = await get('SELECT (SELECT COUNT(*) FROM movies) AS movies, (SELECT COUNT(*) FROM series) AS series').catch(() => null);
+lib/catalog-index.js:223:    if (meta?.value === version && ((count?.movies || 0) || (count?.series || 0))) {
+lib/catalog-index.js:231:      await run('DELETE FROM movies');
+lib/catalog-index.js:235:      const movieStmt = await prepare(`INSERT OR REPLACE INTO movies
+lib/catalog-index.js:239:      await streamMovies(movieStmt, ftsStmt);
+lib/catalog-index.js:240:      await movieStmt.finalize();
+lib/catalog-index.js:288:  async function streamMovies(movieStmt, ftsStmt) {
+lib/catalog-index.js:289:    if (!fs.existsSync(moviesFile)) return;
+lib/catalog-index.js:290:    const rl = readline.createInterface({ input: fs.createReadStream(moviesFile), crlfDelay: Infinity });
+lib/catalog-index.js:295:      pending.push(insertMovie(movieStmt, ftsStmt, raw));
+lib/catalog-index.js:375:  async function pagedMovies(query = {}) {
+lib/catalog-index.js:378:    const rows = await all('SELECT * FROM movies ORDER BY sortYear DESC, rating DESC, name LIMIT ? OFFSET ?', [limit, offset]);
+lib/catalog-index.js:379:    const total = await get('SELECT COUNT(*) AS count FROM movies');
+lib/catalog-index.js:381:      movies: dedupeCatalog(rows.map(row => summaryItem({ ...row, type: 'movie', isFtp: true })).filter(Boolean), { kind: 'movie', allowMetadataOnly: true }),
+lib/catalog-index.js:409:      if (row.kind === 'movie') {
+lib/catalog-index.js:410:        const movie = await get('SELECT * FROM movies WHERE id = ?', [row.id]);
+lib/catalog-index.js:411:        if (movie) {
+lib/catalog-index.js:412:          const item = summaryItem({ ...movie, type: 'movie', isFtp: true });
+lib/catalog-index.js:429:    let row = await get('SELECT * FROM movies WHERE id = ?', [cleanId]);
+lib/catalog-index.js:431:      const item = summaryItem({ ...row, type: 'movie' });
+lib/catalog-index.js:459:        type: item.type === 'series' ? 'tv' : item.type || 'movie',
+lib/catalog-index.js:461:      }, item.type === 'series' ? 'tv' : item.type || 'movie')).filter(Boolean);
+lib/catalog-index.js:492:    return { ready, building, dbFile, moviesFile, seriesFile };
+lib/catalog-index.js:495:  return { init, initBackground, status, pagedMovies, pagedSeries, search, title, homeFeed, section };
+lib/home-sections.js:167:  const movies = Array.isArray(items.movies) ? items.movies : [];
+lib/home-sections.js:169:  const all = [...movies, ...series].filter(item => item && item.approvedForHome && hasArt(item));
+lib/home-sections.js:176:  sections.allMovies = sectionSort('allMovies', movies.filter(item => item.approvedForHome && hasArt(item))).slice(0, 300);
+lib/tmdb-verify.js:55:async function searchTmdb({ title, year = '', type = 'movie', token }) {
+lib/tmdb-verify.js:60:  const endpoint = isSeries ? 'search/tv' : 'search/movie';
+lib/tmdb-verify.js:62:  const url = `https://api.themoviedb.org/3/${endpoint}?query=${encodeURIComponent(clean)}${yearParam}&include_adult=false`;
+middleware/tracker.js:26:let contentStats = {};   // { movieName: { count, lastWatched } }
+migrate-json-to-sql.js:35:  if (Array.isArray(data.movies)) return data.movies
+public/app.js:27:let trendingMovies = [], trendingSeries = [];
+public/app.js:29:let movies=[],series=[],channels=[];
+public/app.js:30:let heroMovies=[],heroIdx=0,heroTimer=null;
+public/app.js:36:let movieWatchlist=[];
+public/app.js:37:try{movieWatchlist=JSON.parse(localStorage.getItem('sv_movie_watchlist')||'[]');}catch{}
+public/app.js:40:let _movieDetailRegistry = new Map();
+public/app.js:41:let _movieDetailSeq = 0;
+public/app.js:46:let currentDetailMovie = null;
+public/app.js:129:let _totalMoviePages=0;
+public/app.js:130:let _movieBrowsePageSize=100;
+public/app.js:131:let _homeMoviesLoaded=false;
+public/app.js:132:let _allMoviesLoaded=false;
+public/app.js:135:function movieListKey(m){
+public/app.js:138:function mergeMovieList(incoming=[]){
+public/app.js:139:  const seen = new Set(movies.map(movieListKey));
+public/app.js:140:  for(const movie of incoming){
+public/app.js:141:    const key = movieListKey(movie);
+public/app.js:144:    movies.push(movie);
+public/app.js:224:function isCartoonClient(movie) {
+public/app.js:225:  const name = (movie.name || '').toLowerCase();
+public/app.js:226:  const genre = (movie.genre || '').toLowerCase();
+public/app.js:229:    'bug\'s life', 'a bug\'s life', 'charlie brown', 'goofy movie', 'akira',
+public/app.js:239:function movieScore(m) {
+public/app.js:388:  let base = movieScore(item);
+public/app.js:407:  const sorted = [...list].sort((a,b) => movieScore(b) - movieScore(a));
+public/app.js:420:      fetch('/api/movies?page=0&limit=24'),
+public/app.js:424:    movies = mData.movies.filter(m=>m&&m.name);
+public/app.js:428:    movies = movies.filter(m => !isCartoonClient(m));
+public/app.js:431:    _totalMoviePages = Math.ceil((mData.total || movies.length) / _movieBrowsePageSize);
+public/app.js:436:          trendingMovies = (d.movies || []).filter(m => !isCartoonClient(m));
+public/app.js:447:        fetch(`/api/movies?page=${p}&limit=100`)
+public/app.js:450:            let newMovies = d.movies.filter(m=>m&&m.name);
+public/app.js:451:            newMovies = newMovies.filter(m => !isCartoonClient(m));
+public/app.js:452:            mergeMovieList(newMovies);
+public/app.js:457:              renderSortedTrack('allTrack', movies);
+public/app.js:462:    setTimeout(()=>{ _homeMoviesLoaded=true; }, homeBgPages * 600 + 200);
+public/app.js:480:function loadAllMoviesForBrowse(){
+public/app.js:481:  if(_allMoviesLoaded) return;
+public/app.js:482:  _allMoviesLoaded=true;
+public/app.js:485:  const total=Math.max(0,_totalMoviePages-startPage);
+public/app.js:486:  for(let p=startPage; p<_totalMoviePages; p++){
+public/app.js:488:      fetch(`/api/movies?page=${p}&limit=${_movieBrowsePageSize}`)
+public/app.js:491:          let newMovies = d.movies.filter(m=>m&&m.name);
+public/app.js:492:          newMovies = newMovies.filter(m => !isCartoonClient(m));
+public/app.js:493:          mergeMovieList(newMovies);
+public/app.js:496:            if(document.getElementById('moviesSection').style.display!=='none') filterMoviesPage();
+public/app.js:524:  ['bnShows','bnMovies','bnLibrary','bnDownloads','bnSearch'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+public/app.js:526:  document.getElementById('allMoviesNavBtn')?.classList.remove('active');
+public/app.js:531:  if(tab==='home'||tab==='movies')tab='discover';
+public/app.js:540:  document.getElementById('moviesSection').style.display=tab==='movies-browse'?'block':'none';
+public/app.js:547:  document.getElementById('allMoviesNavBtn')?.classList.toggle('active',tab==='movies-browse');
+public/app.js:549:  ['bnDiscover','bnShows','bnMovies','bnLibrary','bnDownloads','bnSearch'].forEach(id=>{
+public/app.js:558:  if(tab==='movies-browse'){
+public/app.js:559:    document.getElementById('bnMovies')?.classList.add('active');
+public/app.js:560:    loadAllMoviesForBrowse();
+public/app.js:561:    renderMoviesPage();
+public/app.js:576:  var mp4M=movies.filter(function(m){var u=(m.streamUrl||'').toLowerCase().split('?')[0];return u.endsWith('.mp4')||u.endsWith('.m4v');});
+public/app.js:582:  if(!all.length){grid.innerHTML='<div class="movies-empty"><h2>No MP4 titles found</h2></div>';return;}
+public/app.js:749:  const movieItems = movies
+public/app.js:755:  heroMovies = [...movieItems, ...seriesItems]
+public/app.js:763:  if(!heroMovies.length) heroMovies = [...seriesItems, ...movieItems].slice(0, 12);
+public/app.js:766:    cardsEl.innerHTML=heroMovies.slice(0,6).map(item=>{
+public/app.js:772:  let candidates = movies.filter(m => m.poster || m.backdrop);
+public/app.js:773:  candidates.sort((a,b) => movieScore(b) - movieScore(a));
+public/app.js:774:  heroMovies = candidates.slice(0, 8);
+public/app.js:775:  if(!heroMovies.length) heroMovies = movies.slice(0,6);
+public/app.js:780:  heroMovies.forEach((m,i)=>{
+public/app.js:792:  hEl.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50){dx<0?setHero((heroIdx+1)%heroMovies.length):setHero((heroIdx-1+heroMovies.length)%heroMovies.length);resetHeroTimer();}},{passive:true});
+public/app.js:795:  heroIdx=idx;const m=heroMovies[idx];if(!m)return;
+public/app.js:813:function cycleHero(){setHero((heroIdx+1)%heroMovies.length);resetHeroTimer();}
+public/app.js:814:function startHeroTimer(){heroTimer=setInterval(()=>setHero((heroIdx+1)%heroMovies.length),7000);}
+public/app.js:819:  watchHistory.unshift({id, name, genre: genre||'', type: type||'movie', watchedAt: Date.now()});
+public/app.js:836:    ...movies.map(m=>({...m, _type:'movie'})),
+public/app.js:869:  return list.sort((a, b) => movieScore(b) - movieScore(a)).filter(item => {
+public/app.js:886:  const mList = movies.filter(m => {
+public/app.js:907:  const mList = movies.filter(predicate);
+public/app.js:909:  let list = [...mList, ...sList];  // skip _rowSeen so Marvel/DC movies always show
+public/app.js:952:  const localMatched = movies.filter(m => {
+public/app.js:960:    const r = await fetch(`/api/movies/keywords?q=${encodeURIComponent(keywords.join(','))}`);
+public/app.js:999:  renderSortedTrack('allTrack', movies);
+public/app.js:1000:  const cont = movies.filter(m=>!m.isTrending&&watchProgress[m.id]?.progress>0.02&&watchProgress[m.id]?.progress<0.95);
+public/app.js:1005:    ...trendingMovies.slice(0,20)
+public/app.js:1016:    var mp4M=movies.filter(function(m){var u=(m.streamUrl||'').toLowerCase().split('?')[0];return u.endsWith('.mp4')||u.endsWith('.m4v');});
+public/app.js:1023:  const newMovies = movies.filter(m=>!m.isFtp&&!m.isTrending).slice(-10).reverse();
+public/app.js:1025:  const newMixed = [...newSeries,...newMovies];
+public/app.js:1053:    const mList = movies.filter(predicate);
+public/app.js:1150:  const mList = movies.filter(m => genreMatch(m, genres));
+public/app.js:1156:  const mList = movies.filter(m => langMatch(m, langs));
+public/app.js:1162:  const mList = movies.filter(predFn);
+public/app.js:1170:function registerMovieForDetail(movie){
+public/app.js:1171:  const key = 'md-' + (++_movieDetailSeq);
+public/app.js:1172:  _movieDetailRegistry.set(key, movie);
+public/app.js:1378:  const relMovies = seedGenres.length
+public/app.js:1379:    ? movies
+public/app.js:1385:    : movies.slice().sort((a,b)=>(parseFloat(b.rating||0))-(parseFloat(a.rating||0))).slice(0,18);
+public/app.js:1386:  if(relMovies.length){
+public/app.js:1387:    document.getElementById('smRelatedMoviesTrack').innerHTML = relMovies.map(m=>cardHTML(m)).join('');
+public/app.js:1388:    document.getElementById('smRelatedMovies').style.display = '';
+public/app.js:1390:    document.getElementById('smRelatedMovies').style.display = 'none';
+public/app.js:1933:function localFileForStreamId(id, movie={}){
+public/app.js:1934:  if(movie?.file)return movie.file;
+public/app.js:2173:  const movie = movies.find(m => m.id === id) || {};
+public/app.js:2174:  recordWatchHistory(id, movie.name || name, movie.genre || '', 'movie');
+public/app.js:2175:  if (!checkParentalLock(movie.rating || 'PG')) {
+public/app.js:2925:  const mHits=movies.filter(m=>m.name.toLowerCase().includes(q.toLowerCase()));
+public/app.js:2964:function renderMoviesPage(){
+public/app.js:2965:  if(!movies.length) return;
+public/app.js:2966:  filterMoviesPage();
+public/app.js:2969:let _svMoviesFilterTimer=0,_svSeriesFilterTimer=0;
+public/app.js:2970:function debounceMoviesPage(){
+public/app.js:2971:  clearTimeout(_svMoviesFilterTimer);
+public/app.js:2972:  _svMoviesFilterTimer=setTimeout(filterMoviesPage,_svWeakDevice?180:80);
+public/app.js:2983:  document.querySelectorAll('.movies-filters.filters-open').forEach(el=>{
+public/app.js:2993:function filterMoviesPage(){
+public/app.js:2994:  const q        = (document.getElementById('moviesSearchInput')?.value||'').trim().toLowerCase();
+public/app.js:2995:  const genre    = document.getElementById('moviesGenreFilter')?.value||'';
+public/app.js:2996:  const lang     = document.getElementById('moviesLangFilter')?.value||'';
+public/app.js:2997:  const yearRange= document.getElementById('moviesYearFilter')?.value||'';
+public/app.js:2998:  const minRating= document.getElementById('moviesRatingFilter')?.value||'';
+public/app.js:2999:  const publisher= document.getElementById('moviesPublisherFilter')?.value||'';
+public/app.js:3000:  const sort     = document.getElementById('moviesSortFilter')?.value||'default';
+public/app.js:3007:    dreamworks:['shrek','kung fu panda','how to train your dragon','madagascar','bee movie','antz','prince of egypt','spirit','shark tale','over the hedge','megamind','puss in boots','croods','trolls','boss baby','abominable','bad guys'],
+public/app.js:3013:  let list = movies.slice();
+public/app.js:3055:  document.getElementById('moviesCount').textContent =
+public/app.js:3056:    list.length === movies.length
+public/app.js:3057:      ? `${movies.length.toLocaleString()} movies`
+public/app.js:3058:      : `${list.length.toLocaleString()} of ${movies.length.toLocaleString()} movies`;
+public/app.js:3059:  renderMoviesChips({q,genre,lang,yearRange,minRating,publisher,sort});
+public/app.js:3060:  const grid = document.getElementById('moviesGrid');
+public/app.js:3062:    grid.innerHTML = '<div class="movies-empty"><h2>No movies found</h2><p>Try different filters</p></div>';
+public/app.js:3063:    document.getElementById('moviesLoadMoreWrap').style.display='none';
+public/app.js:3068:  document.getElementById('moviesLoadMoreWrap').style.display =
+public/app.js:3072:function moviesLoadMore(){
+public/app.js:3076:  document.getElementById('moviesGrid').insertAdjacentHTML('beforeend', chunk.map(m=>cardHTML(m)).join(''));
+public/app.js:3079:    document.getElementById('moviesLoadMoreWrap').style.display='none';
+public/app.js:3087:function renderMoviesChips({q,genre,lang,yearRange,minRating,publisher,sort}){
+public/app.js:3089:  if(q) chips.push({label:`"${q}"`, clear:()=>{document.getElementById('moviesSearchInput').value='';filterMoviesPage();}});
+public/app.js:3090:  if(genre) chips.push({label:genre, clear:()=>{document.getElementById('moviesGenreFilter').value='';filterMoviesPage();}});
+public/app.js:3091:  if(lang) chips.push({label:lang, clear:()=>{document.getElementById('moviesLangFilter').value='';filterMoviesPage();}});
+public/app.js:3092:  if(yearRange) chips.push({label:_yearLabels[yearRange]||yearRange, clear:()=>{document.getElementById('moviesYearFilter').value='';filterMoviesPage();}});
+public/app.js:3093:  if(minRating) chips.push({label:`Γÿà${_ratingLabels[minRating]||minRating}`, clear:()=>{document.getElementById('moviesRatingFilter').value='';filterMoviesPage();}});
+public/app.js:3094:  if(publisher) chips.push({label:_pubLabels[publisher]||publisher, clear:()=>{document.getElementById('moviesPublisherFilter').value='';filterMoviesPage();}});
+public/app.js:3095:  if(sort&&sort!=='default') chips.push({label:document.getElementById('moviesSortFilter')?.selectedOptions[0]?.text||sort, clear:()=>{document.getElementById('moviesSortFilter').value='default';filterMoviesPage();}});
+public/app.js:3096:  const wrap = document.getElementById('moviesActiveFilters');
+public/app.js:3101:  const wrap=document.getElementById('moviesActiveFilters');
+public/app.js:3160:    grid.innerHTML = '<div class="movies-empty"><h2>No series found</h2><p>Try different filters</p></div>';
+public/app.js:3215:  const isUnplayable = isMovieUnavailable(m);
+public/app.js:3216:  const detailKey = registerMovieForDetail(m);
+public/app.js:3218:  return `<div class="card" role="button" tabindex="0" onclick="openMovieDetail('${detailKey}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMovieDetail('${detailKey}')}">${img}${unavailableOverlay}<div class="card-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div class="card-overlay"><div class="card-title">${esc(m.name)}</div><div class="card-meta">${m.rating?`<span class="card-rating">&#9733; ${esc(m.rating)}</span>`:''} ${m.year?`<span>${esc(m.year)}</span>`:''}</div></div>${bar}</div>`;
+public/app.js:3221:function isMovieUnavailable(movie){
+public/app.js:3222:  return movie?.streamAvailable === false || (movie?.isTrending && !movie.streamUrl && !movie.isFtp && typeof movie.id === 'string' && movie.id.startsWith('tmdb_'));
+public/app.js:3225:function movieIdentity(movie){
+public/app.js:3226:  return String(movie?.id ?? movie?.streamUrl ?? movie?.name ?? '');
+public/app.js:3229:function saveMovieWatchlist(){
+public/app.js:3230:  try{localStorage.setItem('sv_movie_watchlist', JSON.stringify(movieWatchlist));}catch{}
+public/app.js:3233:function isMovieWatchlisted(movie){
+public/app.js:3234:  const id = movieIdentity(movie);
+public/app.js:3235:  return !!id && movieWatchlist.includes(id);
+public/app.js:3238:function toggleMovieWatchlistFromDetail(){
+public/app.js:3239:  if(!currentDetailMovie)return;
+public/app.js:3240:  const id = movieIdentity(currentDetailMovie);
+public/app.js:3242:  if(movieWatchlist.includes(id)){
+public/app.js:3243:    movieWatchlist = movieWatchlist.filter(x=>x!==id);
+public/app.js:3246:    movieWatchlist.unshift(id);
+public/app.js:3249:  saveMovieWatchlist();
+public/app.js:3250:  updateMovieWatchlistButtons();
+public/app.js:3254:function updateMovieWatchlistButtons(){
+public/app.js:3255:  const active = isMovieWatchlisted(currentDetailMovie);
+public/app.js:3262:function inferQuality(movie, qualityData){
+public/app.js:3264:  const text = `${movie?.name||''} ${movie?.file||''} ${movie?.streamUrl||''}`;
+public/app.js:3361:  const routeType = type === 'tv' || item?.type === 'tv' || item?.type === 'series' ? 'series' : 'movie';
+public/app.js:3394:  const source = type === 'tv' ? series : movies;
+public/app.js:3395:  const currentId = String(type === 'tv' ? (item?.id || item?.name || '') : movieIdentity(item || {}));
+public/app.js:3401:      const otherId = String(type === 'tv' ? (other.id || other.name || '') : movieIdentity(other));
+public/app.js:3424:  return movies
+public/app.js:3583:  const sourceItem = item || (prefix === 'sm' ? currentShow : currentDetailMovie);
+public/app.js:3606:function renderMovieAbout(movie, details){
+public/app.js:3611:  const companies = Array.isArray(movie.productionCompanies) ? movie.productionCompanies.slice(0,3).join(', ') : '';
+public/app.js:3613:    {label:'Year', value: movie.year || 'Unknown'},
+public/app.js:3614:    {label:'Runtime', value: movie.runtime || 'Unknown'},
+public/app.js:3615:    {label:'Rating', value: movie.rating ? `${movie.rating}/10` : 'Unrated'},
+public/app.js:3616:    {label:'Genres', value: movie.genre || 'Unknown'},
+public/app.js:3617:    {label:'Language', value: movie.language || 'Unknown'},
+public/app.js:3622:async function renderMovieMediaInfo(movie){
+public/app.js:3625:  if(isMovieUnavailable(movie)){
+public/app.js:3629:  const source = movie.isFtp ? 'FTP source' : 'Local server';
+public/app.js:3631:    metadataItem('Quality', inferQuality(movie)),
+public/app.js:3632:    metadataItem('Runtime', movie.runtime || 'Probing'),
+public/app.js:3634:    metadataItem('Format', movie.streamUrl ? movie.streamUrl.split('?')[0].split('.').pop()?.toUpperCase() : 'Auto'),
+public/app.js:3640:    if(movie.isFtp && movie.streamUrl){
+public/app.js:3641:      const r = await fetchWithTimeout(`/api/ftp/media-info?url=${encodeURIComponent(movie.streamUrl)}`, {}, 3500);
+public/app.js:3643:    }else if(movie.id !== undefined && movie.id !== null && !String(movie.id).startsWith('tmdb_')){
+public/app.js:3645:        fetchWithTimeout(`/api/media-info/${movie.id}`, {}, 3500).catch(()=>null),
+public/app.js:3646:        fetchWithTimeout(`/api/qualities/${movie.id}`, {}, 3500).catch(()=>null)
+public/app.js:3653:      metadataItem('Quality', inferQuality(movie, quality)),
+public/app.js:3654:      metadataItem('Runtime', info?.duration ? fmtTime(info.duration) : (movie.runtime || 'Unknown')),
+public/app.js:3667:async function loadMovieOnlineDetails(movie, token){
+public/app.js:3669:    const details = await fetchTitleDetails(movie, movie.type === 'tv' ? 'tv' : 'movie');
+public/app.js:3670:    if(token !== _titleDetailsToken || currentDetailMovie !== movie)return;
+public/app.js:3671:    mergeTitleDetails(movie, details);
+public/app.js:3672:    renderOnlineSections('md', details || {}, movie.type === 'tv' ? 'tv' : 'movie', movie);
+public/app.js:3673:    renderMovieAbout(movie, details);
+public/app.js:3692:    renderOnlineSections('md', localTitleDetails(movie, movie.type === 'tv' ? 'tv' : 'movie'), movie.type === 'tv' ? 'tv' : 'movie', movie);
+public/app.js:3696:function openMovieDetail(key){
+public/app.js:3697:  const movie = _movieDetailRegistry.get(key);
+public/app.js:3698:  if(!movie)return;
+public/app.js:3699:  currentDetailMovie = movie;
+public/app.js:3700:  const modal = document.getElementById('movieDetailModal');
+public/app.js:3703:  const art = movie.backdrop || movie.poster || '';
+public/app.js:3704:  poster.src = svOptimizeImageUrl(movie.poster || art || '', false);
+public/app.js:3706:  backdrop.src = svOptimizeImageUrl(art || movie.poster || '', true);
+public/app.js:3708:  document.getElementById('mdTitle').textContent = movie.name || 'Untitled';
+public/app.js:3709:  document.getElementById('mdKicker').textContent = movie.type === 'tv' ? 'Series' : 'Movie';
+public/app.js:3711:  if(movie.rating)meta.push(`<span class="detail-rating">&#9733; ${esc(movie.rating)}</span>`);
+public/app.js:3712:  if(movie.year)meta.push(esc(movie.year));
+public/app.js:3713:  if(movie.runtime)meta.push(esc(movie.runtime));
+public/app.js:3714:  if(movie.genre)meta.push(esc(movie.genre.split(',').slice(0,2).join(' / ')));
+public/app.js:3717:  overview.textContent = movie.overview || 'No overview is available for this title yet.';
+public/app.js:3720:  document.getElementById('mdShowMoreBtn').style.display = (movie.overview || '').length > 220 ? '' : 'none';
+public/app.js:3722:  const unavailable = isMovieUnavailable(movie);
+public/app.js:3727:  watchBtn.onclick = unavailable ? ()=>showToast('This title is not in your library') : ()=>playMovieFromDetail();
+public/app.js:3728:  document.getElementById('mdSimilarTitle').textContent = movie.type === 'tv' ? 'Similar Shows' : 'Similar Movies';
+public/app.js:3731:  renderMovieAbout(movie);
+public/app.js:3732:  renderMovieMediaInfo(movie);
+public/app.js:3733:  loadMovieOnlineDetails(movie, token);
+public/app.js:3734:  updateMovieWatchlistButtons();
+public/app.js:3740:function closeMovieDetail(){
+public/app.js:3741:  document.getElementById('movieDetailModal')?.classList.remove('open');
+public/app.js:3742:  currentDetailMovie = null;
+public/app.js:3746:async function hydrateMoviePlayback(movie){
+public/app.js:3747:  if(!movie || movie.streamUrl || !movie.isFtp)return movie;
+public/app.js:3750:    if(movie.name)params.set('title', movie.name);
+public/app.js:3751:    const r = await fetchWithTimeout(`/api/playback/movie/${encodeURIComponent(movie.id || movie.name || '')}?${params.toString()}`, {}, 2500);
+public/app.js:3755:        movie.streamUrl = movie.streamUrl || data.streamUrl || '';
+public/app.js:3756:        movie.isFtp = movie.isFtp || !!data.isFtp;
+public/app.js:3757:        movie.streamAvailable = data.streamAvailable;
+public/app.js:3763:  return movie;
+public/app.js:3766:async function playMovieFromDetail(){
+public/app.js:3767:  const movie = currentDetailMovie;
+public/app.js:3768:  if(!movie)return;
+public/app.js:3770:  await hydrateMoviePlayback(movie);
+
+=== CATALOG SHAPE SUMMARY ONLY ===
+CATALOG_KEYS=movies,series,generatedAt
+CATALOG_MOVIES=22171
+CATALOG_SERIES=3431
+MOVIE_SAMPLE_KEYS=title,filename,year,category,server,streamUrl
+
+=== BASELINE GATES ===
+v20.20.2
+The Glorious Glasgow Haskell Compilation System, version 9.6.7
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+RESPONSE_SNAPSHOT_ROWS=120
+RESPONSE_SNAPSHOT_BAD=0
+DETAILS_RESPONSE_SNAPSHOT_PASS
+
+=== CABAL BUILD ALL SAFE CAPTURE ===
+cabal : Configuration is affected by the following files:
+At line:66 char:1
++ cabal build all *> $cabalTmp
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Configuration i...ollowing files::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+- cabal.project
+Up to date
+EXIT_CODE=0
+
+=== FINAL STATUS BEFORE COMMIT ===
+?? tools/movies-parity-v1/

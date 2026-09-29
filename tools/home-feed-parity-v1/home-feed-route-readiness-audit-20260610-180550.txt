@@ -1,0 +1,371 @@
+﻿=== HOME-FEED ROUTE READINESS AUDIT ===
+DATE=2026-06-10 18:05:53
+WORK_BRANCH=haskell-home-feed-route-readiness-audit-20260610-180550
+BASE_BRANCH=haskell-home-feed-contract-reader-ghc-20260610-175103
+MASTER_LEFT_AT=0f9bec0dd6c87fab550968fea1bb9507c98e59cd
+HEAD=c829b0f70f571b67867aad51662b1c93cf6dddb9
+MASTER_NOT_TOUCHED=YES
+
+=== READINESS SUMMARY ===
+STATUS=READY_FOR_STANDALONE_HASKELL_HOME_FEED_SHADOW_PAGER
+WHY=Fixture schema exists, base-only Haskell fixture reader passes, movies/details safety gates pass, cabal build all passes.
+RISK=Do not wire Haskell route into Node or master yet. Keep as standalone shadow tool only.
+
+=== HOME-FEED FIXTURE FILES ===
+
+Name                                                       Length
+----                                                       ------
+build-home-feed-fixture.js                                   3140
+cabal-build-home-feed-audit-20260610-170229.txt               666
+cabal-build-home-feed-fixture-v2-20260610-171140.txt          668
+cabal-build-home-feed-fixture-v2-20260610-171758.txt          668
+cabal-build-home-feed-reader-fixed-20260610-180233.txt        668
+home-feed-api-audit-20260610-170229.txt                     25966
+home-feed-contract-fixture-v2-report-20260610-171140.txt     3201
+home-feed-contract-fixture-v2-report-20260610-171758.txt     3081
+home-feed-contract-fixture.json                             56649
+home-feed-contract-reader-fixed-report-20260610-180233.txt   3676
+home-feed-route-readiness-audit-20260610-180550.txt           679
+HomeFeedContractFixtureReader.hs                             1287
+test-home-feed-fixture-schema.js                             1010
+
+
+
+
+=== HOME-FEED FIXTURE SUMMARY ===
+SECTION_COUNT=5
+SECTION=netflix-originals TITLE=Netflix Originals TYPE=movie ROWS=5
+SECTION=trending-now TITLE=≡ƒöÑ Trending Now TYPE=movie ROWS=24
+SECTION=series TITLE=Series TYPE=series ROWS=24
+SECTION=new-to-streamvault TITLE=New to StreamVault TYPE=movie ROWS=24
+SECTION=all-movies TITLE=All Movies TYPE=movie ROWS=24
+CATALOG_MOVIES=22171
+CATALOG_SERIES=3431
+
+=== NODE HOME-FEED / SECTION SOURCE HITS ===
+lib/catalog-cleaner.js:8:const { buildHomeSections } = require('./home-sections');
+lib/catalog-cleaner.js:243:  data.home.sections = buildHomeSections({ movies: data.home.movies, series: data.home.series });
+lib/catalog-cleaner.js:282:    if (existing?.schemaVersion === APPROVED_SCHEMA_VERSION && existing?.home?.sections) return existing;
+lib/catalog-index.js:467:  async function homeFeed(limit = 36, rowSpecs = []) {
+lib/catalog-index.js:495:  return { init, initBackground, status, pagedMovies, pagedSeries, search, title, homeFeed, section };
+lib/home-sections.js:97:  if (strict.length >= min) return sectionSort(key, strict).slice(0, 240);
+lib/home-sections.js:98:  return sectionSort(key, dedupeItems([...strict, ...(fallbackItems || [])])).slice(0, 240);
+lib/home-sections.js:154:function sectionSort(key, items) {
+lib/home-sections.js:166:function buildHomeSections(items = {}) {
+lib/home-sections.js:171:  const sections = {};
+lib/home-sections.js:172:  sections.trending = mergeSection('trending', all.filter(item => popularity(item) > 0), all, 12);
+lib/home-sections.js:173:  sections.series = sectionSort('series', all.filter(predicates.series)).slice(0, 240);
+lib/home-sections.js:174:  sections.new = sectionSort('new', all).slice(0, 240);
+lib/home-sections.js:175:  sections.recentlyAdded = sections.new;
+lib/home-sections.js:176:  sections.allMovies = sectionSort('allMovies', movies.filter(item => item.approvedForHome && hasArt(item))).slice(0, 300);
+lib/home-sections.js:181:    sections[key] = mergeSection(key, strictItems, fallbackItems, MAJOR_FALLBACKS[key] ? 8 : 12);
+lib/home-sections.js:183:  return sections;
+lib/home-sections.js:187:  buildHomeSections,
+lib/home-sections.js:189:  sectionSort,
+organize-files.js:21:    'home-feed.json',
+public/app.js:880:    Netflix: ['Netflix', 'Netflix Originals', 'Netflix Studios'],
+public/app.js:1251:    renderOnlineSections('sm', details || {}, 'tv', show);
+public/app.js:1264:    renderOnlineSections('sm', localTitleDetails(show, 'tv'), 'tv', show);
+public/app.js:3582:function renderOnlineSections(prefix, details, type, item){
+public/app.js:3672:    renderOnlineSections('md', details || {}, movie.type === 'tv' ? 'tv' : 'movie', movie);
+public/app.js:3692:    renderOnlineSections('md', localTitleDetails(movie, movie.type === 'tv' ? 'tv' : 'movie'), movie.type === 'tv' ? 'tv' : 'movie', movie);
+public/app.js:3991:  if(text.includes('all movies'))return 'Browse the full collection';
+public/app.js:4226:window.svPrefetchHomeFeedPosters = function(data){
+public/app.js:4733:  netflixRow:   ['Netflix Originals','netflixTrack'],
+public/app.js:4736:  trendingRow:  ['≡ƒöÑ Trending Now','trendingTrack'],
+public/app.js:4738:  newRow:       ['New to StreamVault','newTrack'],
+public/app.js:4748:  allRow:       ['All Movies','allTrack']
+public/app.js:4950:function svRenderOnlineSections(rows){
+public/app.js:5021:    ()=>svOnlineRowsCache&&svRenderOnlineSections(svOnlineRowsCache),
+public/downloads.js:199:    const sectionPage = document.getElementById('sectionSection');
+public/home.js:3:    { rowId:'netflixRow', trackId:'netflixTrack', sectionKey:'netflix', title:'Netflix Originals' },
+public/home.js:6:    { rowId:'trendingRow', trackId:'trendingTrack', sectionKey:'trending', title:'≡ƒöÑ Trending Now' },
+public/home.js:8:    { rowId:'newRow', trackId:'newTrack', sectionKey:'new', title:'New to StreamVault' },
+public/home.js:18:    { rowId:'allRow', trackId:'allTrack', sectionKey:'allMovies', title:'All Movies' }
+public/home.js:21:    { rowId:'netflixRow', trackId:'netflixTrack', sectionKey:'netflix', title:'Netflix Originals' },
+public/home.js:24:    { rowId:'trendingRow', trackId:'trendingTrack', sectionKey:'trending', title:'≡ƒöÑ Trending Now' },
+public/home.js:26:    { rowId:'newRow', trackId:'newTrack', sectionKey:'new', title:'New to StreamVault' },
+public/home.js:62:    { rowId:'allRow', trackId:'allTrack', sectionKey:'allMovies', title:'All Movies' },
+public/home.js:70:  var svSectionState = { key:'', page:0, pages:0, items:[] };
+public/home.js:238:  function svFetchHomeFeed(limit){
+public/home.js:242:    svHomePayloadPromise = fetch(`/api/home-feed?limit=${requestedLimit}`)
+public/home.js:252:  const svHomeFeedPrime = svFetchHomeFeed(svWeakDevice ? 12 : 24).catch(()=>null);
+public/home.js:264:  function svLoadHomeSections(){
+public/home.js:275:      if(typeof svPrefetchHomeFeedPosters === 'function')svPrefetchHomeFeedPosters(data);
+public/home.js:298:    return svFetchHomeFeed(svWeakDevice ? 8 : 12)
+public/home.js:301:        console.warn('[Homepage] home-feed unavailable, using section APIs:', err.message);
+public/home.js:747:    svFetchHomeFeed(SV_EXCLUSIVE_HERO_LIMIT)
+public/home.js:761:      svLoadHomeSections().catch(err=>{
+public/home.js:776:    svLoadHomeSections().catch(err=>{
+public/home.js:782:  svRenderOnlineSections = function(rows){
+public/home.js:808:    let page = document.getElementById('sectionSection');
+public/home.js:811:    page.id = 'sectionSection';
+public/home.js:860:    svSectionState = { key:meta.sectionKey, page:0, pages:1, items:[], rowId };
+public/home.js:864:        svSectionState.page = data.page || 0;
+public/home.js:865:        svSectionState.pages = data.pages || 1;
+public/home.js:866:        svSectionState.items = data.items || [];
+public/home.js:867:        svRenderGridProgressive(grid, svSectionState.items, svHomeRenderer, 60);
+public/home.js:868:        document.getElementById('sectionLoadWrap').style.display = svSectionState.page + 1 < svSectionState.pages ? 'flex' : 'none';
+public/home.js:875:    const nextPage = (svSectionState.page || 0) + 1;
+public/home.js:876:    if(nextPage >= svSectionState.pages)return;
+public/home.js:877:    fetch(`/api/section/${encodeURIComponent(svSectionState.key)}?page=${nextPage}&limit=60&summary=1`)
+public/home.js:880:        svSectionState.page = data.page || nextPage;
+public/home.js:885:        document.getElementById('sectionLoadWrap').style.display = svSectionState.page + 1 < (data.pages || svSectionState.pages) ? 'flex' : 'none';
+public/home.js:893:      const section = document.getElementById('sectionSection');
+public/index.html:58:      <span>All Movies</span>
+public/index.html:142:    <div class="row-header"><div class="row-title"><span class="row-title-accent">≡ƒö┤</span> Netflix Originals</div></div>
+public/index.html:158:    <div class="row-header"><div class="row-title">≡ƒöÑ Trending Now</div></div>
+public/index.html:184:    <div class="row-header"><div class="row-title">New to StreamVault</div></div>
+public/index.html:336:    <div class="row-header"><div class="row-title">All Movies</div></div>
+public/perf-overrides.js:256:        const section = document.getElementById('sectionSection');
+public/search.js:64:    const section = document.getElementById('sectionSection');
+public/shadow-api-mode.js:66:      console.log('[SV shadow API downloads+search+sections]', url.pathname + url.search, '->', shadowUrl);
+public/shadow-api-mode.js:82:      badge.textContent = 'Haskell Shadow API: downloads + search + sections';
+public/sw.js:37:async function brieflyCachedHomeFeed(request) {
+public/sw.js:79:  if (url.pathname === '/api/home-feed') {
+public/sw.js:80:    event.respondWith(brieflyCachedHomeFeed(request));
+server.js:312:// for it. Homepage/home-feed/software APIs stay untouched.
+server.js:2319:const SV_HOME_SECTIONS = [
+server.js:2320:  ['netflixRow','netflix','Netflix Originals'],
+server.js:2328:  ['trendingRow','trending','≡ƒöÑ Trending Now'], ['seriesRow','series','Series'], ['newRow','new','New to StreamVault'],
+server.js:2342:  ['allRow','allMovies','All Movies'], ['recentlyAddedRow','recentlyAdded','Recently Added'], ['mostWatchedTodayRow','mostWatchedToday','Most Watched Today']
+server.js:2712:app.get('/api/home-feed', (req, res) => {
+server.js:2715:    const rows = SV_HOME_SECTIONS.map(([rowId, sectionKey, title]) => {
+server.js:2725:    console.error('/api/home-feed error:', e.message);
+tools/home-feed-parity-v1/build-home-feed-fixture.js:66:const sections = [
+tools/home-feed-parity-v1/build-home-feed-fixture.js:67:{ id: "netflix-originals", title: "Netflix Originals", type: "movie", items: netflixRows },
+tools/home-feed-parity-v1/build-home-feed-fixture.js:68:{ id: "trending-now", title: "≡ƒöÑ Trending Now", type: "movie", items: trendingRows },
+tools/home-feed-parity-v1/build-home-feed-fixture.js:70:{ id: "new-to-streamvault", title: "New to StreamVault", type: "movie", items: newRows },
+tools/home-feed-parity-v1/build-home-feed-fixture.js:71:{ id: "all-movies", title: "All Movies", type: "movie", items: movieRows }
+tools/home-feed-parity-v1/build-home-feed-fixture.js:78:sectionCount: sections.length,
+tools/home-feed-parity-v1/build-home-feed-fixture.js:79:sections
+tools/home-feed-parity-v1/build-home-feed-fixture.js:83:"tools/home-feed-parity-v1/home-feed-contract-fixture.json",
+tools/home-feed-parity-v1/build-home-feed-fixture.js:89:console.log("HOME_FEED_SECTION_COUNT=" + sections.length);
+tools/home-feed-parity-v1/build-home-feed-fixture.js:91:for (const section of sections) {
+tools/home-feed-parity-v1/build-home-feed-fixture.js:95:if (sections.length <= 0 || sections.some(section => !section.items.length)) {
+tools/home-feed-parity-v1/test-home-feed-fixture-schema.js:5:const fixture = JSON.parse(fs.readFileSync("tools/home-feed-parity-v1/home-feed-contract-fixture.json", "utf8"));
+tools/home-feed-parity-v1/test-home-feed-fixture-schema.js:10:if (!Array.isArray(fixture.sections)) bad++;
+tools/home-feed-parity-v1/test-home-feed-fixture-schema.js:11:if (!fixture.sections || fixture.sections.length <= 0) bad++;
+tools/home-feed-parity-v1/test-home-feed-fixture-schema.js:13:for (const section of fixture.sections || []) {
+tools/home-feed-parity-v1/test-home-feed-fixture-schema.js:29:console.log("HOME_FEED_SCHEMA_SECTIONS=" + ((fixture.sections || []).length));
+
+=== HASKELL HOME-FEED RELATED HITS ===
+app/CatalogApi.hs:3:module CatalogApi
+app/CatalogApi.hs:4:  ( CatalogState
+app/CatalogApi.hs:5:  , CatalogCache
+app/CatalogApi.hs:6:  , newCatalogCache
+app/CatalogApi.hs:7:  , loadCatalogState
+app/CatalogApi.hs:8:  , catalogResponseCached
+app/CatalogApi.hs:9:  , catalogResponse
+app/CatalogApi.hs:33:data CatalogState = CatalogState
+app/CatalogApi.hs:35:  , csCatalogMovies :: [Value]
+app/CatalogApi.hs:36:  , csCatalogSeries :: [Value]
+app/CatalogApi.hs:42:type CatalogCache = IORef (Maybe CatalogState)
+app/CatalogApi.hs:49:newCatalogCache :: IO CatalogCache
+app/CatalogApi.hs:50:newCatalogCache = newIORef Nothing
+app/CatalogApi.hs:52:loadCatalogState :: FilePath -> IO CatalogState
+app/CatalogApi.hs:53:loadCatalogState root = do
+app/CatalogApi.hs:54:  catalog <- readJsonValue (root </> "catalog.json") (Object KM.empty)
+app/CatalogApi.hs:59:  let catalogMovies = dedupeBy titleYearKey (arrayField "movies" catalog)
+app/CatalogApi.hs:60:      catalogSeries = dedupeBy titleYearKey (arrayField "series" catalog)
+app/CatalogApi.hs:61:  pure CatalogState
+app/CatalogApi.hs:63:    , csCatalogMovies = catalogMovies
+app/CatalogApi.hs:64:    , csCatalogSeries = catalogSeries
+app/CatalogApi.hs:70:catalogResponseCached :: FilePath -> CatalogCache -> Request -> IO (Maybe Response)
+app/CatalogApi.hs:71:catalogResponseCached root cache req
+app/CatalogApi.hs:72:  | requestMethod req == "OPTIONS" && nativeCatalogRoute req =
+app/CatalogApi.hs:74:  | requestMethod req /= "GET" || not (nativeCatalogRoute req) =
+app/CatalogApi.hs:81:          loaded <- try (loadCatalogState root) :: IO (Either SomeException CatalogState)
+app/CatalogApi.hs:86:        Right state -> pure (catalogResponse state req)
+app/CatalogApi.hs:89:nativeCatalogRoute :: Request -> Bool
+app/CatalogApi.hs:90:nativeCatalogRoute req =
+app/CatalogApi.hs:96:    || ["api", "section"] `isPrefixOf` pathInfo req
+app/CatalogApi.hs:98:catalogResponse :: CatalogState -> Request -> Maybe Response
+app/CatalogApi.hs:99:catalogResponse state req
+app/CatalogApi.hs:112:  | ["api", "section"] `isPrefixOf` pathInfo req =
+app/CatalogApi.hs:114:        (key:_) -> Just $ jsonResponse [("Cache-Control", "public, max-age=60"), ("X-StreamVault-Haskell", "native-section")]
+app/CatalogApi.hs:115:          (sectionResponse state req key)
+app/CatalogApi.hs:464:  let fp = root </> "data" </> "catalogs" </> "downloads-catalog.json"
+app/CatalogApi.hs:603:downloadsResponse :: CatalogState -> Request -> Value
+app/CatalogApi.hs:628:ftpMovieRouteItems :: CatalogState -> [Value]
+app/CatalogApi.hs:646:  | (i, m) <- zip [(0 :: Int)..] (csCatalogMovies state)
+app/CatalogApi.hs:655:moviesList :: CatalogState -> [Value]
+app/CatalogApi.hs:662:moviesResponse :: CatalogState -> Request -> Value
+app/CatalogApi.hs:674:ftpSeriesRouteItems :: Int -> CatalogState -> [Value]
+app/CatalogApi.hs:677:        then take (max 0 (requestedLimit - length (csLocalSeries state))) (csCatalogSeries state)
+app/CatalogApi.hs:678:        else csCatalogSeries state
+app/CatalogApi.hs:731:seriesList :: CatalogState -> Request -> [Value]
+app/CatalogApi.hs:741:seriesResponse :: CatalogState -> Request -> Value
+app/CatalogApi.hs:804:      source = if field "isMassiveCatalog" item == Bool True then 0 else 260
+app/CatalogApi.hs:842:sectionResponse :: CatalogState -> Request -> T.Text -> Value
+app/CatalogApi.hs:843:sectionResponse state req key =
+app/CatalogApi.hs:846:      list = sectionList state key
+app/CatalogApi.hs:858:sectionList :: CatalogState -> T.Text -> [Value]
+app/CatalogApi.hs:859:sectionList state key =
+app/CatalogApi.hs:863:      pick wordsToFind = homeSort [item | item <- allItems, hasAny (homeText item) wordsToFind]
+app/CatalogApi.hs:866:        "series" -> homeSort seriesOnly
+app/CatalogApi.hs:867:        "allMovies" -> homeSort moviesOnly
+app/CatalogApi.hs:868:        "topRated" -> homeSort [i | i <- allItems, ratingNum i >= 8]
+app/CatalogApi.hs:869:        "new" -> byYearDesc (homeSort allItems)
+app/CatalogApi.hs:870:        "recentlyAdded" -> byYearDesc (homeSort allItems)
+app/CatalogApi.hs:871:        "trending" -> take 300 (homeSort allItems)
+app/CatalogApi.hs:872:        "mostWatchedToday" -> take 300 (homeSort allItems)
+app/CatalogApi.hs:873:        "netflix" -> take 500 (featuredSection allItems "netflix")
+app/CatalogApi.hs:874:        "marvel" -> take 500 (featuredSection allItems "marvel")
+app/CatalogApi.hs:875:        "dc" -> take 500 (featuredSection allItems "dc")
+app/CatalogApi.hs:876:        "universal" -> studioSection allItems "universal"
+app/CatalogApi.hs:877:        "disney" -> studioSection allItems "disney"
+app/CatalogApi.hs:878:        "warner" -> studioSection allItems "warner"
+app/CatalogApi.hs:879:        "hbo" -> studioSection allItems "hbo"
+app/CatalogApi.hs:880:        "apple" -> studioSection allItems "apple"
+app/CatalogApi.hs:889:        "nostalgia90s" -> homeSort [i | i <- allItems, yearNum i >= 1990, yearNum i <= 1999]
+app/CatalogApi.hs:902:        "hiddenMasterpieces" -> take 500 (homeSort [i | i <- allItems, ratingNum i >= 7, hasArt i])
+app/CatalogApi.hs:907:        "comingSoon" -> homeSort [i | i <- allItems, yearNum i >= 2026]
+app/CatalogApi.hs:910:        _ -> homeSort allItems
+app/CatalogApi.hs:911:  in if null result then take 300 (homeSort allItems) else result
+app/CatalogApi.hs:913:normalMovieItems :: CatalogState -> [Value]
+app/CatalogApi.hs:918:          [ "id" .= T.pack ("ftp_home_" ++ show i)
+app/CatalogApi.hs:937:        | (i, m) <- zip [(0 :: Int)..] (csCatalogMovies state)
+app/CatalogApi.hs:940:  in dedupeBy homeMovieKey (local ++ ftp)
+app/CatalogApi.hs:942:normalSeriesItems :: CatalogState -> [Value]
+app/CatalogApi.hs:946:        [ insertFields [("_sourceRank", Number 1), ("id", String (T.pack ("ftp_series_home_" ++ show i))), ("category", textOr "" (field "category" s)), ("language", textOr "" (field "language" s))] (seriesRouteValue s)
+app/CatalogApi.hs:947:        | (i, s) <- zip [(0 :: Int)..] (csCatalogSeries state)
+app/CatalogApi.hs:956:homeMovieKey :: Value -> T.Text
+app/CatalogApi.hs:957:homeMovieKey item =
+app/CatalogApi.hs:963:homeText :: Value -> T.Text
+app/CatalogApi.hs:964:homeText item =
+app/CatalogApi.hs:994:homeSort :: [Value] -> [Value]
+app/CatalogApi.hs:995:homeSort =
+app/CatalogApi.hs:1002:featuredSection :: [Value] -> T.Text -> [Value]
+app/CatalogApi.hs:1003:featuredSection allItems key =
+app/CatalogApi.hs:1034:studioSection :: [Value] -> T.Text -> [Value]
+app/CatalogApi.hs:1035:studioSection allItems key =
+app/Main.hs:38:import CatalogApi (CatalogCache, catalogResponseCached, newCatalogCache)
+app/Main.hs:66:  catalogCache <- newCatalogCache
+app/Main.hs:71:  runRawServer port (handleClient root catalogCache manager upstream)
+app/Main.hs:82:  putStrLn "nativeRoutesEnabled=/api/downloads,/api/movies,/api/series,/api/section/:key"
+app/Main.hs:101:handleClient :: FilePath -> CatalogCache -> HC.Manager -> String -> Socket.Socket -> Socket.SockAddr -> IO ()
+app/Main.hs:102:handleClient root catalogCache manager upstream conn remote = do
+app/Main.hs:116:          nativeResult <- try (catalogResponseCached root catalogCache waiReq) :: IO (Either SomeException (Maybe Response))
+streamvault-haskell-backend.cabal:10:      CatalogApi
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:10:  text <- readFile "tools/home-feed-parity-v1/home-feed-contract-fixture.json"
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:13:  let required = map q ["sections", "netflix-originals", "trending-now", "series", "new-to-streamvault", "all-movies", "items", "title", "type", "streamUrl", "filename"]
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:18:  putStrLn ("HOME_FEED_READER_ITEMS_BLOCKS=" ++ show itemBlocks)
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:19:  putStrLn ("HOME_FEED_READER_TITLE_ROWS=" ++ show titleRows)
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:20:  putStrLn ("HOME_FEED_READER_TYPE_ROWS=" ++ show typeRows)
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:25:          putStrLn "HOME_FEED_READER_FAIL"
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:27:        else putStrLn "HOME_FEED_READER_PASS"
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:29:      putStrLn ("HOME_FEED_READER_MISSING=" ++ show bad)
+tools/home-feed-parity-v1/HomeFeedContractFixtureReader.hs:30:      putStrLn "HOME_FEED_READER_FAIL"
+
+=== RECOMMENDED NEXT SHADOW CONTRACT ===
+1. Add tools/home-feed-parity-v1/HomeFeedShadowPager.hs.
+2. Keep it base-only first. No Cabal file edit. No Aeson.
+3. Read home-feed-contract-fixture.json.
+4. Validate stable section ids: netflix-originals, trending-now, series, new-to-streamvault, all-movies.
+5. Emit route-shaped JSON summary: sections, sectionCount, limit, source.
+6. Do not connect it to server.js or app/Main.hs yet.
+
+============================================================
+RUN: test home-feed fixture schema
+CMD: node tools\home-feed-parity-v1\test-home-feed-fixture-schema.js
+============================================================
+HOME_FEED_SCHEMA_SECTIONS=5
+HOME_FEED_SCHEMA_BAD=0
+HOME_FEED_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: compile home-feed Haskell contract reader
+CMD: ghc -Wall -o tools\home-feed-parity-v1\home-feed-contract-reader.exe tools\home-feed-parity-v1\HomeFeedContractFixtureReader.hs
+============================================================
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\home-feed-parity-v1\HomeFeedContractFixtureReader.hs, tools\home-feed-parity-v1\HomeFeedContractFixtureReader.o )
+[2 of 2] Linking tools\\home-feed-parity-v1\\home-feed-contract-reader.exe
+EXIT_CODE=0
+
+============================================================
+RUN: run home-feed Haskell contract reader
+CMD: tools\home-feed-parity-v1\home-feed-contract-reader.exe
+============================================================
+HOME_FEED_READER_ITEMS_BLOCKS=5
+HOME_FEED_READER_TITLE_ROWS=106
+HOME_FEED_READER_TYPE_ROWS=106
+HOME_FEED_READER_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: movies fixture schema
+CMD: node tools\movies-parity-v1\test-movies-fixture-schema.js
+============================================================
+MOVIES_SCHEMA_ROWS=120
+MOVIES_SCHEMA_BAD=0
+MOVIES_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: movies shadow pager compile
+CMD: ghc -Wall -o tools\movies-parity-v1\movies-shadow-pager.exe tools\movies-parity-v1\MoviesShadowPager.hs
+============================================================
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\movies-parity-v1\MoviesShadowPager.hs, tools\movies-parity-v1\MoviesShadowPager.o )
+[2 of 2] Linking tools\\movies-parity-v1\\movies-shadow-pager.exe
+EXIT_CODE=0
+
+============================================================
+RUN: movies shadow pager run
+CMD: tools\movies-parity-v1\movies-shadow-pager.exe 0 24
+============================================================
+MOVIES_SHADOW_TOTAL=120
+MOVIES_SHADOW_PAGE=0
+MOVIES_SHADOW_LIMIT=24
+MOVIES_SHADOW_ROWS=24
+MOVIES_SHADOW_PAGES=5
+{"movies":[],"total":120,"page":0,"pages":5}
+MOVIES_SHADOW_PAGER_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture schema
+CMD: node tools\details-parity-v1\validate-details-fixture-schema.js
+============================================================
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details route contract
+CMD: node tools\details-parity-v1\test-details-route-contract.js
+============================================================
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details response snapshot
+CMD: node tools\details-parity-v1\test-details-response-snapshot.js
+============================================================
+RESPONSE_SNAPSHOT_ROWS=120
+RESPONSE_SNAPSHOT_BAD=0
+DETAILS_RESPONSE_SNAPSHOT_PASS
+EXIT_CODE=0
+
+=== CABAL BUILD ALL SAFE CAPTURE ===
+cabal : Configuration is affected by the following files:
+At line:115 char:1
++ cabal build all *> $cabalTmp
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Configuration i...ollowing files::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+- cabal.project
+Up to date
+EXIT_CODE=0
+
+=== FINAL STATUS BEFORE COMMIT ===
+?? tools/home-feed-parity-v1/cabal-build-home-feed-route-readiness-20260610-180550.txt
+?? tools/home-feed-parity-v1/home-feed-route-readiness-audit-20260610-180550.txt

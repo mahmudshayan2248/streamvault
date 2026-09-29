@@ -5,14 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0a0a0a">
+<meta name="theme-color" content="#000000">
 <title>StreamVault</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://image.tmdb.org" crossorigin>
 <link rel="dns-prefetch" href="//image.tmdb.org">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=20260520-downloads1">
+<script>
+(function(){
+  var key = 'streamvault:fifa-live:last-real:v1';
+  if(window.__svFifaLiveEarlyPromise)return;
+  try{
+    var raw = localStorage.getItem(key);
+    if(raw)window.__svFifaCachedPayload = JSON.parse(raw);
+  }catch(_err){}
+  window.__svFifaLiveEarlyStarted = (window.performance && performance.now) ? performance.now() : Date.now();
+  window.__svFifaLiveEarlyPromise = fetch('/api/fifa-live?priority=1', {
+    cache:'no-store',
+    headers:{ Accept:'application/json' }
+  })
+    .then(function(response){
+      if(!response.ok)throw new Error('FIFA live feed failed');
+      return response.json();
+    })
+    .then(function(payload){
+      window.__svFifaEarlyPayload = payload;
+      try{
+        var hasData = payload && ['liveMatches','upcomingMatches','recentResults','standings','headlines'].some(function(name){
+          return Array.isArray(payload[name]) && payload[name].length;
+        });
+        if(hasData)localStorage.setItem(key, JSON.stringify(payload));
+      }catch(_err){}
+      return payload;
+    })
+    .catch(function(err){
+      window.__svFifaEarlyError = err && err.message ? err.message : 'FIFA live feed failed';
+      return null;
+    });
+})();
+</script>
+<link rel="stylesheet" href="/styles.css?v=20260620-hotfix-restore-live-tracks1">
 </head>
 <body>
 
@@ -83,7 +113,7 @@
   <div class="search-overlay-results"><div class="search-overlay-grid" id="mobileSearchGrid"></div></div>
 </div>
 
-<section class="page-intro discover-intro" id="discoverIntro">
+<section class="page-intro discover-intro sv-fifa-intro-hidden" id="discoverIntro" aria-hidden="true">
   <div>
     <div class="page-title">Discover</div>
     <div class="page-kicker">Featured picks, fresh arrivals, and rows from your vault</div>
@@ -98,36 +128,45 @@
   </div>
 </section>
 
-<div class="featured-showcase" id="hero">
-  <div class="row-header">
-    <div>
-      <div class="row-title">Exclusive & Viral Picks</div>
-      <div class="row-subtitle">Popular studio hits from Netflix, Marvel, DC, Disney, Warner, HBO, Apple TV+, and Universal</div>
+<div class="featured-showcase sv-fifa-hero" id="hero" data-sv-fifa-live="1" aria-label="FIFA and football live updates">
+  <section class="fifa-live-section is-loading" id="fifaLiveRoot" aria-live="polite">
+    <div class="fifa-live-top">
+      <div class="fifa-live-heading">
+        <h2>FIFA LIVE UPDATE</h2>
+      </div>
+      <div class="fifa-live-timer-slot" aria-live="polite">
+        <span class="fifa-feature-timer fifa-live-header-timer" data-fifa-feature-timer hidden></span>
+      </div>
     </div>
-  </div>
-  <div class="featured-track" id="heroCards"></div>
-  <div class="hero-slides" id="heroSlides" style="display:none"></div>
-  <div class="hero-vignette" style="display:none"></div>
-  <div class="hero-content" style="display:none">
-    <div class="hero-badge"><span class="hero-badge-dot"></span>NOW STREAMING</div>
-    <div class="hero-title" id="heroTitle">Loading…</div>
-    <div class="hero-meta">
-      <span class="hero-rating" id="heroRating"></span>
-      <span class="hero-year" id="heroYear"></span>
-      <span class="hero-runtime" id="heroRuntime"></span>
-      <span class="hero-type" id="heroType" style="display:none"></span>
-      <span class="hero-genre" id="heroGenre"></span>
+    <div class="fifa-live-layout">
+      <div class="fifa-featured-card" id="fifaFeaturedMatch">
+        <div class="fifa-skeleton-line w40"></div>
+        <div class="fifa-skeleton-score"></div>
+        <div class="fifa-skeleton-line w70"></div>
+        <div class="fifa-skeleton-line w55"></div>
+      </div>
+      <aside class="fifa-table-card" id="fifaStandingsCard">
+        <div class="fifa-skeleton-line w55"></div>
+        <div class="fifa-skeleton-row"></div>
+        <div class="fifa-skeleton-row"></div>
+        <div class="fifa-skeleton-row"></div>
+      </aside>
     </div>
-    <div class="hero-overview" id="heroOverview"></div>
-    <div class="hero-btns">
-      <button class="btn btn-play" id="heroPlayBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="flex-shrink:0"><path d="M8 5v14l11-7z"/></svg>Play</button>
-      <button class="btn btn-info" onclick="cycleHero()">Shuffle</button>
+    <div class="fifa-match-strip-wrap" id="fifaMatchStripWrap">
+      <button class="fifa-match-nav fifa-match-nav-prev" type="button" data-fifa-strip-nav="-1" aria-label="Previous football matches"><span aria-hidden="true">&lsaquo;</span></button>
+      <div class="fifa-match-strip" id="fifaMatchStrip">
+        <div class="fifa-match-card fifa-match-skeleton"><div></div><div></div><div></div></div>
+        <div class="fifa-match-card fifa-match-skeleton"><div></div><div></div><div></div></div>
+        <div class="fifa-match-card fifa-match-skeleton"><div></div><div></div><div></div></div>
+        <div class="fifa-match-card fifa-match-skeleton"><div></div><div></div><div></div></div>
+      </div>
+      <button class="fifa-match-nav fifa-match-nav-next" type="button" data-fifa-strip-nav="1" aria-label="Next football matches"><span aria-hidden="true">&rsaquo;</span></button>
     </div>
-  </div>
-  <div class="hero-dots" id="heroDots" style="display:none"></div>
-  <div class="hero-thumbs" id="heroThumbs" style="display:none"></div>
+    <div class="fifa-headline-strip" id="fifaHeadlineStrip" hidden></div>
+	</section>
 </div>
-
+<script src="/fifa-fast.js?v=20260620-hotfix-restore-live-tracks1"></script>
+	
 <div class="content" id="mainSection">
   <div class="row" id="liveHomeRow" style="display:none">
     <div class="row-header">
@@ -332,7 +371,7 @@
     <div class="row-header"><div class="row-title">⭐ Top Rated (8+)</div></div>
     <div class="cards-track" id="highRatedTrack"></div>
   </div>
-  <div class="row" id="allRow">
+  <div class="row" id="allRow" style="display:none">
     <div class="row-header"><div class="row-title">All Movies</div></div>
     <div class="cards-track" id="allTrack"></div>
   </div>
@@ -832,25 +871,22 @@
     <span class="bn-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg></span>
     <span class="bn-label">Shows</span>
   </div>
-  <div class="bn-item" id="bnDownloads" onclick="bnTap('downloads')" aria-label="Explore Free Softwares" title="Explore Free Softwares">
-    <span class="bn-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.29 1.4 1.4-4.7 4.71-4.7-4.71 1.4-1.4 2.3 2.29V4a1 1 0 0 1 1-1zM5 18h14v2H5v-2z"/></svg></span>
-    <span class="bn-label">Softwares</span>
-  </div>
-  <div class="bn-item" id="bnSearch" onclick="bnTap('search')">
-    <span class="bn-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></span>
-    <span class="bn-label">Search</span>
-  </div>
+  <a class="bn-item bn-live-match" id="bnLiveMatch" href="#" role="button" onclick="openLiveMatchChannel(event)" aria-label="Play T Sports live match in StreamVault">
+    <span class="bn-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2 2.9 2.1-1.1 3.4h-3.6L9.1 6.1 12 4Zm-6.7 6.5 2.9-2.1 1.1 3.4-2.9 2.1-1.1-3.4Zm4.1 8.4-3-2.2.8-3.3 3 2.2v3.3Zm5.2 0v-3.3l3-2.2.8 3.3-3 2.2Zm3-5-2.9-2.1 1.1-3.4 2.9 2.1-1.1 3.4Z"/></svg></span>
+    <span class="bn-label">LIVE MATCH</span>
+  </a>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script defer src="/app.js?v=20260521-desktop-noffmpeg2"></script>
-<script defer src="/details.js?v=20260520-postercache3"></script>
-<script defer src="/home.js?v=20260523-exclusive2"></script>
-<script defer src="/downloads.js?v=20260520-downloads1"></script>
-<script defer src="/search.js?v=20260520-downloads1"></script>
-<script defer src="/livetv.js?v=20260519-hls-fallback3"></script>
-<script defer src="/player.js?v=20260519-playback-rollback"></script>
-<script defer src="/boot.js?v=20260519-hls-fallback3"></script>
+<script defer src="/app.js?v=20260620-hotfix-restore-live-tracks1"></script>
+<script defer src="/details.js?v=20260620-hotfix-restore-live-tracks1"></script>
+<script defer src="/home.js?v=20260620-hotfix-restore-live-tracks1"></script>
+<script defer src="/downloads.js?v=20260620-hotfix-restore-live-tracks1"></script>
+<script defer src="/search.js?v=20260620-hotfix-restore-live-tracks1"></script>
+<script defer src="/livetv.js?v=20260620-hotfix-restore-live-tracks1"></script>
+<script defer src="/player.js?v=20260620-hotfix-restore-live-tracks1"></script>
+<script defer src="/live-fast.js?v=20260620-hotfix-restore-live-tracks1"></script>
+<script defer src="/boot.js?v=20260620-hotfix-restore-live-tracks1"></script>
 </body>
 </html>  

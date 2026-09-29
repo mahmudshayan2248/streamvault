@@ -1,0 +1,98 @@
+﻿=== MASTER AFTER HASKELL BASELINE MERGE AUDIT ===
+DATE=2026-06-09 17:13:29
+MASTER_BRANCH=master
+INTEGRATION_BRANCH=haskell-baseline-ready-for-master-20260609-164226
+BACKUP_BRANCH=master-before-haskell-baseline-merge-20260609-171320
+HEAD=ca9f86fd666db061a2d48d201a0283fc71561128
+
+
+============================================================
+RUN: node version
+CMD: node --version
+============================================================
+v20.20.2
+EXIT_CODE=0
+
+============================================================
+RUN: npm version
+CMD: npm --version
+============================================================
+10.8.2
+EXIT_CODE=0
+
+============================================================
+RUN: ghc version
+CMD: ghc --version
+============================================================
+The Glorious Glasgow Haskell Compilation System, version 9.6.7
+EXIT_CODE=0
+
+============================================================
+RUN: cabal version
+CMD: cabal --version
+============================================================
+cabal-install version 3.14.2.0
+compiled using version 3.14.2.0 of the Cabal library 
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture schema
+CMD: node tools\details-parity-v1\validate-details-fixture-schema.js
+============================================================
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details route contract
+CMD: node tools\details-parity-v1\test-details-route-contract.js
+============================================================
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture coverage
+CMD: node tools\details-parity-v1\test-details-fixture-coverage.js
+============================================================
+COVERAGE_ROWS=120
+COVERAGE_MOVIES=80
+COVERAGE_TV=40
+COVERAGE_POSTERS=116
+COVERAGE_OVERVIEWS=115
+DETAILS_FIXTURE_COVERAGE_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture builder determinism
+CMD: node tools\details-parity-v1\test-details-fixture-builder-determinism.js
+============================================================
+WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+FIXTURE_BUILDER_DETERMINISM_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details response snapshot
+CMD: node tools\details-parity-v1\test-details-response-snapshot.js
+============================================================
+RESPONSE_SNAPSHOT_ROWS=120
+RESPONSE_SNAPSHOT_BAD=0
+DETAILS_RESPONSE_SNAPSHOT_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: cabal build all
+CMD: cabal build all
+============================================================
+Configuration is affected by the following files:
+- cabal.project
+Up to date
+EXIT_CODE=0
+
+=== FINAL MASTER STATUS BEFORE PUSH ===
+?? tools/haskell-migration-baseline/master-after-haskell-baseline-merge-audit-20260609-171320.txt

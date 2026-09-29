@@ -1,0 +1,263 @@
+﻿=== MOVIES ROUTE READINESS AUDIT ===
+DATE=2026-06-10 13:29:04
+WORK_BRANCH=haskell-movies-route-readiness-audit-20260610-132901
+BASE_BRANCH=haskell-movies-contract-reader-ghc-20260610-121224
+MASTER_LEFT_AT=0f9bec0dd6c87fab550968fea1bb9507c98e59cd
+HEAD=ecbeb3367bdad874003ee48e3fb55ff66c981b66
+MASTER_NOT_TOUCHED=YES
+
+=== HASKELL FILES ===
+app/CatalogApi.hs
+app/CryptoHashCompat.hs
+app/Main.hs
+cabal.project
+streamvault-haskell-backend.cabal
+tools/haskell-warp-health/HealthOnly.hs
+tools/movies-parity-v1/MoviesContractFixtureReader.hs
+
+=== HASKELL ROUTE / SERVER HITS ===
+app/CatalogApi.hs:3:module CatalogApi
+app/CatalogApi.hs:4:  ( CatalogState
+app/CatalogApi.hs:5:  , CatalogCache
+app/CatalogApi.hs:6:  , newCatalogCache
+app/CatalogApi.hs:7:  , loadCatalogState
+app/CatalogApi.hs:8:  , catalogResponseCached
+app/CatalogApi.hs:9:  , catalogResponse
+app/CatalogApi.hs:33:data CatalogState = CatalogState
+app/CatalogApi.hs:35:  , csCatalogMovies :: [Value]
+app/CatalogApi.hs:36:  , csCatalogSeries :: [Value]
+app/CatalogApi.hs:37:  , csLocalMovies   :: [Value]
+app/CatalogApi.hs:42:type CatalogCache = IORef (Maybe CatalogState)
+app/CatalogApi.hs:49:newCatalogCache :: IO CatalogCache
+app/CatalogApi.hs:50:newCatalogCache = newIORef Nothing
+app/CatalogApi.hs:52:loadCatalogState :: FilePath -> IO CatalogState
+app/CatalogApi.hs:53:loadCatalogState root = do
+app/CatalogApi.hs:54:  catalog <- readJsonValue (root </> "catalog.json") (Object KM.empty)
+app/CatalogApi.hs:57:  localMovies <- buildLocalMovies root posterCache
+app/CatalogApi.hs:59:  let catalogMovies = dedupeBy titleYearKey (arrayField "movies" catalog)
+app/CatalogApi.hs:60:      catalogSeries = dedupeBy titleYearKey (arrayField "series" catalog)
+app/CatalogApi.hs:61:  pure CatalogState
+app/CatalogApi.hs:63:    , csCatalogMovies = catalogMovies
+app/CatalogApi.hs:64:    , csCatalogSeries = catalogSeries
+app/CatalogApi.hs:65:    , csLocalMovies = localMovies
+app/CatalogApi.hs:70:catalogResponseCached :: FilePath -> CatalogCache -> Request -> IO (Maybe Response)
+app/CatalogApi.hs:71:catalogResponseCached root cache req
+app/CatalogApi.hs:72:  | requestMethod req == "OPTIONS" && nativeCatalogRoute req =
+app/CatalogApi.hs:74:  | requestMethod req /= "GET" || not (nativeCatalogRoute req) =
+app/CatalogApi.hs:81:          loaded <- try (loadCatalogState root) :: IO (Either SomeException CatalogState)
+app/CatalogApi.hs:86:        Right state -> pure (catalogResponse state req)
+app/CatalogApi.hs:89:nativeCatalogRoute :: Request -> Bool
+app/CatalogApi.hs:90:nativeCatalogRoute req =
+app/CatalogApi.hs:92:    [ ["api", "downloads"]
+app/CatalogApi.hs:93:    , ["api", "movies"]
+app/CatalogApi.hs:94:    , ["api", "series"]
+app/CatalogApi.hs:96:    || ["api", "section"] `isPrefixOf` pathInfo req
+app/CatalogApi.hs:98:catalogResponse :: CatalogState -> Request -> Maybe Response
+app/CatalogApi.hs:99:catalogResponse state req
+app/CatalogApi.hs:103:  | pathInfo req == ["api", "downloads"] =
+app/CatalogApi.hs:106:  | pathInfo req == ["api", "movies"] =
+app/CatalogApi.hs:107:      Just $ jsonResponse [("X-StreamVault-Haskell", "native-movies")]
+app/CatalogApi.hs:108:        (moviesResponse state req)
+app/CatalogApi.hs:109:  | pathInfo req == ["api", "series"] =
+app/CatalogApi.hs:112:  | ["api", "section"] `isPrefixOf` pathInfo req =
+app/CatalogApi.hs:236:buildLocalMovies :: FilePath -> KM.KeyMap Value -> IO [Value]
+app/CatalogApi.hs:237:buildLocalMovies root posters = do
+app/CatalogApi.hs:238:  files <- listVideoFiles (root </> "movies")
+app/CatalogApi.hs:279:  movieFiles <- listVideoFiles (root </> "movies")
+app/CatalogApi.hs:464:  let fp = root </> "data" </> "catalogs" </> "downloads-catalog.json"
+app/CatalogApi.hs:603:downloadsResponse :: CatalogState -> Request -> Value
+app/CatalogApi.hs:628:ftpMovieRouteItems :: CatalogState -> [Value]
+app/CatalogApi.hs:629:ftpMovieRouteItems state =
+app/CatalogApi.hs:646:  | (i, m) <- zip [(0 :: Int)..] (csCatalogMovies state)
+app/CatalogApi.hs:655:moviesList :: CatalogState -> [Value]
+app/CatalogApi.hs:656:moviesList state =
+app/CatalogApi.hs:657:  let local = csLocalMovies state
+app/CatalogApi.hs:659:      ftp = filter (\m -> (T.toLower (firstText ["name", "title"] m) <> "|" <> fieldText "year" m) `notElem` seen) (ftpMovieRouteItems state)
+app/CatalogApi.hs:662:moviesResponse :: CatalogState -> Request -> Value
+app/CatalogApi.hs:663:moviesResponse state req =
+app/CatalogApi.hs:664:  let base = moviesList state
+app/CatalogApi.hs:665:      items = applyBrowseSearch "movies" req base
+app/CatalogApi.hs:668:    [ "movies" .= pageItems
+app/CatalogApi.hs:674:ftpSeriesRouteItems :: Int -> CatalogState -> [Value]
+app/CatalogApi.hs:675:ftpSeriesRouteItems requestedLimit state =
+app/CatalogApi.hs:677:        then take (max 0 (requestedLimit - length (csLocalSeries state))) (csCatalogSeries state)
+app/CatalogApi.hs:678:        else csCatalogSeries state
+app/CatalogApi.hs:679:  in [seriesRouteValue s | s <- raw, not (isCartoonOrAnime s)]
+app/CatalogApi.hs:681:seriesRouteValue :: Value -> Value
+app/CatalogApi.hs:682:seriesRouteValue s =
+app/CatalogApi.hs:731:seriesList :: CatalogState -> Request -> [Value]
+app/CatalogApi.hs:738:      ftp = filter (\s -> T.toLower (firstText ["name", "title"] s) `notElem` seen) (ftpSeriesRouteItems ftpLimit state)
+app/CatalogApi.hs:741:seriesResponse :: CatalogState -> Request -> Value
+app/CatalogApi.hs:804:      source = if field "isMassiveCatalog" item == Bool True then 0 else 260
+app/CatalogApi.hs:842:sectionResponse :: CatalogState -> Request -> T.Text -> Value
+app/CatalogApi.hs:858:sectionList :: CatalogState -> T.Text -> [Value]
+app/CatalogApi.hs:860:  let moviesOnly = normalMovieItems state
+app/CatalogApi.hs:862:      allItems = moviesOnly ++ seriesOnly
+app/CatalogApi.hs:867:        "allMovies" -> homeSort moviesOnly
+app/CatalogApi.hs:913:normalMovieItems :: CatalogState -> [Value]
+app/CatalogApi.hs:915:  let local = map (insertFields [("type", String "movie"), ("_sourceRank", Number 0)]) (csLocalMovies state)
+app/CatalogApi.hs:937:        | (i, m) <- zip [(0 :: Int)..] (csCatalogMovies state)
+app/CatalogApi.hs:942:normalSeriesItems :: CatalogState -> [Value]
+app/CatalogApi.hs:946:        [ insertFields [("_sourceRank", Number 1), ("id", String (T.pack ("ftp_series_home_" ++ show i))), ("category", textOr "" (field "category" s)), ("language", textOr "" (field "language" s))] (seriesRouteValue s)
+app/CatalogApi.hs:947:        | (i, s) <- zip [(0 :: Int)..] (csCatalogSeries state)
+app/Main.hs:38:import CatalogApi (CatalogCache, catalogResponseCached, newCatalogCache)
+app/Main.hs:40:data RawRequest = RawRequest
+app/Main.hs:42:  , rrPath    :: BS.ByteString
+app/Main.hs:66:  catalogCache <- newCatalogCache
+app/Main.hs:71:  runRawServer port (handleClient root catalogCache manager upstream)
+app/Main.hs:81:  putStrLn "healthRoutes=/__haskell-health,/api/health"
+app/Main.hs:82:  putStrLn "nativeRoutesEnabled=/api/downloads,/api/movies,/api/series,/api/section/:key"
+app/Main.hs:83:  putStrLn "proxiedRoutesEnabled=all unsupported/risky routes -> Node"
+app/Main.hs:101:handleClient :: FilePath -> CatalogCache -> HC.Manager -> String -> Socket.Socket -> Socket.SockAddr -> IO ()
+app/Main.hs:102:handleClient root catalogCache manager upstream conn remote = do
+app/Main.hs:103:  parsed <- timeout 10000000 (readRawRequest conn remote)
+app/Main.hs:109:    Just (Right rawReq)
+app/Main.hs:110:      | rrPath rawReq == "/__haskell-health" ->
+app/Main.hs:112:      | rrPath rawReq == "/api/health" ->
+app/Main.hs:115:          waiReq <- toWaiRequest rawReq
+app/Main.hs:116:          nativeResult <- try (catalogResponseCached root catalogCache waiReq) :: IO (Either SomeException (Maybe Response))
+app/Main.hs:121:                Nothing -> proxyToNode manager upstream rawReq conn
+app/Main.hs:123:              proxyToNode manager upstream rawReq conn
+app/Main.hs:125:              hPutStrLn stderr ("native route failed, proxying to Node: " ++ displayException e)
+app/Main.hs:126:              proxyToNode manager upstream rawReq conn
+app/Main.hs:128:readRawRequest :: Socket.Socket -> Socket.SockAddr -> IO (Either String RawRequest)
+app/Main.hs:129:readRawRequest conn remote = do
+app/Main.hs:144:              pure $ Right RawRequest
+app/Main.hs:146:                , rrPath = if BS.null rawPath then "/" else rawPath
+app/Main.hs:216:toWaiRequest :: RawRequest -> IO Request
+app/Main.hs:217:toWaiRequest rawReq = do
+app/Main.hs:218:  bodyRef <- newIORef (BL.toStrict (rrBody rawReq))
+app/Main.hs:220:      headers = rrHeaders rawReq
+app/Main.hs:222:    { requestMethod = rrMethod rawReq
+app/Main.hs:224:    , rawPathInfo = rrPath rawReq
+app/Main.hs:225:    , rawQueryString = rrQuery rawReq
+app/Main.hs:228:    , remoteHost = rrRemote rawReq
+app/Main.hs:229:    , pathInfo = decodePathInfo (rrPath rawReq)
+app/Main.hs:230:    , queryString = HT.parseQuery (rrQuery rawReq)
+app/Main.hs:231:    , requestBodyLength = KnownLength (fromIntegral (BL.length (rrBody rawReq)))
+app/Main.hs:253:proxyToNode :: HC.Manager -> String -> RawRequest -> Socket.Socket -> IO ()
+app/Main.hs:254:proxyToNode manager upstream rawReq conn = do
+app/Main.hs:255:  let targetUrl = upstream ++ B8.unpack (rrPath rawReq <> rrQuery rawReq)
+app/Main.hs:262:            { HC.method = rrMethod rawReq
+app/Main.hs:263:            , HC.requestHeaders = filterRequestHeaders (rrHeaders rawReq)
+app/Main.hs:264:            , HC.requestBody = HC.RequestBodyLBS (rrBody rawReq)
+streamvault-haskell-backend.cabal:10:      CatalogApi
+tools/movies-parity-v1/MoviesContractFixtureReader.hs:7:  text <- readFile "tools/movies-parity-v1/movies-contract-fixture.json"
+tools/movies-parity-v1/MoviesContractFixtureReader.hs:14:  putStrLn ("MOVIES_HASKELL_READER_ROWS=" ++ show rows)
+tools/movies-parity-v1/MoviesContractFixtureReader.hs:15:  putStrLn ("MOVIES_HASKELL_READER_HAS_ITEMS=" ++ show hasItems)
+tools/movies-parity-v1/MoviesContractFixtureReader.hs:16:  putStrLn ("MOVIES_HASKELL_READER_HAS_STREAM_URL=" ++ show hasStreamUrl)
+tools/movies-parity-v1/MoviesContractFixtureReader.hs:19:      putStrLn "MOVIES_HASKELL_READER_FAIL"
+tools/movies-parity-v1/MoviesContractFixtureReader.hs:21:    else putStrLn "MOVIES_HASKELL_READER_PASS"
+
+=== NODE MOVIES ROUTE SHAPE HITS ONLY ===
+lib/catalog-cleaner.js:240:    movies: data.movies.filter(item => item.approvedForHome),
+lib/catalog-cleaner.js:244:  data.finalMovies = data.movies.filter(item => item.approvedForSearch).map(toFinalMovie);
+lib/catalog-cleaner.js:261:    movies: toArray(rawCatalog.movies).map(item => cleanOne(item, { posterCache, type: 'movie' })).filter(Boolean),
+lib/home-sections.js:176:  sections.allMovies = sectionSort('allMovies', movies.filter(item => item.approvedForHome && hasArt(item))).slice(0, 300);
+public/app.js:420:      fetch('/api/movies?page=0&limit=24'),
+public/app.js:424:    movies = mData.movies.filter(m=>m&&m.name);
+public/app.js:428:    movies = movies.filter(m => !isCartoonClient(m));
+public/app.js:447:        fetch(`/api/movies?page=${p}&limit=100`)
+public/app.js:450:            let newMovies = d.movies.filter(m=>m&&m.name);
+public/app.js:451:            newMovies = newMovies.filter(m => !isCartoonClient(m));
+public/app.js:488:      fetch(`/api/movies?page=${p}&limit=${_movieBrowsePageSize}`)
+public/app.js:491:          let newMovies = d.movies.filter(m=>m&&m.name);
+public/app.js:492:          newMovies = newMovies.filter(m => !isCartoonClient(m));
+public/app.js:576:  var mp4M=movies.filter(function(m){var u=(m.streamUrl||'').toLowerCase().split('?')[0];return u.endsWith('.mp4')||u.endsWith('.m4v');});
+public/app.js:766:    cardsEl.innerHTML=heroMovies.slice(0,6).map(item=>{
+public/app.js:772:  let candidates = movies.filter(m => m.poster || m.backdrop);
+public/app.js:775:  if(!heroMovies.length) heroMovies = movies.slice(0,6);
+public/app.js:886:  const mList = movies.filter(m => {
+public/app.js:907:  const mList = movies.filter(predicate);
+public/app.js:952:  const localMatched = movies.filter(m => {
+public/app.js:960:    const r = await fetch(`/api/movies/keywords?q=${encodeURIComponent(keywords.join(','))}`);
+public/app.js:1000:  const cont = movies.filter(m=>!m.isTrending&&watchProgress[m.id]?.progress>0.02&&watchProgress[m.id]?.progress<0.95);
+public/app.js:1005:    ...trendingMovies.slice(0,20)
+public/app.js:1016:    var mp4M=movies.filter(function(m){var u=(m.streamUrl||'').toLowerCase().split('?')[0];return u.endsWith('.mp4')||u.endsWith('.m4v');});
+public/app.js:1023:  const newMovies = movies.filter(m=>!m.isFtp&&!m.isTrending).slice(-10).reverse();
+public/app.js:1053:    const mList = movies.filter(predicate);
+public/app.js:1150:  const mList = movies.filter(m => genreMatch(m, genres));
+public/app.js:1156:  const mList = movies.filter(m => langMatch(m, langs));
+public/app.js:1162:  const mList = movies.filter(predFn);
+public/app.js:1385:    : movies.slice().sort((a,b)=>(parseFloat(b.rating||0))-(parseFloat(a.rating||0))).slice(0,18);
+public/app.js:2925:  const mHits=movies.filter(m=>m.name.toLowerCase().includes(q.toLowerCase()));
+public/app.js:2983:  document.querySelectorAll('.movies-filters.filters-open').forEach(el=>{
+public/app.js:3013:  let list = movies.slice();
+public/app.js:3818:  if(kind==='movieWatched')return movies.filter(m=>watchProgress[m.id]?.progress>=0.95);
+public/app.js:3899:  const mHits=movies.filter(m=>`${m.name||''} ${m.overview||''} ${m.genre||''} ${m.language||''}`.toLowerCase().includes(query));
+public/app.js:4599:  const localMatched = movies.filter(m => {
+public/app.js:4607:    const r = await fetch(`/api/movies/keywords?q=${encodeURIComponent(keywords.join(','))}`);
+public/app.js:4644:  const mList = movies.filter(predicate);
+public/home.js:738:    if(typeof svPrefetchPosterUrls === 'function')svPrefetchPosterUrls(heroMovies.slice(0,12).map(item=>item.poster || item.backdrop));
+public/index.html:360:  <div class="movies-filters" id="moviesFilters">
+public/index.html:459:  <div class="movies-filters" id="seriesFilters">
+public/movies-page-fix.js:165:      const data = await fetchJson(endpoint('/api/movies', page, MOVIES_PAGE_SIZE, filters), movieState);
+public/perf-overrides.js:104:        : `/api/movies?page=${page}&limit=${PAGE_SIZE}`;
+scripts/crawlers/discover-bloggerbd-ftp.js:180:    catalog.movies.length;
+scripts/crawlers/discover-bloggerbd-ftp.js:218:  catalog.movies.push({
+scripts/crawlers/discover-bloggerbd-ftp.js:225:≡ƒôª ${catalog.movies.length}
+scripts/crawlers/ftp-scan.js:238:          catalog.movies.push(...movies);
+scripts/crawlers/ftp-scan.js:251:  console.log(`\nΓ£ô Done. Movies: ${catalog.movies.length} | Series: ${catalog.series.length}`);
+scripts/maintenance/build-database.js:32:  const movies = catalog.movies || [];
+scripts/maintenance/check-enrichment.js:5:const moviesWithPoster = catalog.movies.filter(m => m.poster).length;
+scripts/maintenance/check-enrichment.js:6:const moviesWithoutPoster = catalog.movies.filter(m => !m.poster).length;
+scripts/maintenance/check-enrichment.js:10:console.log(`Movies:  ${moviesWithPoster} with poster / ${moviesWithoutPoster} without / ${catalog.movies.length} total`);
+scripts/maintenance/enrich-catalog.js:43:  const movies = catalog.movies;
+scripts/maintenance/retry-enrich.js:53:  const failedMovies = catalog.movies.filter(m => !m.poster);
+server.js:237:    console.log(`≡ƒôí FTP Catalog loaded: ${ftpCatalog.movies.length} movies, ${ftpCatalog.series.length} series`);
+server.js:277:  return ftpCatalog.movies.filter(m => {
+server.js:1907:  const ftpMovies = (ftpCatalog.movies || [])
+server.js:1931:  return [...localMovies, ...ftpMovies.filter(m => !seenLocal.has(m.name))];
+server.js:2133:  const raw = (ftpCatalog.movies || []).find((item, i) =>
+server.js:2169:    catalogMovies: ftpCatalog.movies?.length || 0,
+server.js:2730:app.get('/api/movies', (req, res) => {
+server.js:2755:    const ftpFiltered = ftpMovies.filter(m => !seenLocal.has(`${String(m.name || m.title || '').toLowerCase()}|${m.year || ''}`));
+server.js:2765:      const extra = _massiveMovies.filter(m => {
+server.js:2781:  } catch (e) { console.error('/api/movies error:', e.message); res.json({ movies: [], total: 0, page: 0, pages: 0 }); }
+server.js:2826:app.get('/api/movies/keywords', (req, res) => {
+tools/details-parity-v1/build-expanded-details-fixture.js:10:const movies = Array.isArray(catalog.movies) ? catalog.movies : [];
+tools/movies-parity-v1/build-movies-fixture.js:36:const movies = Array.isArray(catalog.movies) ? catalog.movies : [];
+
+=== MOVIES FIXTURE SUMMARY ===
+MOVIES_FIXTURE_ROWS=120
+MOVIES_CATALOG_TOTAL=22171
+MOVIES_SAMPLE_KEYS=id,type,title,filename,year,category,server,streamUrl,sourceIndex
+
+=== BASELINE GATES ===
+MOVIES_SCHEMA_ROWS=120
+MOVIES_SCHEMA_BAD=0
+MOVIES_SCHEMA_PASS
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\movies-parity-v1\MoviesContractFixtureReader.hs, tools\movies-parity-v1\MoviesContractFixtureReader.o )
+[2 of 2] Linking tools\\movies-parity-v1\\movies-contract-fixture-reader.exe
+MOVIES_HASKELL_READER_ROWS=120
+MOVIES_HASKELL_READER_HAS_ITEMS=True
+MOVIES_HASKELL_READER_HAS_STREAM_URL=True
+MOVIES_HASKELL_READER_PASS
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+RESPONSE_SNAPSHOT_ROWS=120
+RESPONSE_SNAPSHOT_BAD=0
+DETAILS_RESPONSE_SNAPSHOT_PASS
+
+=== CABAL BUILD ALL SAFE CAPTURE ===
+cabal : Configuration is affected by the following files:
+At line:86 char:1
++ cabal build all *> $cabalTmp
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Configuration i...ollowing files::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+- cabal.project
+Up to date
+EXIT_CODE=0
+
+=== FINAL STATUS BEFORE COMMIT ===
+?? tools/movies-parity-v1/cabal-build-movies-route-readiness-20260610-132901.txt
+?? tools/movies-parity-v1/movies-route-readiness-audit-20260610-132901.txt

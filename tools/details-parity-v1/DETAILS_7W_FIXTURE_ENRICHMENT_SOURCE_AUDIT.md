@@ -1,0 +1,3943 @@
+﻿StreamVault Haskell Details 7W Fixture Enrichment Source Audit
+==============================================================
+
+Status:
+
+* Task type: report-only source audit
+* Runtime/frontend/playback files changed: no
+
+7V confirmed raw fixture coverage:
+
+* RAW_ROWS=120
+* RAW_poster=116
+* RAW_backdrop=109
+* RAW_overview=115
+* RAW_rating=97
+* RAW_genre=0
+* RAW_runtime=0
+* RAW_language=0
+* RAW_director=0
+* RAW_productionCompanies=0
+
+Conclusion:
+The missing genre/runtime/language/director/productionCompanies fields are not just reporter noise.
+They are missing from expanded-details-fixture.json itself.
+
+Goal:
+Find the fixture generator/enrichment code that creates expanded-details-fixture.json before changing metadata behavior.
+
+
+## git grep: expanded-details-fixture
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:84:- tools/details-parity-v1/build-expanded-details-fixture.js:26:    genre: clean(item.genre),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:85:- tools/details-parity-v1/expanded-details-fixture.json:10:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:86:- tools/details-parity-v1/expanded-details-fixture.json:26:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:87:- tools/details-parity-v1/expanded-details-fixture.json:42:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:88:- tools/details-parity-v1/expanded-details-fixture.json:58:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:89:- tools/details-parity-v1/expanded-details-fixture.json:74:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:90:- tools/details-parity-v1/expanded-details-fixture.json:90:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:91:- tools/details-parity-v1/expanded-details-fixture.json:106:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:92:- tools/details-parity-v1/expanded-details-fixture.json:122:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:93:- tools/details-parity-v1/expanded-details-fixture.json:138:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:94:- tools/details-parity-v1/expanded-details-fixture.json:154:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:95:- tools/details-parity-v1/expanded-details-fixture.json:170:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:96:- tools/details-parity-v1/expanded-details-fixture.json:186:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:97:- tools/details-parity-v1/expanded-details-fixture.json:202:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:98:- tools/details-parity-v1/expanded-details-fixture.json:218:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:99:- tools/details-parity-v1/expanded-details-fixture.json:234:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:100:- tools/details-parity-v1/expanded-details-fixture.json:250:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:101:- tools/details-parity-v1/expanded-details-fixture.json:266:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:102:- tools/details-parity-v1/expanded-details-fixture.json:282:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:103:- tools/details-parity-v1/expanded-details-fixture.json:298:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:104:- tools/details-parity-v1/expanded-details-fixture.json:314:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:105:- tools/details-parity-v1/expanded-details-fixture.json:330:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:106:- tools/details-parity-v1/expanded-details-fixture.json:346:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:107:- tools/details-parity-v1/expanded-details-fixture.json:362:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:108:- tools/details-parity-v1/expanded-details-fixture.json:378:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:109:- tools/details-parity-v1/expanded-details-fixture.json:394:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:110:- tools/details-parity-v1/expanded-details-fixture.json:410:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:111:- tools/details-parity-v1/expanded-details-fixture.json:426:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:112:- tools/details-parity-v1/expanded-details-fixture.json:442:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:113:- tools/details-parity-v1/expanded-details-fixture.json:458:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:114:- tools/details-parity-v1/expanded-details-fixture.json:474:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:115:- tools/details-parity-v1/expanded-details-fixture.json:490:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:116:- tools/details-parity-v1/expanded-details-fixture.json:506:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:117:- tools/details-parity-v1/expanded-details-fixture.json:522:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:118:- tools/details-parity-v1/expanded-details-fixture.json:538:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:119:- tools/details-parity-v1/expanded-details-fixture.json:554:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:120:- tools/details-parity-v1/expanded-details-fixture.json:570:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:121:- tools/details-parity-v1/expanded-details-fixture.json:586:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:122:- tools/details-parity-v1/expanded-details-fixture.json:602:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:123:- tools/details-parity-v1/expanded-details-fixture.json:618:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:124:- tools/details-parity-v1/expanded-details-fixture.json:634:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:125:- tools/details-parity-v1/expanded-details-fixture.json:650:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:126:- tools/details-parity-v1/expanded-details-fixture.json:666:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:127:- tools/details-parity-v1/expanded-details-fixture.json:682:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:128:- tools/details-parity-v1/expanded-details-fixture.json:698:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:129:- tools/details-parity-v1/expanded-details-fixture.json:714:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:130:- tools/details-parity-v1/expanded-details-fixture.json:730:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:131:- tools/details-parity-v1/expanded-details-fixture.json:746:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:132:- tools/details-parity-v1/expanded-details-fixture.json:762:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:133:- tools/details-parity-v1/expanded-details-fixture.json:778:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:134:- tools/details-parity-v1/expanded-details-fixture.json:794:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:135:- tools/details-parity-v1/expanded-details-fixture.json:810:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:136:- tools/details-parity-v1/expanded-details-fixture.json:826:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:137:- tools/details-parity-v1/expanded-details-fixture.json:842:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:138:- tools/details-parity-v1/expanded-details-fixture.json:858:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:139:- tools/details-parity-v1/expanded-details-fixture.json:874:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:140:- tools/details-parity-v1/expanded-details-fixture.json:890:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:141:- tools/details-parity-v1/expanded-details-fixture.json:906:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:142:- tools/details-parity-v1/expanded-details-fixture.json:922:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:143:- tools/details-parity-v1/expanded-details-fixture.json:938:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:144:- tools/details-parity-v1/expanded-details-fixture.json:954:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:145:- tools/details-parity-v1/expanded-details-fixture.json:970:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:146:- tools/details-parity-v1/expanded-details-fixture.json:986:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:147:- tools/details-parity-v1/expanded-details-fixture.json:1002:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:148:- tools/details-parity-v1/expanded-details-fixture.json:1018:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:149:- tools/details-parity-v1/expanded-details-fixture.json:1034:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:150:- tools/details-parity-v1/expanded-details-fixture.json:1050:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:151:- tools/details-parity-v1/expanded-details-fixture.json:1066:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:152:- tools/details-parity-v1/expanded-details-fixture.json:1082:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:153:- tools/details-parity-v1/expanded-details-fixture.json:1098:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:154:- tools/details-parity-v1/expanded-details-fixture.json:1114:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:155:- tools/details-parity-v1/expanded-details-fixture.json:1130:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:156:- tools/details-parity-v1/expanded-details-fixture.json:1146:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:157:- tools/details-parity-v1/expanded-details-fixture.json:1162:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:158:- tools/details-parity-v1/expanded-details-fixture.json:1178:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:159:- tools/details-parity-v1/expanded-details-fixture.json:1194:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:160:- tools/details-parity-v1/expanded-details-fixture.json:1210:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:161:- tools/details-parity-v1/expanded-details-fixture.json:1226:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:162:- tools/details-parity-v1/expanded-details-fixture.json:1242:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:163:- tools/details-parity-v1/expanded-details-fixture.json:1258:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:164:- tools/details-parity-v1/expanded-details-fixture.json:1274:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:165:- tools/details-parity-v1/expanded-details-fixture.json:1290:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:166:- tools/details-parity-v1/expanded-details-fixture.json:1306:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:167:- tools/details-parity-v1/expanded-details-fixture.json:1322:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:168:- tools/details-parity-v1/expanded-details-fixture.json:1338:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:169:- tools/details-parity-v1/expanded-details-fixture.json:1354:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:170:- tools/details-parity-v1/expanded-details-fixture.json:1370:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:171:- tools/details-parity-v1/expanded-details-fixture.json:1386:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:172:- tools/details-parity-v1/expanded-details-fixture.json:1402:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:173:- tools/details-parity-v1/expanded-details-fixture.json:1418:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:174:- tools/details-parity-v1/expanded-details-fixture.json:1434:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:175:- tools/details-parity-v1/expanded-details-fixture.json:1450:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:176:- tools/details-parity-v1/expanded-details-fixture.json:1466:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:177:- tools/details-parity-v1/expanded-details-fixture.json:1482:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:178:- tools/details-parity-v1/expanded-details-fixture.json:1498:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:179:- tools/details-parity-v1/expanded-details-fixture.json:1514:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:180:- tools/details-parity-v1/expanded-details-fixture.json:1530:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:181:- tools/details-parity-v1/expanded-details-fixture.json:1546:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:182:- tools/details-parity-v1/expanded-details-fixture.json:1562:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:183:- tools/details-parity-v1/expanded-details-fixture.json:1578:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:184:- tools/details-parity-v1/expanded-details-fixture.json:1594:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:185:- tools/details-parity-v1/expanded-details-fixture.json:1610:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:186:- tools/details-parity-v1/expanded-details-fixture.json:1626:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:187:- tools/details-parity-v1/expanded-details-fixture.json:1642:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:188:- tools/details-parity-v1/expanded-details-fixture.json:1658:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:189:- tools/details-parity-v1/expanded-details-fixture.json:1674:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:190:- tools/details-parity-v1/expanded-details-fixture.json:1690:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:191:- tools/details-parity-v1/expanded-details-fixture.json:1706:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:192:- tools/details-parity-v1/expanded-details-fixture.json:1722:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:193:- tools/details-parity-v1/expanded-details-fixture.json:1738:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:194:- tools/details-parity-v1/expanded-details-fixture.json:1754:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:195:- tools/details-parity-v1/expanded-details-fixture.json:1770:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:196:- tools/details-parity-v1/expanded-details-fixture.json:1786:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:197:- tools/details-parity-v1/expanded-details-fixture.json:1802:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:198:- tools/details-parity-v1/expanded-details-fixture.json:1818:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:199:- tools/details-parity-v1/expanded-details-fixture.json:1834:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:200:- tools/details-parity-v1/expanded-details-fixture.json:1850:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:201:- tools/details-parity-v1/expanded-details-fixture.json:1866:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:202:- tools/details-parity-v1/expanded-details-fixture.json:1882:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:203:- tools/details-parity-v1/expanded-details-fixture.json:1898:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:204:- tools/details-parity-v1/expanded-details-fixture.json:1914:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:234:- tools/details-parity-v1/build-expanded-details-fixture.js:27:    runtime: clean(item.runtime),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:235:- tools/details-parity-v1/expanded-details-fixture.json:11:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:236:- tools/details-parity-v1/expanded-details-fixture.json:27:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:237:- tools/details-parity-v1/expanded-details-fixture.json:43:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:238:- tools/details-parity-v1/expanded-details-fixture.json:59:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:239:- tools/details-parity-v1/expanded-details-fixture.json:75:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:240:- tools/details-parity-v1/expanded-details-fixture.json:91:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:241:- tools/details-parity-v1/expanded-details-fixture.json:107:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:242:- tools/details-parity-v1/expanded-details-fixture.json:123:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:243:- tools/details-parity-v1/expanded-details-fixture.json:139:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:244:- tools/details-parity-v1/expanded-details-fixture.json:155:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:245:- tools/details-parity-v1/expanded-details-fixture.json:171:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:246:- tools/details-parity-v1/expanded-details-fixture.json:187:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:247:- tools/details-parity-v1/expanded-details-fixture.json:203:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:248:- tools/details-parity-v1/expanded-details-fixture.json:219:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:249:- tools/details-parity-v1/expanded-details-fixture.json:235:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:250:- tools/details-parity-v1/expanded-details-fixture.json:251:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:251:- tools/details-parity-v1/expanded-details-fixture.json:267:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:252:- tools/details-parity-v1/expanded-details-fixture.json:283:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:253:- tools/details-parity-v1/expanded-details-fixture.json:299:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:254:- tools/details-parity-v1/expanded-details-fixture.json:315:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:255:- tools/details-parity-v1/expanded-details-fixture.json:331:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:256:- tools/details-parity-v1/expanded-details-fixture.json:347:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:257:- tools/details-parity-v1/expanded-details-fixture.json:363:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:258:- tools/details-parity-v1/expanded-details-fixture.json:379:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:259:- tools/details-parity-v1/expanded-details-fixture.json:395:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:260:- tools/details-parity-v1/expanded-details-fixture.json:411:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:261:- tools/details-parity-v1/expanded-details-fixture.json:427:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:262:- tools/details-parity-v1/expanded-details-fixture.json:443:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:263:- tools/details-parity-v1/expanded-details-fixture.json:459:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:264:- tools/details-parity-v1/expanded-details-fixture.json:475:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:265:- tools/details-parity-v1/expanded-details-fixture.json:491:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:266:- tools/details-parity-v1/expanded-details-fixture.json:507:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:267:- tools/details-parity-v1/expanded-details-fixture.json:523:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:268:- tools/details-parity-v1/expanded-details-fixture.json:539:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:269:- tools/details-parity-v1/expanded-details-fixture.json:555:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:270:- tools/details-parity-v1/expanded-details-fixture.json:571:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:271:- tools/details-parity-v1/expanded-details-fixture.json:587:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:272:- tools/details-parity-v1/expanded-details-fixture.json:603:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:273:- tools/details-parity-v1/expanded-details-fixture.json:619:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:274:- tools/details-parity-v1/expanded-details-fixture.json:635:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:275:- tools/details-parity-v1/expanded-details-fixture.json:651:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:276:- tools/details-parity-v1/expanded-details-fixture.json:667:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:277:- tools/details-parity-v1/expanded-details-fixture.json:683:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:278:- tools/details-parity-v1/expanded-details-fixture.json:699:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:279:- tools/details-parity-v1/expanded-details-fixture.json:715:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:280:- tools/details-parity-v1/expanded-details-fixture.json:731:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:281:- tools/details-parity-v1/expanded-details-fixture.json:747:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:282:- tools/details-parity-v1/expanded-details-fixture.json:763:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:283:- tools/details-parity-v1/expanded-details-fixture.json:779:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:284:- tools/details-parity-v1/expanded-details-fixture.json:795:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:285:- tools/details-parity-v1/expanded-details-fixture.json:811:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:286:- tools/details-parity-v1/expanded-details-fixture.json:827:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:287:- tools/details-parity-v1/expanded-details-fixture.json:843:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:288:- tools/details-parity-v1/expanded-details-fixture.json:859:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:289:- tools/details-parity-v1/expanded-details-fixture.json:875:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:290:- tools/details-parity-v1/expanded-details-fixture.json:891:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:291:- tools/details-parity-v1/expanded-details-fixture.json:907:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:292:- tools/details-parity-v1/expanded-details-fixture.json:923:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:293:- tools/details-parity-v1/expanded-details-fixture.json:939:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:294:- tools/details-parity-v1/expanded-details-fixture.json:955:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:295:- tools/details-parity-v1/expanded-details-fixture.json:971:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:296:- tools/details-parity-v1/expanded-details-fixture.json:987:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:297:- tools/details-parity-v1/expanded-details-fixture.json:1003:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:298:- tools/details-parity-v1/expanded-details-fixture.json:1019:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:299:- tools/details-parity-v1/expanded-details-fixture.json:1035:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:300:- tools/details-parity-v1/expanded-details-fixture.json:1051:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:301:- tools/details-parity-v1/expanded-details-fixture.json:1067:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:302:- tools/details-parity-v1/expanded-details-fixture.json:1083:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:303:- tools/details-parity-v1/expanded-details-fixture.json:1099:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:304:- tools/details-parity-v1/expanded-details-fixture.json:1115:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:305:- tools/details-parity-v1/expanded-details-fixture.json:1131:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:306:- tools/details-parity-v1/expanded-details-fixture.json:1147:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:307:- tools/details-parity-v1/expanded-details-fixture.json:1163:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:308:- tools/details-parity-v1/expanded-details-fixture.json:1179:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:309:- tools/details-parity-v1/expanded-details-fixture.json:1195:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:310:- tools/details-parity-v1/expanded-details-fixture.json:1211:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:311:- tools/details-parity-v1/expanded-details-fixture.json:1227:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:312:- tools/details-parity-v1/expanded-details-fixture.json:1243:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:313:- tools/details-parity-v1/expanded-details-fixture.json:1259:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:314:- tools/details-parity-v1/expanded-details-fixture.json:1275:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:315:- tools/details-parity-v1/expanded-details-fixture.json:1291:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:316:- tools/details-parity-v1/expanded-details-fixture.json:1307:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:317:- tools/details-parity-v1/expanded-details-fixture.json:1323:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:318:- tools/details-parity-v1/expanded-details-fixture.json:1339:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:319:- tools/details-parity-v1/expanded-details-fixture.json:1355:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:320:- tools/details-parity-v1/expanded-details-fixture.json:1371:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:321:- tools/details-parity-v1/expanded-details-fixture.json:1387:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:322:- tools/details-parity-v1/expanded-details-fixture.json:1403:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:323:- tools/details-parity-v1/expanded-details-fixture.json:1419:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:324:- tools/details-parity-v1/expanded-details-fixture.json:1435:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:325:- tools/details-parity-v1/expanded-details-fixture.json:1451:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:326:- tools/details-parity-v1/expanded-details-fixture.json:1467:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:327:- tools/details-parity-v1/expanded-details-fixture.json:1483:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:328:- tools/details-parity-v1/expanded-details-fixture.json:1499:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:329:- tools/details-parity-v1/expanded-details-fixture.json:1515:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:330:- tools/details-parity-v1/expanded-details-fixture.json:1531:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:331:- tools/details-parity-v1/expanded-details-fixture.json:1547:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:332:- tools/details-parity-v1/expanded-details-fixture.json:1563:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:333:- tools/details-parity-v1/expanded-details-fixture.json:1579:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:334:- tools/details-parity-v1/expanded-details-fixture.json:1595:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:335:- tools/details-parity-v1/expanded-details-fixture.json:1611:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:336:- tools/details-parity-v1/expanded-details-fixture.json:1627:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:337:- tools/details-parity-v1/expanded-details-fixture.json:1643:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:338:- tools/details-parity-v1/expanded-details-fixture.json:1659:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:339:- tools/details-parity-v1/expanded-details-fixture.json:1675:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:340:- tools/details-parity-v1/expanded-details-fixture.json:1691:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:341:- tools/details-parity-v1/expanded-details-fixture.json:1707:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:342:- tools/details-parity-v1/expanded-details-fixture.json:1723:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:343:- tools/details-parity-v1/expanded-details-fixture.json:1739:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:344:- tools/details-parity-v1/expanded-details-fixture.json:1755:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:345:- tools/details-parity-v1/expanded-details-fixture.json:1771:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:346:- tools/details-parity-v1/expanded-details-fixture.json:1787:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:347:- tools/details-parity-v1/expanded-details-fixture.json:1803:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:348:- tools/details-parity-v1/expanded-details-fixture.json:1819:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:349:- tools/details-parity-v1/expanded-details-fixture.json:1835:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:350:- tools/details-parity-v1/expanded-details-fixture.json:1851:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:351:- tools/details-parity-v1/expanded-details-fixture.json:1867:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:352:- tools/details-parity-v1/expanded-details-fixture.json:1883:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:353:- tools/details-parity-v1/expanded-details-fixture.json:1899:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:354:- tools/details-parity-v1/expanded-details-fixture.json:1915:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:415:- tools/details-parity-v1/build-expanded-details-fixture.js:28:    language: clean(item.language),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:416:- tools/details-parity-v1/expanded-details-fixture.json:12:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:417:- tools/details-parity-v1/expanded-details-fixture.json:28:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:418:- tools/details-parity-v1/expanded-details-fixture.json:44:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:419:- tools/details-parity-v1/expanded-details-fixture.json:60:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:420:- tools/details-parity-v1/expanded-details-fixture.json:76:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:421:- tools/details-parity-v1/expanded-details-fixture.json:92:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:422:- tools/details-parity-v1/expanded-details-fixture.json:108:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:423:- tools/details-parity-v1/expanded-details-fixture.json:124:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:424:- tools/details-parity-v1/expanded-details-fixture.json:140:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:425:- tools/details-parity-v1/expanded-details-fixture.json:156:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:426:- tools/details-parity-v1/expanded-details-fixture.json:172:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:427:- tools/details-parity-v1/expanded-details-fixture.json:188:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:428:- tools/details-parity-v1/expanded-details-fixture.json:204:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:429:- tools/details-parity-v1/expanded-details-fixture.json:220:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:430:- tools/details-parity-v1/expanded-details-fixture.json:236:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:431:- tools/details-parity-v1/expanded-details-fixture.json:252:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:432:- tools/details-parity-v1/expanded-details-fixture.json:268:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:433:- tools/details-parity-v1/expanded-details-fixture.json:284:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:434:- tools/details-parity-v1/expanded-details-fixture.json:300:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:435:- tools/details-parity-v1/expanded-details-fixture.json:316:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:436:- tools/details-parity-v1/expanded-details-fixture.json:332:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:437:- tools/details-parity-v1/expanded-details-fixture.json:348:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:438:- tools/details-parity-v1/expanded-details-fixture.json:364:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:439:- tools/details-parity-v1/expanded-details-fixture.json:380:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:440:- tools/details-parity-v1/expanded-details-fixture.json:396:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:441:- tools/details-parity-v1/expanded-details-fixture.json:412:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:442:- tools/details-parity-v1/expanded-details-fixture.json:428:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:443:- tools/details-parity-v1/expanded-details-fixture.json:444:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:444:- tools/details-parity-v1/expanded-details-fixture.json:460:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:445:- tools/details-parity-v1/expanded-details-fixture.json:476:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:446:- tools/details-parity-v1/expanded-details-fixture.json:492:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:447:- tools/details-parity-v1/expanded-details-fixture.json:508:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:448:- tools/details-parity-v1/expanded-details-fixture.json:524:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:449:- tools/details-parity-v1/expanded-details-fixture.json:540:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:450:- tools/details-parity-v1/expanded-details-fixture.json:556:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:451:- tools/details-parity-v1/expanded-details-fixture.json:572:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:452:- tools/details-parity-v1/expanded-details-fixture.json:588:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:453:- tools/details-parity-v1/expanded-details-fixture.json:604:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:454:- tools/details-parity-v1/expanded-details-fixture.json:620:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:455:- tools/details-parity-v1/expanded-details-fixture.json:623:    "overview": "Singh vs Kaur 2 is an upcoming Indian Punjabi-language romantic comedy film directed by Navaniat Singh and produced by Gippy Grewal's Humble Motion Pictures and SVF Entertainment. Serving as a standalone sequel to the 2013 film Singh vs Kaur, it stars Gippy Grewal and Shehnaaz Gill, scheduled for worldwide release on 24th April 2026.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:456:- tools/details-parity-v1/expanded-details-fixture.json:636:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:457:- tools/details-parity-v1/expanded-details-fixture.json:652:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:458:- tools/details-parity-v1/expanded-details-fixture.json:668:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:459:- tools/details-parity-v1/expanded-details-fixture.json:684:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:460:- tools/details-parity-v1/expanded-details-fixture.json:700:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:461:- tools/details-parity-v1/expanded-details-fixture.json:716:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:462:- tools/details-parity-v1/expanded-details-fixture.json:732:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:463:- tools/details-parity-v1/expanded-details-fixture.json:748:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:464:- tools/details-parity-v1/expanded-details-fixture.json:764:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:465:- tools/details-parity-v1/expanded-details-fixture.json:780:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:466:- tools/details-parity-v1/expanded-details-fixture.json:796:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:467:- tools/details-parity-v1/expanded-details-fixture.json:812:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:468:- tools/details-parity-v1/expanded-details-fixture.json:828:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:469:- tools/details-parity-v1/expanded-details-fixture.json:844:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:470:- tools/details-parity-v1/expanded-details-fixture.json:860:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:471:- tools/details-parity-v1/expanded-details-fixture.json:876:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:472:- tools/details-parity-v1/expanded-details-fixture.json:892:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:473:- tools/details-parity-v1/expanded-details-fixture.json:908:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:474:- tools/details-parity-v1/expanded-details-fixture.json:924:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:475:- tools/details-parity-v1/expanded-details-fixture.json:940:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:476:- tools/details-parity-v1/expanded-details-fixture.json:956:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:477:- tools/details-parity-v1/expanded-details-fixture.json:972:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:478:- tools/details-parity-v1/expanded-details-fixture.json:988:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:479:- tools/details-parity-v1/expanded-details-fixture.json:1004:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:480:- tools/details-parity-v1/expanded-details-fixture.json:1020:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:481:- tools/details-parity-v1/expanded-details-fixture.json:1036:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:482:- tools/details-parity-v1/expanded-details-fixture.json:1052:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:483:- tools/details-parity-v1/expanded-details-fixture.json:1068:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:484:- tools/details-parity-v1/expanded-details-fixture.json:1084:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:485:- tools/details-parity-v1/expanded-details-fixture.json:1100:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:486:- tools/details-parity-v1/expanded-details-fixture.json:1116:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:487:- tools/details-parity-v1/expanded-details-fixture.json:1132:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:488:- tools/details-parity-v1/expanded-details-fixture.json:1148:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:489:- tools/details-parity-v1/expanded-details-fixture.json:1164:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:490:- tools/details-parity-v1/expanded-details-fixture.json:1180:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:491:- tools/details-parity-v1/expanded-details-fixture.json:1196:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:492:- tools/details-parity-v1/expanded-details-fixture.json:1212:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:493:- tools/details-parity-v1/expanded-details-fixture.json:1228:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:494:- tools/details-parity-v1/expanded-details-fixture.json:1244:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:495:- tools/details-parity-v1/expanded-details-fixture.json:1260:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:496:- tools/details-parity-v1/expanded-details-fixture.json:1276:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:497:- tools/details-parity-v1/expanded-details-fixture.json:1292:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:498:- tools/details-parity-v1/expanded-details-fixture.json:1308:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:499:- tools/details-parity-v1/expanded-details-fixture.json:1324:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:500:- tools/details-parity-v1/expanded-details-fixture.json:1340:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:501:- tools/details-parity-v1/expanded-details-fixture.json:1356:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:502:- tools/details-parity-v1/expanded-details-fixture.json:1372:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:503:- tools/details-parity-v1/expanded-details-fixture.json:1388:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:504:- tools/details-parity-v1/expanded-details-fixture.json:1404:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:505:- tools/details-parity-v1/expanded-details-fixture.json:1420:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:506:- tools/details-parity-v1/expanded-details-fixture.json:1436:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:507:- tools/details-parity-v1/expanded-details-fixture.json:1452:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:508:- tools/details-parity-v1/expanded-details-fixture.json:1468:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:509:- tools/details-parity-v1/expanded-details-fixture.json:1484:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:510:- tools/details-parity-v1/expanded-details-fixture.json:1500:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:511:- tools/details-parity-v1/expanded-details-fixture.json:1516:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:512:- tools/details-parity-v1/expanded-details-fixture.json:1532:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:513:- tools/details-parity-v1/expanded-details-fixture.json:1548:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:514:- tools/details-parity-v1/expanded-details-fixture.json:1564:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:515:- tools/details-parity-v1/expanded-details-fixture.json:1580:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:516:- tools/details-parity-v1/expanded-details-fixture.json:1596:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:517:- tools/details-parity-v1/expanded-details-fixture.json:1612:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:518:- tools/details-parity-v1/expanded-details-fixture.json:1628:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:519:- tools/details-parity-v1/expanded-details-fixture.json:1644:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:520:- tools/details-parity-v1/expanded-details-fixture.json:1660:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:521:- tools/details-parity-v1/expanded-details-fixture.json:1676:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:522:- tools/details-parity-v1/expanded-details-fixture.json:1692:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:523:- tools/details-parity-v1/expanded-details-fixture.json:1708:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:524:- tools/details-parity-v1/expanded-details-fixture.json:1724:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:525:- tools/details-parity-v1/expanded-details-fixture.json:1740:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:526:- tools/details-parity-v1/expanded-details-fixture.json:1756:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:527:- tools/details-parity-v1/expanded-details-fixture.json:1772:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:528:- tools/details-parity-v1/expanded-details-fixture.json:1788:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:529:- tools/details-parity-v1/expanded-details-fixture.json:1804:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:530:- tools/details-parity-v1/expanded-details-fixture.json:1820:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:531:- tools/details-parity-v1/expanded-details-fixture.json:1836:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:532:- tools/details-parity-v1/expanded-details-fixture.json:1852:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:533:- tools/details-parity-v1/expanded-details-fixture.json:1868:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:534:- tools/details-parity-v1/expanded-details-fixture.json:1884:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:535:- tools/details-parity-v1/expanded-details-fixture.json:1900:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:536:- tools/details-parity-v1/expanded-details-fixture.json:1916:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:696:- tools/details-parity-v1/build-expanded-details-fixture.js:25:    rating: clean(item.rating),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:697:- tools/details-parity-v1/expanded-details-fixture.json:9:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:698:- tools/details-parity-v1/expanded-details-fixture.json:25:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:699:- tools/details-parity-v1/expanded-details-fixture.json:41:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:700:- tools/details-parity-v1/expanded-details-fixture.json:57:    "rating": "5.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:701:- tools/details-parity-v1/expanded-details-fixture.json:73:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:702:- tools/details-parity-v1/expanded-details-fixture.json:89:    "rating": "6.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:703:- tools/details-parity-v1/expanded-details-fixture.json:105:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:704:- tools/details-parity-v1/expanded-details-fixture.json:121:    "rating": "6.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:705:- tools/details-parity-v1/expanded-details-fixture.json:137:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:706:- tools/details-parity-v1/expanded-details-fixture.json:153:    "rating": "8.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:707:- tools/details-parity-v1/expanded-details-fixture.json:169:    "rating": "6.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:708:- tools/details-parity-v1/expanded-details-fixture.json:185:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:709:- tools/details-parity-v1/expanded-details-fixture.json:201:    "rating": "6.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:710:- tools/details-parity-v1/expanded-details-fixture.json:217:    "rating": "6.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:711:- tools/details-parity-v1/expanded-details-fixture.json:233:    "rating": "4.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:712:- tools/details-parity-v1/expanded-details-fixture.json:249:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:713:- tools/details-parity-v1/expanded-details-fixture.json:265:    "rating": "6.7",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:714:- tools/details-parity-v1/expanded-details-fixture.json:281:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:715:- tools/details-parity-v1/expanded-details-fixture.json:297:    "rating": "6.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:716:- tools/details-parity-v1/expanded-details-fixture.json:313:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:717:- tools/details-parity-v1/expanded-details-fixture.json:329:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:718:- tools/details-parity-v1/expanded-details-fixture.json:345:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:719:- tools/details-parity-v1/expanded-details-fixture.json:361:    "rating": "6.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:720:- tools/details-parity-v1/expanded-details-fixture.json:377:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:721:- tools/details-parity-v1/expanded-details-fixture.json:393:    "rating": "6.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:722:- tools/details-parity-v1/expanded-details-fixture.json:409:    "rating": "6.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:723:- tools/details-parity-v1/expanded-details-fixture.json:425:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:724:- tools/details-parity-v1/expanded-details-fixture.json:441:    "rating": "5.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:725:- tools/details-parity-v1/expanded-details-fixture.json:457:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:726:- tools/details-parity-v1/expanded-details-fixture.json:473:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:727:- tools/details-parity-v1/expanded-details-fixture.json:489:    "rating": "6.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:728:- tools/details-parity-v1/expanded-details-fixture.json:505:    "rating": "7.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:729:- tools/details-parity-v1/expanded-details-fixture.json:521:    "rating": "5.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:730:- tools/details-parity-v1/expanded-details-fixture.json:537:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:731:- tools/details-parity-v1/expanded-details-fixture.json:553:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:732:- tools/details-parity-v1/expanded-details-fixture.json:569:    "rating": "10.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:733:- tools/details-parity-v1/expanded-details-fixture.json:575:    "overview": "In a mind void of the line separating reality, broken pencils tells the truth.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:734:- tools/details-parity-v1/expanded-details-fixture.json:585:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:735:- tools/details-parity-v1/expanded-details-fixture.json:601:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:736:- tools/details-parity-v1/expanded-details-fixture.json:617:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:737:- tools/details-parity-v1/expanded-details-fixture.json:633:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:738:- tools/details-parity-v1/expanded-details-fixture.json:649:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:739:- tools/details-parity-v1/expanded-details-fixture.json:665:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:740:- tools/details-parity-v1/expanded-details-fixture.json:681:    "rating": "8.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:741:- tools/details-parity-v1/expanded-details-fixture.json:697:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:742:- tools/details-parity-v1/expanded-details-fixture.json:713:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:743:- tools/details-parity-v1/expanded-details-fixture.json:729:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:744:- tools/details-parity-v1/expanded-details-fixture.json:745:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:745:- tools/details-parity-v1/expanded-details-fixture.json:761:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:746:- tools/details-parity-v1/expanded-details-fixture.json:777:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:747:- tools/details-parity-v1/expanded-details-fixture.json:793:    "rating": "4.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:748:- tools/details-parity-v1/expanded-details-fixture.json:809:    "rating": "5.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:749:- tools/details-parity-v1/expanded-details-fixture.json:825:    "rating": "3.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:750:- tools/details-parity-v1/expanded-details-fixture.json:841:    "rating": "6.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:751:- tools/details-parity-v1/expanded-details-fixture.json:857:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:752:- tools/details-parity-v1/expanded-details-fixture.json:873:    "rating": "6.7",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:753:- tools/details-parity-v1/expanded-details-fixture.json:889:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:754:- tools/details-parity-v1/expanded-details-fixture.json:905:    "rating": "8.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:755:- tools/details-parity-v1/expanded-details-fixture.json:921:    "rating": "6.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:756:- tools/details-parity-v1/expanded-details-fixture.json:937:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:757:- tools/details-parity-v1/expanded-details-fixture.json:953:    "rating": "4.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:758:- tools/details-parity-v1/expanded-details-fixture.json:969:    "rating": "3.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:759:- tools/details-parity-v1/expanded-details-fixture.json:985:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:760:- tools/details-parity-v1/expanded-details-fixture.json:1001:    "rating": "6.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:761:- tools/details-parity-v1/expanded-details-fixture.json:1017:    "rating": "8.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:762:- tools/details-parity-v1/expanded-details-fixture.json:1033:    "rating": "6.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:763:- tools/details-parity-v1/expanded-details-fixture.json:1049:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:764:- tools/details-parity-v1/expanded-details-fixture.json:1065:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:765:- tools/details-parity-v1/expanded-details-fixture.json:1081:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:766:- tools/details-parity-v1/expanded-details-fixture.json:1097:    "rating": "4.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:767:- tools/details-parity-v1/expanded-details-fixture.json:1113:    "rating": "7.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:768:- tools/details-parity-v1/expanded-details-fixture.json:1129:    "rating": "3.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:769:- tools/details-parity-v1/expanded-details-fixture.json:1145:    "rating": "4.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:770:- tools/details-parity-v1/expanded-details-fixture.json:1161:    "rating": "7.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:771:- tools/details-parity-v1/expanded-details-fixture.json:1177:    "rating": "4.7",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:772:- tools/details-parity-v1/expanded-details-fixture.json:1193:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:773:- tools/details-parity-v1/expanded-details-fixture.json:1209:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:774:- tools/details-parity-v1/expanded-details-fixture.json:1225:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:775:- tools/details-parity-v1/expanded-details-fixture.json:1241:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:776:- tools/details-parity-v1/expanded-details-fixture.json:1257:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:777:- tools/details-parity-v1/expanded-details-fixture.json:1273:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:778:- tools/details-parity-v1/expanded-details-fixture.json:1289:    "rating": "8.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:779:- tools/details-parity-v1/expanded-details-fixture.json:1305:    "rating": "6.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:780:- tools/details-parity-v1/expanded-details-fixture.json:1321:    "rating": "7.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:781:- tools/details-parity-v1/expanded-details-fixture.json:1337:    "rating": "6.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:782:- tools/details-parity-v1/expanded-details-fixture.json:1353:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:783:- tools/details-parity-v1/expanded-details-fixture.json:1369:    "rating": "7.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:784:- tools/details-parity-v1/expanded-details-fixture.json:1385:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:785:- tools/details-parity-v1/expanded-details-fixture.json:1401:    "rating": "10.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:786:- tools/details-parity-v1/expanded-details-fixture.json:1417:    "rating": "6.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:787:- tools/details-parity-v1/expanded-details-fixture.json:1433:    "rating": "6.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:788:- tools/details-parity-v1/expanded-details-fixture.json:1449:    "rating": "5.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:789:- tools/details-parity-v1/expanded-details-fixture.json:1465:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:790:- tools/details-parity-v1/expanded-details-fixture.json:1481:    "rating": "8.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:791:- tools/details-parity-v1/expanded-details-fixture.json:1497:    "rating": "7.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:792:- tools/details-parity-v1/expanded-details-fixture.json:1513:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:793:- tools/details-parity-v1/expanded-details-fixture.json:1529:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:794:- tools/details-parity-v1/expanded-details-fixture.json:1545:    "rating": "8.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:795:- tools/details-parity-v1/expanded-details-fixture.json:1561:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:796:- tools/details-parity-v1/expanded-details-fixture.json:1577:    "rating": "4.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:797:- tools/details-parity-v1/expanded-details-fixture.json:1593:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:798:- tools/details-parity-v1/expanded-details-fixture.json:1609:    "rating": "7.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:799:- tools/details-parity-v1/expanded-details-fixture.json:1625:    "rating": "7.7",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:800:- tools/details-parity-v1/expanded-details-fixture.json:1641:    "rating": "5.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:801:- tools/details-parity-v1/expanded-details-fixture.json:1657:    "rating": "6.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:802:- tools/details-parity-v1/expanded-details-fixture.json:1673:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:803:- tools/details-parity-v1/expanded-details-fixture.json:1689:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:804:- tools/details-parity-v1/expanded-details-fixture.json:1705:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:805:- tools/details-parity-v1/expanded-details-fixture.json:1721:    "rating": "7.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:806:- tools/details-parity-v1/expanded-details-fixture.json:1737:    "rating": "6.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:807:- tools/details-parity-v1/expanded-details-fixture.json:1753:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:808:- tools/details-parity-v1/expanded-details-fixture.json:1769:    "rating": "7.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:809:- tools/details-parity-v1/expanded-details-fixture.json:1785:    "rating": "5.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:810:- tools/details-parity-v1/expanded-details-fixture.json:1801:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:811:- tools/details-parity-v1/expanded-details-fixture.json:1817:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:812:- tools/details-parity-v1/expanded-details-fixture.json:1833:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:813:- tools/details-parity-v1/expanded-details-fixture.json:1849:    "rating": "7.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:814:- tools/details-parity-v1/expanded-details-fixture.json:1865:    "rating": "6.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:815:- tools/details-parity-v1/expanded-details-fixture.json:1881:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:816:- tools/details-parity-v1/expanded-details-fixture.json:1897:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:817:- tools/details-parity-v1/expanded-details-fixture.json:1913:    "rating": "6.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:959:- tools/details-parity-v1/build-expanded-details-fixture.js:29:    poster: clean(item.poster),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:960:- tools/details-parity-v1/expanded-details-fixture.json:13:    "poster": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:961:- tools/details-parity-v1/expanded-details-fixture.json:29:    "poster": "https://image.tmdb.org/t/p/w500/dZIj0MxV54VLf39RaD4xjzjjLOY.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:962:- tools/details-parity-v1/expanded-details-fixture.json:45:    "poster": "https://image.tmdb.org/t/p/w500/aEUH2ECoZHvSmoMzJpca0STF2CZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:963:- tools/details-parity-v1/expanded-details-fixture.json:61:    "poster": "https://image.tmdb.org/t/p/w500/7azHIOSrxo0VC5wYiwtGOnVehsH.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:964:- tools/details-parity-v1/expanded-details-fixture.json:77:    "poster": "https://image.tmdb.org/t/p/w500/1fwV2QQByqvbdCzPqfV9Cu4fhHM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:965:- tools/details-parity-v1/expanded-details-fixture.json:93:    "poster": "https://image.tmdb.org/t/p/w500/298clyKoBbZPp4zgUiDSxhCO0wk.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:966:- tools/details-parity-v1/expanded-details-fixture.json:109:    "poster": "https://image.tmdb.org/t/p/w500/7wIBfBl2gejt6xHxNSK0reVIm7E.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:967:- tools/details-parity-v1/expanded-details-fixture.json:125:    "poster": "https://image.tmdb.org/t/p/w500/fYqSOkix4rbDiZW0ACNnvZCpT6X.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:968:- tools/details-parity-v1/expanded-details-fixture.json:141:    "poster": "https://image.tmdb.org/t/p/w500/kW7tPdLcNQ72YpMoNVLvSAbeZqp.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:969:- tools/details-parity-v1/expanded-details-fixture.json:157:    "poster": "https://image.tmdb.org/t/p/w500/yihdXomYb5kTeSivtFndMy5iDmf.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:970:- tools/details-parity-v1/expanded-details-fixture.json:173:    "poster": "https://image.tmdb.org/t/p/w500/sTPUg3XtdcKRAS5Vwsi1GYPFhNZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:971:- tools/details-parity-v1/expanded-details-fixture.json:189:    "poster": "https://image.tmdb.org/t/p/w500/rWcfOdY7TU6lTdazWj0ebDZnAfO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:972:- tools/details-parity-v1/expanded-details-fixture.json:205:    "poster": "https://image.tmdb.org/t/p/w500/z97hrgI5wbGbZvSVkBfAeBnFKAg.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:973:- tools/details-parity-v1/expanded-details-fixture.json:221:    "poster": "https://image.tmdb.org/t/p/w500/9u7sUTYPPTxGCXbkcw8FTq50PnO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:974:- tools/details-parity-v1/expanded-details-fixture.json:237:    "poster": "https://image.tmdb.org/t/p/w500/v7CCosgX9LcSpt7bXmqw5OzTFTV.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:975:- tools/details-parity-v1/expanded-details-fixture.json:253:    "poster": "https://image.tmdb.org/t/p/w500/kK1BGkG3KAvWB0WMV1DfOx9yTMZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:976:- tools/details-parity-v1/expanded-details-fixture.json:269:    "poster": "https://image.tmdb.org/t/p/w500/pfqkETJ2A3zXZJuNcufZbAJNnKA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:977:- tools/details-parity-v1/expanded-details-fixture.json:285:    "poster": "https://image.tmdb.org/t/p/w500/tVvpFIoteRHNnoZMhdnwIVwJpCA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:978:- tools/details-parity-v1/expanded-details-fixture.json:301:    "poster": "https://image.tmdb.org/t/p/w500/z2tqCJLsw6uEJ8nJV8BsQXGa3dr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:979:- tools/details-parity-v1/expanded-details-fixture.json:317:    "poster": "https://image.tmdb.org/t/p/w500/pyok1kZJCfyuFapYXzHcy7BLlQa.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:980:- tools/details-parity-v1/expanded-details-fixture.json:333:    "poster": "https://image.tmdb.org/t/p/w500/gRMalasZEzsZi4w2VFuYusfSfqf.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:981:- tools/details-parity-v1/expanded-details-fixture.json:349:    "poster": "https://image.tmdb.org/t/p/w500/peG6482ALJQ9Tbvv2P38BquVk0f.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:982:- tools/details-parity-v1/expanded-details-fixture.json:365:    "poster": "https://image.tmdb.org/t/p/w500/jjyuk0edLiW8vOSnlfwWCCLpbh5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:983:- tools/details-parity-v1/expanded-details-fixture.json:381:    "poster": "https://image.tmdb.org/t/p/w500/mjkS2iAgWj3ik1DTjvI15nHZ7yl.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:984:- tools/details-parity-v1/expanded-details-fixture.json:397:    "poster": "https://image.tmdb.org/t/p/w500/buPFnHZ3xQy6vZEHxbHgL1Pc6CR.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:985:- tools/details-parity-v1/expanded-details-fixture.json:413:    "poster": "https://image.tmdb.org/t/p/w500/dl1cA7wdwePc9QU2Rc24EPqlcyJ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:986:- tools/details-parity-v1/expanded-details-fixture.json:429:    "poster": "https://image.tmdb.org/t/p/w500/eZo31Dhl5BQ6GfbMNf3oU0tUvPZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:987:- tools/details-parity-v1/expanded-details-fixture.json:445:    "poster": "https://image.tmdb.org/t/p/w500/yPHwX78mcwJw3I6YOJ9qh2wQBFr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:988:- tools/details-parity-v1/expanded-details-fixture.json:461:    "poster": "https://image.tmdb.org/t/p/w500/gbVwHl4YPSq6BcC92TQpe7qUTh6.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:989:- tools/details-parity-v1/expanded-details-fixture.json:477:    "poster": "https://image.tmdb.org/t/p/w500/tlPgDzwIE7VYYIIAGCTUOnN4wI1.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:990:- tools/details-parity-v1/expanded-details-fixture.json:493:    "poster": "https://image.tmdb.org/t/p/w500/3YBce6dTh1D5oCMITXk2S5QhPt.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:991:- tools/details-parity-v1/expanded-details-fixture.json:509:    "poster": "https://image.tmdb.org/t/p/w500/82bX2GK4PhaJQtfkTnfmd2P7erG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:992:- tools/details-parity-v1/expanded-details-fixture.json:525:    "poster": "https://image.tmdb.org/t/p/w500/dvRtAQKk3FxW4UnU54UJGEjMJzZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:993:- tools/details-parity-v1/expanded-details-fixture.json:541:    "poster": "https://image.tmdb.org/t/p/w500/dHxLBtHw4InwsVumnthupZYz6NM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:994:- tools/details-parity-v1/expanded-details-fixture.json:557:    "poster": "https://image.tmdb.org/t/p/w500/rWcfOdY7TU6lTdazWj0ebDZnAfO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:995:- tools/details-parity-v1/expanded-details-fixture.json:573:    "poster": "https://image.tmdb.org/t/p/w500/j8fWiWwrAncNoBaclg8ZAVBPrh6.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:996:- tools/details-parity-v1/expanded-details-fixture.json:589:    "poster": "https://image.tmdb.org/t/p/w500/srvDYDyaYTh27ObUvOcggyT1ZGn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:997:- tools/details-parity-v1/expanded-details-fixture.json:605:    "poster": "https://image.tmdb.org/t/p/w500/jpKXZyWh6WN55UJ3rqkwbzWeD5Q.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:998:- tools/details-parity-v1/expanded-details-fixture.json:621:    "poster": "https://image.tmdb.org/t/p/w500/aF2mmcB0hu3xtZj35dySOj4eqtD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:999:- tools/details-parity-v1/expanded-details-fixture.json:637:    "poster": "https://image.tmdb.org/t/p/w500/dHxLBtHw4InwsVumnthupZYz6NM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1000:- tools/details-parity-v1/expanded-details-fixture.json:653:    "poster": "https://image.tmdb.org/t/p/w500/cJAj6j473SJFrdnViVN8xOsgvhb.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1001:- tools/details-parity-v1/expanded-details-fixture.json:669:    "poster": "https://image.tmdb.org/t/p/w500/si4RdbdCGZSy39N2EzN8dabszim.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1002:- tools/details-parity-v1/expanded-details-fixture.json:685:    "poster": "https://image.tmdb.org/t/p/w500/xkTrpl8WPUjDitBViQTHbnKErCk.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1003:- tools/details-parity-v1/expanded-details-fixture.json:701:    "poster": "https://image.tmdb.org/t/p/w500/lsg0IxNQCUxKqs63YjturEuY0qQ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1004:- tools/details-parity-v1/expanded-details-fixture.json:717:    "poster": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1005:- tools/details-parity-v1/expanded-details-fixture.json:733:    "poster": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1006:- tools/details-parity-v1/expanded-details-fixture.json:749:    "poster": "https://image.tmdb.org/t/p/w500/ov8vrRLZGoXHpYjSY9Vpv1tHJX7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1007:- tools/details-parity-v1/expanded-details-fixture.json:765:    "poster": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1008:- tools/details-parity-v1/expanded-details-fixture.json:781:    "poster": "https://image.tmdb.org/t/p/w500/hIC4knJmcAO02JPjF840FJBI4ib.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1009:- tools/details-parity-v1/expanded-details-fixture.json:797:    "poster": "https://image.tmdb.org/t/p/w500/3KFcPRcv7hNUhaxlCU14FybwkcP.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1010:- tools/details-parity-v1/expanded-details-fixture.json:813:    "poster": "https://image.tmdb.org/t/p/w500/72AoFPC5TY4DfJwXXS9rPwPeReD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1011:- tools/details-parity-v1/expanded-details-fixture.json:829:    "poster": "https://image.tmdb.org/t/p/w500/iuVlVRoBL1fHhBlVjS58MpBES05.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1012:- tools/details-parity-v1/expanded-details-fixture.json:845:    "poster": "https://image.tmdb.org/t/p/w500/wUcttG71zo9deP4m9sDhYPUcvi5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1013:- tools/details-parity-v1/expanded-details-fixture.json:861:    "poster": "https://image.tmdb.org/t/p/w500/ov8vrRLZGoXHpYjSY9Vpv1tHJX7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1014:- tools/details-parity-v1/expanded-details-fixture.json:877:    "poster": "https://image.tmdb.org/t/p/w500/p8yPjT9NAH87oD9TedclRaAW7RY.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1015:- tools/details-parity-v1/expanded-details-fixture.json:893:    "poster": "https://image.tmdb.org/t/p/w500/A3zKx7XpXY1ykL8CLbyCN0OCsT8.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1016:- tools/details-parity-v1/expanded-details-fixture.json:909:    "poster": "https://image.tmdb.org/t/p/w500/tZJBXGNyDanSne6a2TLRU45Uhwu.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1017:- tools/details-parity-v1/expanded-details-fixture.json:925:    "poster": "https://image.tmdb.org/t/p/w500/8PWu0V10nMqG5SrA13wLRXTD2fH.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1018:- tools/details-parity-v1/expanded-details-fixture.json:941:    "poster": "https://image.tmdb.org/t/p/w500/dHxLBtHw4InwsVumnthupZYz6NM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1019:- tools/details-parity-v1/expanded-details-fixture.json:957:    "poster": "https://image.tmdb.org/t/p/w500/aTnIGrfVv03FIDsNDuabNsp9yFM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1020:- tools/details-parity-v1/expanded-details-fixture.json:973:    "poster": "https://image.tmdb.org/t/p/w500/zjgWWOIsEqYNSa1fGRr82mBo3gv.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1021:- tools/details-parity-v1/expanded-details-fixture.json:989:    "poster": "https://image.tmdb.org/t/p/w500/97jAFQcAnspd416cupbAbGMNT9z.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1022:- tools/details-parity-v1/expanded-details-fixture.json:1005:    "poster": "https://image.tmdb.org/t/p/w500/nUPnA0I1MTaZRVCsUQc5DS5JA8W.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1023:- tools/details-parity-v1/expanded-details-fixture.json:1021:    "poster": "https://image.tmdb.org/t/p/w500/bAtgrD2Syuna8vB5deDipTqupKN.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1024:- tools/details-parity-v1/expanded-details-fixture.json:1037:    "poster": "https://image.tmdb.org/t/p/w500/wlimwHMelt9PRdgFhS5bWJWPrjr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1025:- tools/details-parity-v1/expanded-details-fixture.json:1053:    "poster": "https://image.tmdb.org/t/p/w500/7V029fFThWiUjr335ic6rVUUian.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1026:- tools/details-parity-v1/expanded-details-fixture.json:1069:    "poster": "https://image.tmdb.org/t/p/w500/lV8Yuhz36hds5dvEIwB7DThixH.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1027:- tools/details-parity-v1/expanded-details-fixture.json:1085:    "poster": "https://image.tmdb.org/t/p/w500/30fQ2nYMyv5TjyEm3j9JwgTa3ZW.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1028:- tools/details-parity-v1/expanded-details-fixture.json:1101:    "poster": "https://image.tmdb.org/t/p/w500/rF6txsM6cgF9vg6Ra5sNbkvUwrw.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1029:- tools/details-parity-v1/expanded-details-fixture.json:1117:    "poster": "https://image.tmdb.org/t/p/w500/xjtWQ2CL1mpmMNwuU5HeS4Iuwuu.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1030:- tools/details-parity-v1/expanded-details-fixture.json:1133:    "poster": "https://image.tmdb.org/t/p/w500/o5M5mjnfRO50t3Wha1QPD04oHfT.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1031:- tools/details-parity-v1/expanded-details-fixture.json:1149:    "poster": "https://image.tmdb.org/t/p/w500/enxF32km4P9gXYhAUXWgoVfQqg5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1032:- tools/details-parity-v1/expanded-details-fixture.json:1165:    "poster": "https://image.tmdb.org/t/p/w500/wfuqMlaExcoYiUEvKfVpUTt1v4u.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1033:- tools/details-parity-v1/expanded-details-fixture.json:1181:    "poster": "https://image.tmdb.org/t/p/w500/uye25uG7k8r3NNPLyPiKOiRnFRF.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1034:- tools/details-parity-v1/expanded-details-fixture.json:1197:    "poster": "https://image.tmdb.org/t/p/w500/ov8vrRLZGoXHpYjSY9Vpv1tHJX7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1035:- tools/details-parity-v1/expanded-details-fixture.json:1213:    "poster": "https://image.tmdb.org/t/p/w500/gBqGMMWdMthsCHO6hvBKAZUvnzI.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1036:- tools/details-parity-v1/expanded-details-fixture.json:1229:    "poster": "https://image.tmdb.org/t/p/w500/e90BK2TO5qs1ge2PbRQ0b1DuSAQ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1037:- tools/details-parity-v1/expanded-details-fixture.json:1245:    "poster": "https://image.tmdb.org/t/p/w500/rWcfOdY7TU6lTdazWj0ebDZnAfO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1038:- tools/details-parity-v1/expanded-details-fixture.json:1261:    "poster": "https://image.tmdb.org/t/p/w500/llbEOPs3adtMqnU0EUL2ecKadsz.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1039:- tools/details-parity-v1/expanded-details-fixture.json:1277:    "poster": "https://image.tmdb.org/t/p/w500/rnIOUhzwJDfgQakx8EjoNyItKgs.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1040:- tools/details-parity-v1/expanded-details-fixture.json:1293:    "poster": "https://image.tmdb.org/t/p/w500/k8yARbD9iYn2nRX2HvsopfKDN2r.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1041:- tools/details-parity-v1/expanded-details-fixture.json:1309:    "poster": "https://image.tmdb.org/t/p/w500/3uRQi9HDEAGSadoKee1UHoFCaU9.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1042:- tools/details-parity-v1/expanded-details-fixture.json:1325:    "poster": "https://image.tmdb.org/t/p/w500/ShizRVGvyFCmGqv7tFA0hxzQ8E.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1043:- tools/details-parity-v1/expanded-details-fixture.json:1341:    "poster": "https://image.tmdb.org/t/p/w500/wvAwkKeIs7bkb6EJAYRzpANhfxM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1044:- tools/details-parity-v1/expanded-details-fixture.json:1357:    "poster": "https://image.tmdb.org/t/p/w500/j61dmzEq4aRWJZk5tPyjzpHj8T2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1045:- tools/details-parity-v1/expanded-details-fixture.json:1373:    "poster": "https://image.tmdb.org/t/p/w500/cDSXLVQLkCSBIpBx3UW04TsfZ5c.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1046:- tools/details-parity-v1/expanded-details-fixture.json:1389:    "poster": "https://image.tmdb.org/t/p/w500/nInfaveN1iFpRIcMGNKENoVVUT2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1047:- tools/details-parity-v1/expanded-details-fixture.json:1405:    "poster": "https://image.tmdb.org/t/p/w500/volCKl2AP5v9oEVOLwQ8pSbF7fA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1048:- tools/details-parity-v1/expanded-details-fixture.json:1421:    "poster": "https://image.tmdb.org/t/p/w500/rwKS6rSAqMGnXwBVteYkHxeDLWX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1049:- tools/details-parity-v1/expanded-details-fixture.json:1437:    "poster": "https://image.tmdb.org/t/p/w500/frKxKytEHIA2vXg4RAz14Sc0UmS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1050:- tools/details-parity-v1/expanded-details-fixture.json:1453:    "poster": "https://image.tmdb.org/t/p/w500/m4JnADIJkF5ck6jq7GUEcPBKxd0.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1051:- tools/details-parity-v1/expanded-details-fixture.json:1469:    "poster": "https://image.tmdb.org/t/p/w500/25fKRXvQLBq4nXu9vjOVJcvCiiD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1052:- tools/details-parity-v1/expanded-details-fixture.json:1485:    "poster": "https://image.tmdb.org/t/p/w500/lRpnGxVYlhWoemkkP4OYgqGrew0.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1053:- tools/details-parity-v1/expanded-details-fixture.json:1501:    "poster": "https://image.tmdb.org/t/p/w500/jJfk8NXauN4UgFQ1qn9lFzEk7ib.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1054:- tools/details-parity-v1/expanded-details-fixture.json:1517:    "poster": "https://image.tmdb.org/t/p/w500/hdEQWvSbDQsbdseeYjUS0NgrfT2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1055:- tools/details-parity-v1/expanded-details-fixture.json:1533:    "poster": "https://image.tmdb.org/t/p/w500/6yy9nQlFt2l6UVWzrfhszFCaZ5C.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1056:- tools/details-parity-v1/expanded-details-fixture.json:1549:    "poster": "https://image.tmdb.org/t/p/w500/h3s0Cd2JppeWA4UjTuSRauL52P7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1057:- tools/details-parity-v1/expanded-details-fixture.json:1565:    "poster": "https://image.tmdb.org/t/p/w500/zOzGMbqxNL49U4Z6TlDxSSvHSf0.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1058:- tools/details-parity-v1/expanded-details-fixture.json:1581:    "poster": "https://image.tmdb.org/t/p/w500/tnX7FsJBDZ6xmS8YuUnz2FLpwGl.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1059:- tools/details-parity-v1/expanded-details-fixture.json:1597:    "poster": "https://image.tmdb.org/t/p/w500/20i4nShZZg1g1VFHSB8xpaYM4r7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1060:- tools/details-parity-v1/expanded-details-fixture.json:1613:    "poster": "https://image.tmdb.org/t/p/w500/yueXS3q8BtoWekcHOATFHicLl3e.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1061:- tools/details-parity-v1/expanded-details-fixture.json:1629:    "poster": "https://image.tmdb.org/t/p/w500/ff0s9OHGNSZL6cVteIb7LNvTnJD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1062:- tools/details-parity-v1/expanded-details-fixture.json:1645:    "poster": "https://image.tmdb.org/t/p/w500/wXVttISNv9GkbTCojifhZXeITG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1063:- tools/details-parity-v1/expanded-details-fixture.json:1661:    "poster": "https://image.tmdb.org/t/p/w500/d55nhKP5A3YEwwOa91Qh7bs3yOt.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1064:- tools/details-parity-v1/expanded-details-fixture.json:1677:    "poster": "https://image.tmdb.org/t/p/w500/ldO5HuJC3pUMOJRtGyG50KEF4YU.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1065:- tools/details-parity-v1/expanded-details-fixture.json:1693:    "poster": "https://image.tmdb.org/t/p/w500/hINeNo3c3ycZPlSh8MXqofZLMBw.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1066:- tools/details-parity-v1/expanded-details-fixture.json:1709:    "poster": "https://image.tmdb.org/t/p/w500/vHQGu6ducKC7JcDU6lqWyx7tWW5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1067:- tools/details-parity-v1/expanded-details-fixture.json:1725:    "poster": "https://image.tmdb.org/t/p/w500/nERRTZKsieX3v3IhHPCviegcxaR.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1068:- tools/details-parity-v1/expanded-details-fixture.json:1741:    "poster": "https://image.tmdb.org/t/p/w500/hNVb60dPG34wYjazGgFolJhqfxp.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1069:- tools/details-parity-v1/expanded-details-fixture.json:1757:    "poster": "https://image.tmdb.org/t/p/w500/4e9CraVtGY00jLP2YGwsuEtaIjR.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1070:- tools/details-parity-v1/expanded-details-fixture.json:1773:    "poster": "https://image.tmdb.org/t/p/w500/u6Gs1IzzPJsmXKdc9alGaxtChQu.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1071:- tools/details-parity-v1/expanded-details-fixture.json:1789:    "poster": "https://image.tmdb.org/t/p/w500/6PXpJDC6wRhD6H8OCGPjSLpaXoZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1072:- tools/details-parity-v1/expanded-details-fixture.json:1805:    "poster": "https://image.tmdb.org/t/p/w500/8x1W0TR2VIe7ORaRI9zwDqeJn9q.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1073:- tools/details-parity-v1/expanded-details-fixture.json:1821:    "poster": "https://image.tmdb.org/t/p/w500/AoRaqmBGeJt1H23cbMatnWMMxTA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1074:- tools/details-parity-v1/expanded-details-fixture.json:1837:    "poster": "https://image.tmdb.org/t/p/w500/62TJdt6GlzdRbyWY9RYWjljgg3b.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1075:- tools/details-parity-v1/expanded-details-fixture.json:1853:    "poster": "https://image.tmdb.org/t/p/w500/8Mckh3qJRTzXTQNZtpb133RHmO4.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1076:- tools/details-parity-v1/expanded-details-fixture.json:1869:    "poster": "https://image.tmdb.org/t/p/w500/n4rguIB7Cf4h3l1IyqMo3THW5xn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1077:- tools/details-parity-v1/expanded-details-fixture.json:1885:    "poster": "https://image.tmdb.org/t/p/w500/gcSNS5cy1iOmYawIdJCzoc873rQ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1078:- tools/details-parity-v1/expanded-details-fixture.json:1901:    "poster": "https://image.tmdb.org/t/p/w500/9puBY2DdW3xOynWK5cqH3M2ZwJG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1079:- tools/details-parity-v1/expanded-details-fixture.json:1917:    "poster": "https://image.tmdb.org/t/p/w500/ezT0x7ZdAjrR5mFtkNjWxOFcTIB.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1133:- tools/details-parity-v1/build-expanded-details-fixture.js:31:    overview: clean(item.overview),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1134:- tools/details-parity-v1/expanded-details-fixture.json:15:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1135:- tools/details-parity-v1/expanded-details-fixture.json:31:    "overview": "A new film based on the novels. Plot TBA.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1136:- tools/details-parity-v1/expanded-details-fixture.json:47:    "overview": "Jailed for her husband's crime, a woman discovers that her only way out is to solve riddles from her mysterious past.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1137:- tools/details-parity-v1/expanded-details-fixture.json:63:    "overview": "Shakespeare╬ô├ç├ûs most enduring tragedy is reimagined in a bold, modern adaptation set within London╬ô├ç├ûs elite South Asian community. When Hamlet (Riz Ahmed) returns for his father╬ô├ç├ûs funeral, he is stunned to discover his uncle Claudius is marrying his newly widowed mother. Visited by his father╬ô├ç├ûs ghost, Hamlet learns his brutal murder was at the hands of Claudius - and spirals into a quest for vengeance that exposes the rot at the heart of the family╬ô├ç├ûs empire and threatens his own sanity.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1138:- tools/details-parity-v1/expanded-details-fixture.json:79:    "overview": "An unhappy woman goes back in time and poses as her cousin to prevent her younger self from making the same mistakes and ruining her future.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1139:- tools/details-parity-v1/expanded-details-fixture.json:95:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1140:- tools/details-parity-v1/expanded-details-fixture.json:111:    "overview": "High school student Polina is saved from bullying at her new school and makes a deal with the main bully Bars: he must pretend to be her boyfriend and protect her, and she must do everything he says. During this game, the couple develops real feelings, but her family and classmates have reasons to separate the lovers.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1141:- tools/details-parity-v1/expanded-details-fixture.json:127:    "overview": "A CIA-trained assassin recruits other graduates from her secret childhood program, The Internship, to violently destroy the organization. The CIA fights back with deadly force.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1142:- tools/details-parity-v1/expanded-details-fixture.json:143:    "overview": "Teen Spirit chronicles teenager's volatile emotions, complex relationships, and personal growth as they navigate the final days of high school through the eyes of Charu. The series delves into the complexities of teenage life, emphasizing personal growth, resilience, and the importance of friendship.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1143:- tools/details-parity-v1/expanded-details-fixture.json:159:    "overview": "Science teacher Ryland Grace wakes up on a spaceship light years from home with no recollection of who he is or how he got there. As his memory returns, he begins to uncover his mission: solve the riddle of the mysterious substance causing the sun to die out. He must call on his scientific knowledge and unorthodox ideas to save everything on Earth from extinction╬ô├ç┬¬ but an unexpected friendship means he may not have to do it alone.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1144:- tools/details-parity-v1/expanded-details-fixture.json:175:    "overview": "Young Macy is abducted by a deranged, monstrous figure who wants to raise her as its child.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1145:- tools/details-parity-v1/expanded-details-fixture.json:191:    "overview": "A 'Man from the Future' arrives at an LA diner where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1146:- tools/details-parity-v1/expanded-details-fixture.json:207:    "overview": "Lucy, a college student, along with her friends, spend their vacation at her family's home in Hawaii, which includes her pet chimpanzee, Ben. However, when Ben contracts rabies after being bitten by a rabid animal, the group must fight for their lives in order to avoid the now-violent chimp.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1147:- tools/details-parity-v1/expanded-details-fixture.json:223:    "overview": "In an attempt to avenge her daughter╬ô├ç├ûs death, Irene Kelly travels through parallel universes, killing her daughter╬ô├ç├ûs murderer again and again. As she becomes consumed by vengeance, her humanity begins to slip away╬ô├ç├╢until the cycle is disrupted when she rescues Mia, a sharp-witted teenager already marked by the killer.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1148:- tools/details-parity-v1/expanded-details-fixture.json:239:    "overview": "A successful black businessman, haunted by his crumbling marriage and identity crisis, is drawn into a psychological game of cat and mouse with a mysterious white woman he encounters on a New York subway.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1149:- tools/details-parity-v1/expanded-details-fixture.json:255:    "overview": "Dr. Kelson finds himself in a shocking new relationship - with consequences that could change the world as they know it - and Spike's encounter with Jimmy Crystal becomes a nightmare he can't escape.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1150:- tools/details-parity-v1/expanded-details-fixture.json:271:    "overview": "When a mutating, highly contagious fungus escapes a sealed facility, two employees ╬ô├ç├┤ joined by a grizzled bioterror operative ╬ô├ç├┤ must survive the wildest night shift ever to save humanity from extinction.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1151:- tools/details-parity-v1/expanded-details-fixture.json:287:    "overview": "When an elusive thief whose high-stakes heists unfold along the iconic 101 freeway in Los Angeles eyes the score of a lifetime, with hopes of this being his final job, his path collides with a disillusioned insurance broker who is facing her own crossroads. Determined to crack the case, a relentless detective closes in on the operation, raising the stakes even higher.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1152:- tools/details-parity-v1/expanded-details-fixture.json:303:    "overview": "Having found the safety of the Greenland bunker after the comet Clarke decimated the Earth, the Garrity family must now risk everything to embark on a perilous journey across the wasteland of Europe to find a new home.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1153:- tools/details-parity-v1/expanded-details-fixture.json:319:    "overview": "In the near future, a detective stands on trial accused of murdering his wife. He has ninety minutes to prove his innocence to the advanced AI Judge he once championed, before it determines his fate.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1154:- tools/details-parity-v1/expanded-details-fixture.json:335:    "overview": "After his estranged son gets embroiled in a Nazi plot, self-exiled gangster Tommy Shelby must return to Birmingham to save his family ╬ô├ç├╢ and his nation.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1155:- tools/details-parity-v1/expanded-details-fixture.json:351:    "overview": "Poppy's a free spirit. Alex loves a plan. After years of summer vacations, these polar-opposite pals wonder if they could be a perfect romantic match.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1156:- tools/details-parity-v1/expanded-details-fixture.json:367:    "overview": "When a new Ghostface killer emerges in the quiet town where Sidney Prescott has built a new life, her darkest fears are realized as her daughter becomes the next target. Determined to protect her family, Sidney must face the horrors of her past to put an end to the bloodshed once and for all.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1157:- tools/details-parity-v1/expanded-details-fixture.json:383:    "overview": "Two colleagues become stranded on a deserted island, the only survivors of a plane crash. On the island, they must overcome past grievances and work together to survive, but ultimately, it's a battle of wills and wits to make it out alive.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1158:- tools/details-parity-v1/expanded-details-fixture.json:399:    "overview": "A man living in self-imposed exile on a remote island rescues a young girl from a violent storm, setting off a chain of events that forces him out of seclusion to protect her from enemies tied to his past.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1159:- tools/details-parity-v1/expanded-details-fixture.json:415:    "overview": "When her tranquil life on a remote island is shattered by the return of her vengeful former captain, a skilled ex-pirate must confront her bloody past and unleash her deadly talents to save her family from a ruthless siege.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1160:- tools/details-parity-v1/expanded-details-fixture.json:431:    "overview": "Trust frays when a team of Miami cops discovers millions in cash inside a run-down stash house, calling everyone ╬ô├ç├╢ and everything ╬ô├ç├╢ into question.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1161:- tools/details-parity-v1/expanded-details-fixture.json:447:    "overview": "Tethered by a frightening conclusion, Maya and the Strangers are locked on an unavoidable, unforgiving collision course ╬ô├ç├╢ a showdown that proves they╬ô├ç├ûre far from strangers now.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1162:- tools/details-parity-v1/expanded-details-fixture.json:463:    "overview": "Estranged half-brothers Jonny and James reunite after their father's mysterious death. As they search for the truth, buried secrets reveal a conspiracy threatening to tear their family apart.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1163:- tools/details-parity-v1/expanded-details-fixture.json:479:    "overview": "On one last grueling mission during Army Ranger training, a combat engineer must lead his unit in a fight against a giant otherworldly killing machine.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1164:- tools/details-parity-v1/expanded-details-fixture.json:495:    "overview": "Tragedy strikes when Heathcliff falls in love with Catherine Earnshaw, a woman from a wealthy family in 18th-century England.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1165:- tools/details-parity-v1/expanded-details-fixture.json:511:    "overview": "A South Korean agent hunts a drug ring in Russia and goes head-to-head with a North Korean operative ╬ô├ç├╢ pulling both into peril and tangled secrets.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1166:- tools/details-parity-v1/expanded-details-fixture.json:527:    "overview": "When recent college grad Manny has trouble making ends meet, his father-in-law offers him a job evicting delinquent tenants. Manny soon finds himself unleashing a karma demon which stalks him at every turn.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1167:- tools/details-parity-v1/expanded-details-fixture.json:543:    "overview": "Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1168:- tools/details-parity-v1/expanded-details-fixture.json:559:    "overview": "A 'Man from the Future' arrives at an LA diner where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1169:- tools/details-parity-v1/expanded-details-fixture.json:575:    "overview": "In a mind void of the line separating reality, broken pencils tells the truth.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1170:- tools/details-parity-v1/expanded-details-fixture.json:591:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1171:- tools/details-parity-v1/expanded-details-fixture.json:607:    "overview": "Rohan is in love with his colleague Meera but does not have the courage to express his feelings towards her. He finally gets his chance during the company trip. He makes a wish to be with Meera for just one day, and his wish comes true.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1172:- tools/details-parity-v1/expanded-details-fixture.json:623:    "overview": "Singh vs Kaur 2 is an upcoming Indian Punjabi-language romantic comedy film directed by Navaniat Singh and produced by Gippy Grewal's Humble Motion Pictures and SVF Entertainment. Serving as a standalone sequel to the 2013 film Singh vs Kaur, it stars Gippy Grewal and Shehnaaz Gill, scheduled for worldwide release on 24th April 2026.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1173:- tools/details-parity-v1/expanded-details-fixture.json:639:    "overview": "Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1174:- tools/details-parity-v1/expanded-details-fixture.json:655:    "overview": "After getting married and having a daughter, a retired legendary hitman must protect his family when his past catches up to him.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1175:- tools/details-parity-v1/expanded-details-fixture.json:671:    "overview": "Based on the events that took place between the Indian and Chinese troops at the Galwan region on June 15, 2020 when 200 Indian soldiers bravely defended their territory against a force of 1200 Chinese Liberation Army soldiers",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1176:- tools/details-parity-v1/expanded-details-fixture.json:687:    "overview": "A village's unity is tested by a new highway project that sparks greed and conflict.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1177:- tools/details-parity-v1/expanded-details-fixture.json:703:    "overview": "The family's journey to Sreekandapuram to settle the late Bharathan Nair's second wife and son takes a dark turn when an issue from his past resurfaces, leading to an unexpected crime. Forced into a desperate cover-up to protect their future, the family must navigate a treacherous path of secrecy and mounting pressure, determined to overcome any obstacle by any means necessary.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1178:- tools/details-parity-v1/expanded-details-fixture.json:719:    "overview": "Studious teen Emma is left home alone for the first time in a while, when she unexpectedly gets an invite to her first party, she embarks on a whirlwind of adventures meeting new people.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1179:- tools/details-parity-v1/expanded-details-fixture.json:735:    "overview": "Sequel to Lakadbaggha (2023). Plot TBA.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1180:- tools/details-parity-v1/expanded-details-fixture.json:751:    "overview": "As rival gangs, corrupt officials and a ruthless Major Iqbal close in, Hamza's mission for his country spirals into a bloody personal war where the line between patriot and monster disappears in the streets of Lyari.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1181:- tools/details-parity-v1/expanded-details-fixture.json:767:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1182:- tools/details-parity-v1/expanded-details-fixture.json:783:    "overview": "In a Mumbai theater, a producer, his son, and two intruders clash during one night over hidden treasure. As they search for gold, deception grows, secrets emerge, and past wounds resurface.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1183:- tools/details-parity-v1/expanded-details-fixture.json:799:    "overview": "A police officer's pursuit of truth in a shocking prison crime intertwines with the lives of a widowed prison guard and a soon to be released inmate, unravelling a web of morality and redemption.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1184:- tools/details-parity-v1/expanded-details-fixture.json:815:    "overview": "Rebecca Owens, a recent mortuary science graduate takes a night shift job at River Fields Mortuary. Initially, the job seems straightforward ╬ô├ç├╢ embalming bodies, completing paperwork, and keeping things tidy. But once Rebecca starts working the night shift, things take a dark turn.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1185:- tools/details-parity-v1/expanded-details-fixture.json:831:    "overview": "Two rival neighbors and their wives embark on a chaotic road trip, encountering two eccentric brothers who transform their journey into a hilarious adventure full of mishaps and unexpected twists.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1186:- tools/details-parity-v1/expanded-details-fixture.json:847:    "overview": "Three idealistic soldiers in the Indian army, navy and air force face grueling combat conditions in this film set during the 1971 Indo-Pak war.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1187:- tools/details-parity-v1/expanded-details-fixture.json:863:    "overview": "As rival gangs, corrupt officials and a ruthless Major Iqbal close in, Hamza's mission for his country spirals into a bloody personal war where the line between patriot and monster disappears in the streets of Lyari.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1188:- tools/details-parity-v1/expanded-details-fixture.json:879:    "overview": "Two socially awkward millennials in Mumbai find love while struggling with self-acceptance. As they battle insecurities and societal pressure, their journey takes them from city chaos to mountain serenity.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1189:- tools/details-parity-v1/expanded-details-fixture.json:895:    "overview": "At an anniversary party, Sohrab Handa is found dead, with his throat slit in the hall. As the investigation unravels, friendships are tested, and secrets are revealed.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1190:- tools/details-parity-v1/expanded-details-fixture.json:911:    "overview": "Chronically unsuccessful MI7 operative Happy Patel is finally assigned a mission in Goa, where he uncovers his Indian roots and must rescue a high-profile scientist from crime lord Mama. Unaware of his Indian heritage and armed with a comically British accent, Happy╬ô├ç├ûs blunders trigger a string of chaotic mishaps that could lead him to expose a criminal network.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1191:- tools/details-parity-v1/expanded-details-fixture.json:927:    "overview": "Second Lieutenant and India's youngest Param Vir Chakra recipient, Arun Khetarpal, gave his life fighting for his battalion and the country during the 1971 Battle of Basantar. Ikkis also takes a reflective look at the futility of war through the eyes of Khetarpal's father, who visits his ancestral home in Sargodha and Alma Mater for reunion, which now happens to be in post-partition Pakistan, 30 years later.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1192:- tools/details-parity-v1/expanded-details-fixture.json:943:    "overview": "Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1193:- tools/details-parity-v1/expanded-details-fixture.json:959:    "overview": "What fate awaits a stonehearted gangster and bloodthirsty womaniser when true love claims him, helpless and unguarded? A gang war that shakes the entire underworld and crime syndicate to their very roots. A forbidden love; the tale of an unrequited passion.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1194:- tools/details-parity-v1/expanded-details-fixture.json:975:    "overview": "In the magical world of writer Churu Lal Sharma, his unlucky creations Rahu and Ketu spring to life, causing hilarious chaos instead of fighting corruption. When the mischievous Meenu Taxi steals Churu's mystical notebook, the bumbling duo are dragged into absurd adventures that land them in the middle of a drug mafia.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1195:- tools/details-parity-v1/expanded-details-fixture.json:991:    "overview": "Three young Indian women across different states choose love over tradition, only to become trapped. Their parallel lives show how romance and rebellion transform into control and silence, turning love into a weapon that destroys freedom.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1196:- tools/details-parity-v1/expanded-details-fixture.json:1007:    "overview": "A wannabe rapper from the outskirts of Mumbai and an affluent influencer elope to a coastal town, only to find themselves trapped in the pool of a derelict resort fighting for survival against the wrath of a ferocious crocodile.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1197:- tools/details-parity-v1/expanded-details-fixture.json:1023:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1198:- tools/details-parity-v1/expanded-details-fixture.json:1039:    "overview": "Brandon Beckett and Agent Zero lead a rescue mission in Venezuela when their friends are taken hostage.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1199:- tools/details-parity-v1/expanded-details-fixture.json:1055:    "overview": "A feature-length drama film that explores family issues in contemporary society.  COMING IN 2026.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1200:- tools/details-parity-v1/expanded-details-fixture.json:1071:    "overview": "When an unexpected and ruthless adversary strikes too close to home, Kara Zor-El, aka Supergirl, reluctantly joins forces with an unlikely companion on an epic, interstellar journey of vengeance and justice.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1201:- tools/details-parity-v1/expanded-details-fixture.json:1087:    "overview": "Stuttgart, 1942: Nazis have cleared Jewish communities from towns and Villages. Two German-born Jewish children flee Nazis who have killed their family, escorted by Gisella, part of the Lebensborn, an SS Master Race program.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1202:- tools/details-parity-v1/expanded-details-fixture.json:1103:    "overview": "Two millennials make quick money by leasing incredible New York City apartments they don╬ô├ç├ût own to people who don╬ô├ç├ût know they are being scammed. The con works brilliantly until they run into an apartment owner with a dark secret who flips the game on them.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1203:- tools/details-parity-v1/expanded-details-fixture.json:1119:    "overview": "Scientists have discovered how to 'hop' human consciousness into lifelike robotic animals, allowing people to communicate with animals as animals. Animal lover Mabel seizes an opportunity to use the technology, uncovering mysteries within the animal world beyond anything she could have imagined.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1204:- tools/details-parity-v1/expanded-details-fixture.json:1135:    "overview": "Hasley, a girl with a list of unfulfilled dreams, and Luke, a complex and vulnerable boy marked by a tragic past, find refuge on the boulevard, where they discover whether love can conquer all.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1205:- tools/details-parity-v1/expanded-details-fixture.json:1151:    "overview": "An adopted 16-year-old with a mysterious illness learns her bio-tech billionaire parents are harvesting her blood for nefarious purposes.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1206:- tools/details-parity-v1/expanded-details-fixture.json:1167:    "overview": "A small goat with big dreams gets a once-in-a-lifetime shot to join the pros and play roarball, a high-intensity, co-ed, full-contact sport dominated by the fastest, fiercest animals in the world.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1207:- tools/details-parity-v1/expanded-details-fixture.json:1183:    "overview": "Some secrets are better left at the bottom of the ocean. Once she's in your house, there is no escape. When a struggling artist pulls a beautiful, unconscious woman from the freezing coastal waters, he thinks he╬ô├ç├ûs performed a miracle. But as she recovers within the walls of his secluded home, a series of unsettling events leads him to a terrifying realization: her presence is no coincidence. She is inextricably linked to the same watery grave that claimed his family years ago.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1208:- tools/details-parity-v1/expanded-details-fixture.json:1199:    "overview": "As rival gangs, corrupt officials and a ruthless Major Iqbal close in, Hamza's mission for his country spirals into a bloody personal war where the line between patriot and monster disappears in the streets of Lyari.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1209:- tools/details-parity-v1/expanded-details-fixture.json:1215:    "overview": "Adrian's career as a businessman who tries his hand at politics is going well, but the situation at home is inversely proportional. His wife was locked up in the basement because of a mental disorder. His son is in a coma after being involved in a mysterious tragedy which resulted in the loss of other people's lives. As if that wasn't terrible enough, his family begins to be terrorized by a female ghost. The tragedy brings Adrian to flashbacks of the past. Long before achieving success, his life had suffered greatly. When almost giving up, a help appears. Connecting it to a sacred hibiscus tree which apparently did not give all success to Adrian for nothing. Is the destruction of his family a fair price for what Adrian has achieved? Or is there another secret that hasn't been uncovered from his past?",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1210:- tools/details-parity-v1/expanded-details-fixture.json:1231:    "overview": "A State C.I.D. Detective is wrapped into a web of deceit and malignancy after a tragic murder takes place. With the help from a Private Investigator he attempts to uncover the truth before the death toll rises.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1211:- tools/details-parity-v1/expanded-details-fixture.json:1247:    "overview": "A 'Man from the Future' arrives at an LA diner where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1212:- tools/details-parity-v1/expanded-details-fixture.json:1263:    "overview": "An old woman's voice recalls a terrible event from her distant past: on a summer night in 1996, five teenage girls meet in a suburban house, absent of parental supervision. To pass the time, they begin to tell morbid stories of the world outside, trying to best one another in a grim competition.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1213:- tools/details-parity-v1/expanded-details-fixture.json:1279:    "overview": "A happily engaged couple is put to the test when an unexpected turn sends their wedding week off the rails.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1214:- tools/details-parity-v1/expanded-details-fixture.json:1295:    "overview": "A century before the events of Game of Thrones, two unlikely heroes wandered Westeros: a young, naive but courageous knight, Ser Duncan the Tall, and his diminutive squire, Egg. Set in an age when the Targaryen line still holds the Iron Throne and the last dragon has not yet passed from living memory, great destinies, powerful foes, and dangerous exploits await these improbable and incomparable friends.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1215:- tools/details-parity-v1/expanded-details-fixture.json:1311:    "overview": "England, 1925. At a lavish country house party, a practical joke appears to have gone horribly, murderously wrong. It will be up to the unlikeliest of sleuths╬ô├ç├╢the fizzingly inquisitive Lady Eileen \"Bundle\" Brent╬ô├ç├╢to unravel a chilling plot that will change her life, cracking wide open the country house mystery.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1216:- tools/details-parity-v1/expanded-details-fixture.json:1327:    "overview": "Bound by a deity's pact, Han Chieh fights demons on Earth. When he uncovers an old enemy's plan for a second invasion, he must fight to save humanity.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1217:- tools/details-parity-v1/expanded-details-fixture.json:1343:    "overview": "Haunted by the guilt of her past and dealing with the demons of her present, a newly-appointed DCP, Rita Ferreira, must embark on an investigation of a series of murders that puts her on a collision course with a cold-blooded serial killer.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1218:- tools/details-parity-v1/expanded-details-fixture.json:1359:    "overview": "When a series of ritualistic murders hits Oslo, a gifted detective must navigate a puzzle of patterns, corruption and his own demons to catch the killer.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1219:- tools/details-parity-v1/expanded-details-fixture.json:1375:    "overview": "Two estranged spouses ╬ô├ç├╢ one a detective, the other a news reporter ╬ô├ç├╢ vie to solve a murder in which each believes the other is a prime suspect.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1220:- tools/details-parity-v1/expanded-details-fixture.json:1391:    "overview": "With the Yellowstone Ranch behind him, Kayce Dutton joins an elite unit of U.S. Marshals, combining his skills as a cowboy and Navy SEAL to bring range justice to Montana, where he and his teammates must balance family, duty and the high psychological cost that comes with serving as the last line of defense in the region's war on violence.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1221:- tools/details-parity-v1/expanded-details-fixture.json:1407:    "overview": "In the year 199X, the world was engulfed in nuclear fire!! Yet...humanity somehow survived!! A lone man with seven scars on his chest emerges. His name is Kenshiro, heir to Hokuto Shinken. In a world where only the strong survive, Kenshiro forges a path with his iron fists!",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1222:- tools/details-parity-v1/expanded-details-fixture.json:1423:    "overview": "In 1977 Moscow, two \"PONIES\" (\"persons of no interest\") become CIA operatives and uncover a Cold War conspiracy their husbands were killed for.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1223:- tools/details-parity-v1/expanded-details-fixture.json:1439:    "overview": "A desperate father searching for his runaway daughter gets caught up in a murder case ╬ô├ç├╢ and stumbles upon secrets which could destroy his family for good.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1224:- tools/details-parity-v1/expanded-details-fixture.json:1455:    "overview": "A young group of cadets come together to pursue a common dream of hope and optimism. Under the watchful and demanding eyes of their instructors, they will discover what it takes to become Starfleet officers as they navigate blossoming friendships, explosive rivalries, first loves and a new enemy that threatens both the Academy and the Federation itself.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1225:- tools/details-parity-v1/expanded-details-fixture.json:1471:    "overview": "A dedicated customs officer and his team take on a notorious smuggler leading a powerful syndicate, but unexpected obstacles threaten their mission.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1226:- tools/details-parity-v1/expanded-details-fixture.json:1487:    "overview": "The Clyburns uproot their comfortable New York City lives to the wild, untamed beauty of Montana's Madison River Valley on a search for connection.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1227:- tools/details-parity-v1/expanded-details-fixture.json:1503:    "overview": "Merlin, the immortal son of the bard Taliesin and Atlantean Princess Charis, is followed through his tragic upbringing, descent into madness, and shocking disappearance, leading to the legend that surrounds him. Set before King Arthur's birth, Merlin, assumed dead or a myth, reemerges in sub-Roman Britain to unite the fractured kingdoms under threat from Saxon invaders.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1228:- tools/details-parity-v1/expanded-details-fixture.json:1519:    "overview": "When the past catches up with two former spies, their biggest challenge isn't car chases, shootouts or fistfights ╬ô├ç├╢ it's telling each other the truth.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1229:- tools/details-parity-v1/expanded-details-fixture.json:1535:    "overview": "Simon and Trevor, two actors at opposite ends of their careers, chase life-changing roles.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1230:- tools/details-parity-v1/expanded-details-fixture.json:1551:    "overview": "Sherlock Holmes is a disgraced young man, raw and unfiltered, when he finds himself wrapped up in a murder case that threatens his liberty. His first ever case unravels a globe-trotting conspiracy that changes his life forever.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1231:- tools/details-parity-v1/expanded-details-fixture.json:1567:    "overview": "Bachelor Point season 5 will follow the ongoing story of the bachelors, potentially exploring new challenges and relationships.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1232:- tools/details-parity-v1/expanded-details-fixture.json:1583:    "overview": "13th tells the story of Ritesh, a successful venture capitalist who reunites with his maverick IIT-JEE mentor, Mohit Tyagi Sir, to help scale his visionary educational institute. The series unfolds against the backdrop of India's most gruelling academic competition and a startup culture fixated on valuations. At its heart, 13th is a deeply nostalgic, human story of a master and his pupil-bound by ambition, respect, and the lessons that shape a lifetime.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1233:- tools/details-parity-v1/expanded-details-fixture.json:1599:    "overview": "When a 13-year-old is accused of the murder of a classmate, his family, therapist and the detective in charge are all left asking: what really happened?",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1234:- tools/details-parity-v1/expanded-details-fixture.json:1615:    "overview": "When the mysterious deep space research vessel USCSS Maginot crash-lands on Earth, Wendy and a ragtag group of tactical soldiers make a fateful discovery that puts them face-to-face with the planet's greatest threat.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1235:- tools/details-parity-v1/expanded-details-fixture.json:1631:    "overview": "A mother and son fleeing from their past form a found family while confronting a harsh landscape of freedom and cruelty in the American West.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1236:- tools/details-parity-v1/expanded-details-fixture.json:1647:    "overview": "In this visceral tale of urban horror, a fearless cop and a haunted medical student must take on this living darkness to avert impending doom.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1237:- tools/details-parity-v1/expanded-details-fixture.json:1663:    "overview": "Two young women advocate for wellness remedies to cure deadly illnesses, unraveling their lives as they unknowingly ╬ô├ç├╢ and knowingly ╬ô├ç├╢ mislead the world.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1238:- tools/details-parity-v1/expanded-details-fixture.json:1679:    "overview": "Rishabh and Surbhi, two young individuals, find themselves at the crossroads of an arranged marriage. The story unfolds in two timelines: one in Mumbai, in the past, and another in Madhya Pradesh, where their families meet. In Mumbai, they find themselves alone in his room due to the lockdown, creating a pivotal moment in their relationship. In the present, Rishabh is hesitant to reveal his past with Surbhi to their families, his being a much more traditional one, fearing disapproval.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1239:- tools/details-parity-v1/expanded-details-fixture.json:1695:    "overview": "Set in old Ghaziabad, this heartwarming series follows the Kataria family grappling with a financial crunch. When Naina is forced to share her room with her younger brother Bharat, sibling tensions rise.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1240:- tools/details-parity-v1/expanded-details-fixture.json:1711:    "overview": "Detective RenΓö£ΓîÉe Ballard plunges into a web of murder and corruption as she hunts a ruthless serial killer and uncovers a sinister police conspiracy that threatens everything she stands for. With her own demons nipping at her heels, Ballard must outwit both criminals and colleagues to bring long-overdue justice to the victims and their families.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1241:- tools/details-parity-v1/expanded-details-fixture.json:1727:    "overview": "Gaurav Tiwari, a paranormal investigator, faces his greatest challenge when his pursuit of the truth behind unexplained phenomena leads him into a deadly spiral. As his mysterious death leaves questions unanswered, a journalist delves into his eerie and celebrated legacy, unearthing secrets that blur the line between reality and the supernatural.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1242:- tools/details-parity-v1/expanded-details-fixture.json:1743:    "overview": "When a group of billionaires takes shelter in a luxury bunker, an old feud between two families resurfaces amid an unprecedented global conflict.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1243:- tools/details-parity-v1/expanded-details-fixture.json:1759:    "overview": "A rising-star restaurateur is forced into New York's criminal underworld when his chaotic brother returns to town with loan sharks on his trail.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1244:- tools/details-parity-v1/expanded-details-fixture.json:1775:    "overview": "When an upright officer accepts a job at Tihar Jail, he vows to make amends after witnessing cold-blooded corruption within its walls.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1245:- tools/details-parity-v1/expanded-details-fixture.json:1791:    "overview": "Truth is never black or white. A high-profile case of serial killings takes an unexpected turn when forbidden love and deception come into play. In a world where love can kill, uncovering the truth is more dangerous than ever.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1246:- tools/details-parity-v1/expanded-details-fixture.json:1807:    "overview": "David Jung, a mysterious former US intelligence operative living in hiding in South Korea, has his life blown to pieces when the consequences of an impossible decision from his past come back to haunt him, and he finds himself hunted by Rebecca, a deadly young assassin, and Caddis, the sinister spy organization she works for.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1247:- tools/details-parity-v1/expanded-details-fixture.json:1823:    "overview": "Witness the rise of the world's first celebrity chef, Antonin CarΓö£┬¼me, and his descent into espionage in Napoleon-era France╬ô├ç├╢where manipulation is king. With his gifts for gastronomy and seduction, he becomes the perfect weapon in a fight for power.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1248:- tools/details-parity-v1/expanded-details-fixture.json:1839:    "overview": "A family moves into a vintage smart home and discovers that it's under the control of a virtual assistant ╬ô├ç├╢ who will stop at nothing to keep them there.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1249:- tools/details-parity-v1/expanded-details-fixture.json:1855:    "overview": "With Hawaii's four kingdoms divided by war, the ferocious warrior KaΓò⌐Γòùiana embarks on an epic mission to unite his people╬ô├ç├╢as an existential threat approaches their shores.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1250:- tools/details-parity-v1/expanded-details-fixture.json:1871:    "overview": "A gruesome crime has taken place in La Pedrera ╬ô├ç├┤ Casa MilΓö£├í: a burned body is found on the facade of GaudΓö£┬í's iconic building. Inspector Milo Malart, previously suspended for misconduct by the Mossos d'Esquadra (Mossos of the Squadron), returns to Barcelona to find the perpetrator along with Sub-Inspector Rebeca Garrido.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1251:- tools/details-parity-v1/expanded-details-fixture.json:1887:    "overview": "When an officer with the Department of Homeland Security is murdered in broad daylight, LAPD detective Mark Meachum is recruited to a secret task force, alongside undercover agents from all branches of law enforcement, to investigate. But the hunt for the killer soon uncovers a plot far more sinister than anyone could have imagined, kicking off a race against time to save a city of millions.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1252:- tools/details-parity-v1/expanded-details-fixture.json:1903:    "overview": "Attorney Madhav Mishra represents Raj Nagpal, discovered with murdered nurse Roshni Saluja after his child's party. As the trial unfolds, hidden facts emerge, questioning identities.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1253:- tools/details-parity-v1/expanded-details-fixture.json:1919:    "overview": "When an investigation into a pharma company hits close to home, five women launch a tiffin service with a secret ingredient.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1316:- tools/details-parity-v1/build-expanded-details-fixture.js:30:    backdrop: clean(item.backdrop),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1317:- tools/details-parity-v1/expanded-details-fixture.json:14:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1318:- tools/details-parity-v1/expanded-details-fixture.json:30:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1319:- tools/details-parity-v1/expanded-details-fixture.json:46:    "backdrop": "https://image.tmdb.org/t/p/w1280/ru0r5MYhIwcU0IddhRLqJpIPkiV.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1320:- tools/details-parity-v1/expanded-details-fixture.json:62:    "backdrop": "https://image.tmdb.org/t/p/w1280/80K8REhL8wVESLmJk16zTMIS2BJ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1321:- tools/details-parity-v1/expanded-details-fixture.json:78:    "backdrop": "https://image.tmdb.org/t/p/w1280/unnhYUBP8DGw1nNdpiroc7OPiA0.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1322:- tools/details-parity-v1/expanded-details-fixture.json:94:    "backdrop": "https://image.tmdb.org/t/p/w1280/shFeiPJ1MBFdkjiWWigvrOOxvMY.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1323:- tools/details-parity-v1/expanded-details-fixture.json:110:    "backdrop": "https://image.tmdb.org/t/p/w1280/1x9e0qWonw634NhIsRdvnneeqvN.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1324:- tools/details-parity-v1/expanded-details-fixture.json:126:    "backdrop": "https://image.tmdb.org/t/p/w1280/eUERZRVjCTNdgnESlQxyaOJ2d4K.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1325:- tools/details-parity-v1/expanded-details-fixture.json:142:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1326:- tools/details-parity-v1/expanded-details-fixture.json:158:    "backdrop": "https://image.tmdb.org/t/p/w1280/8Tfys3mDZVp4tNoH2ktm06a0Tau.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1327:- tools/details-parity-v1/expanded-details-fixture.json:174:    "backdrop": "https://image.tmdb.org/t/p/w1280/rhuEN18ZimDOva3guaWZA4hYgLB.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1328:- tools/details-parity-v1/expanded-details-fixture.json:190:    "backdrop": "https://image.tmdb.org/t/p/w1280/drRxbu2OHG0DEENptZ8wI5f0uEU.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1329:- tools/details-parity-v1/expanded-details-fixture.json:206:    "backdrop": "https://image.tmdb.org/t/p/w1280/9uakM2woks0JV8HKIc4oatIVS88.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1330:- tools/details-parity-v1/expanded-details-fixture.json:222:    "backdrop": "https://image.tmdb.org/t/p/w1280/nBTUocp7lHmyrTmD8mTBOYem4ok.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1331:- tools/details-parity-v1/expanded-details-fixture.json:238:    "backdrop": "https://image.tmdb.org/t/p/w1280/bUktSJyiZIs4qPpMopjz2NMY0s9.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1332:- tools/details-parity-v1/expanded-details-fixture.json:254:    "backdrop": "https://image.tmdb.org/t/p/w1280/hHDNOlATHhre4eZ7aYz5cdyJLik.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1333:- tools/details-parity-v1/expanded-details-fixture.json:270:    "backdrop": "https://image.tmdb.org/t/p/w1280/puqQGxK9HYITUKhCdREg3XOLlZd.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1334:- tools/details-parity-v1/expanded-details-fixture.json:286:    "backdrop": "https://image.tmdb.org/t/p/w1280/vG42HeYtoTFflqwP42wYD7tBuNr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1335:- tools/details-parity-v1/expanded-details-fixture.json:302:    "backdrop": "https://image.tmdb.org/t/p/w1280/wns4x1GyxCudgOZRyhXKjXVJf3T.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1336:- tools/details-parity-v1/expanded-details-fixture.json:318:    "backdrop": "https://image.tmdb.org/t/p/w1280/po1niVuud0tX86xOFegO5omQ2wX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1337:- tools/details-parity-v1/expanded-details-fixture.json:334:    "backdrop": "https://image.tmdb.org/t/p/w1280/61BiigHOW0ReOZvV039UfeFM2gW.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1338:- tools/details-parity-v1/expanded-details-fixture.json:350:    "backdrop": "https://image.tmdb.org/t/p/w1280/qth56RA3rkUlhbDRDKGeMJEssdi.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1339:- tools/details-parity-v1/expanded-details-fixture.json:366:    "backdrop": "https://image.tmdb.org/t/p/w1280/hz7TdCrpLLt2Dz7S3PS2HG9rpAO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1340:- tools/details-parity-v1/expanded-details-fixture.json:382:    "backdrop": "https://image.tmdb.org/t/p/w1280/gCmfeKmEAZBP5gcXpiqb0gii9rS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1341:- tools/details-parity-v1/expanded-details-fixture.json:398:    "backdrop": "https://image.tmdb.org/t/p/w1280/nHxWyy18SvAZ8jJeemtS8k1UNjM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1342:- tools/details-parity-v1/expanded-details-fixture.json:414:    "backdrop": "https://image.tmdb.org/t/p/w1280/rbFqLPKj6D2JyRh5mOfA7jqX0Qk.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1343:- tools/details-parity-v1/expanded-details-fixture.json:430:    "backdrop": "https://image.tmdb.org/t/p/w1280/3F2EXWF1thX0BdrVaKvnm6mAhqh.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1344:- tools/details-parity-v1/expanded-details-fixture.json:446:    "backdrop": "https://image.tmdb.org/t/p/w1280/fPfDB0IHOqvmKIzFP9CA51OOS1N.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1345:- tools/details-parity-v1/expanded-details-fixture.json:462:    "backdrop": "https://image.tmdb.org/t/p/w1280/cz4vLJrmaV1zJlRYbxqtvLzeLWB.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1346:- tools/details-parity-v1/expanded-details-fixture.json:478:    "backdrop": "https://image.tmdb.org/t/p/w1280/6yeVcxFR0j08vlv2OlL6zbewm4D.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1347:- tools/details-parity-v1/expanded-details-fixture.json:494:    "backdrop": "https://image.tmdb.org/t/p/w1280/vSQSYd2zZTqc0zmHImwWEGGluMI.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1348:- tools/details-parity-v1/expanded-details-fixture.json:510:    "backdrop": "https://image.tmdb.org/t/p/w1280/5KFThZkdBEQkp9gPWWWNb5CI5yD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1349:- tools/details-parity-v1/expanded-details-fixture.json:526:    "backdrop": "https://image.tmdb.org/t/p/w1280/skj7fo58v0cTLpmTXtCPbtOIWjs.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1350:- tools/details-parity-v1/expanded-details-fixture.json:542:    "backdrop": "https://image.tmdb.org/t/p/w1280/pfcyWSaPKGagqdunfBXQYCqZHxx.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1351:- tools/details-parity-v1/expanded-details-fixture.json:558:    "backdrop": "https://image.tmdb.org/t/p/w1280/drRxbu2OHG0DEENptZ8wI5f0uEU.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1352:- tools/details-parity-v1/expanded-details-fixture.json:574:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1353:- tools/details-parity-v1/expanded-details-fixture.json:590:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1354:- tools/details-parity-v1/expanded-details-fixture.json:606:    "backdrop": "https://image.tmdb.org/t/p/w1280/oPECip1U8I0pTcSsrsPSdPb5e9p.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1355:- tools/details-parity-v1/expanded-details-fixture.json:622:    "backdrop": "https://image.tmdb.org/t/p/w1280/jxE6XT9LTgm3GWN8QuEpizHqDlh.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1356:- tools/details-parity-v1/expanded-details-fixture.json:638:    "backdrop": "https://image.tmdb.org/t/p/w1280/pfcyWSaPKGagqdunfBXQYCqZHxx.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1357:- tools/details-parity-v1/expanded-details-fixture.json:654:    "backdrop": "https://image.tmdb.org/t/p/w1280/o0PUws61EjIokuqX0sbQs4CZguL.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1358:- tools/details-parity-v1/expanded-details-fixture.json:670:    "backdrop": "https://image.tmdb.org/t/p/w1280/rILHQgcOgE3DPsYSFWAuKJ7P0wk.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1359:- tools/details-parity-v1/expanded-details-fixture.json:686:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1360:- tools/details-parity-v1/expanded-details-fixture.json:702:    "backdrop": "https://image.tmdb.org/t/p/w1280/g7y8EDiXvlZYrIKDLlhtbcAPnxS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1361:- tools/details-parity-v1/expanded-details-fixture.json:718:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1362:- tools/details-parity-v1/expanded-details-fixture.json:734:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1363:- tools/details-parity-v1/expanded-details-fixture.json:750:    "backdrop": "https://image.tmdb.org/t/p/w1280/owQeDouUZ6wI6f1aTOYEFd511zn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1364:- tools/details-parity-v1/expanded-details-fixture.json:766:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1365:- tools/details-parity-v1/expanded-details-fixture.json:782:    "backdrop": "https://image.tmdb.org/t/p/w1280/okL1DAWIi4fuAKq9q0xdk9Ylp0o.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1366:- tools/details-parity-v1/expanded-details-fixture.json:798:    "backdrop": "https://image.tmdb.org/t/p/w1280/5z7eorMubo7nB11P8s5a0GMXf2D.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1367:- tools/details-parity-v1/expanded-details-fixture.json:814:    "backdrop": "https://image.tmdb.org/t/p/w1280/gM1kQRPwOVW1Eos5tVWqcYmHR5S.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1368:- tools/details-parity-v1/expanded-details-fixture.json:830:    "backdrop": "https://image.tmdb.org/t/p/w1280/yJqMynHqnCqx5oi0IuTtQtTKC6m.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1369:- tools/details-parity-v1/expanded-details-fixture.json:846:    "backdrop": "https://image.tmdb.org/t/p/w1280/fzo85eKFEjfmJ781gubJQjpQAwF.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1370:- tools/details-parity-v1/expanded-details-fixture.json:862:    "backdrop": "https://image.tmdb.org/t/p/w1280/owQeDouUZ6wI6f1aTOYEFd511zn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1371:- tools/details-parity-v1/expanded-details-fixture.json:878:    "backdrop": "https://image.tmdb.org/t/p/w1280/ApvEXB4XrrsgUHFlKDG1Z1V3MWC.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1372:- tools/details-parity-v1/expanded-details-fixture.json:894:    "backdrop": "https://image.tmdb.org/t/p/w1280/khdLhsQqnmrN6JUaEbhlZSMkKck.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1373:- tools/details-parity-v1/expanded-details-fixture.json:910:    "backdrop": "https://image.tmdb.org/t/p/w1280/gsLYR8uALrt2p33iOpqReNW6XyQ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1374:- tools/details-parity-v1/expanded-details-fixture.json:926:    "backdrop": "https://image.tmdb.org/t/p/w1280/wbhoYwvqgadchfMgUOfOp87QZDS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1375:- tools/details-parity-v1/expanded-details-fixture.json:942:    "backdrop": "https://image.tmdb.org/t/p/w1280/pfcyWSaPKGagqdunfBXQYCqZHxx.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1376:- tools/details-parity-v1/expanded-details-fixture.json:958:    "backdrop": "https://image.tmdb.org/t/p/w1280/7AypNX6eZrqyUPZl77jvwTfHgeV.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1377:- tools/details-parity-v1/expanded-details-fixture.json:974:    "backdrop": "https://image.tmdb.org/t/p/w1280/qTwn0p318YB4oXvQSIhSrhuTcpj.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1378:- tools/details-parity-v1/expanded-details-fixture.json:990:    "backdrop": "https://image.tmdb.org/t/p/w1280/lalZuTh46pR318FTNpJB5MZFk1m.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1379:- tools/details-parity-v1/expanded-details-fixture.json:1006:    "backdrop": "https://image.tmdb.org/t/p/w1280/zIOBTZAqGwdKnOb5c6SvzxP7x86.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1380:- tools/details-parity-v1/expanded-details-fixture.json:1022:    "backdrop": "https://image.tmdb.org/t/p/w1280/js26IayVJ5It0Vxc6M6c12ShBcr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1381:- tools/details-parity-v1/expanded-details-fixture.json:1038:    "backdrop": "https://image.tmdb.org/t/p/w1280/9mgKDddLVQouKpXcb4ul1tUwUO9.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1382:- tools/details-parity-v1/expanded-details-fixture.json:1054:    "backdrop": "https://image.tmdb.org/t/p/w1280/g3bx3kTMC0GjaWD5qfkoyYp22Hg.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1383:- tools/details-parity-v1/expanded-details-fixture.json:1070:    "backdrop": "https://image.tmdb.org/t/p/w1280/6nlqYWDUpNem3v2bDCxQNSg41aY.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1384:- tools/details-parity-v1/expanded-details-fixture.json:1086:    "backdrop": "https://image.tmdb.org/t/p/w1280/t0Vd1QDmDC1jBuL8GEukJsSY2O2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1385:- tools/details-parity-v1/expanded-details-fixture.json:1102:    "backdrop": "https://image.tmdb.org/t/p/w1280/55e59Ls6zc37c7orbaWDyriyGPi.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1386:- tools/details-parity-v1/expanded-details-fixture.json:1118:    "backdrop": "https://image.tmdb.org/t/p/w1280/u53UYu5XG2hNgWGvs3xGhAVzypl.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1387:- tools/details-parity-v1/expanded-details-fixture.json:1134:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1388:- tools/details-parity-v1/expanded-details-fixture.json:1150:    "backdrop": "https://image.tmdb.org/t/p/w1280/q0YwDyjYc7ymp1xml95ZPxIHUej.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1389:- tools/details-parity-v1/expanded-details-fixture.json:1166:    "backdrop": "https://image.tmdb.org/t/p/w1280/tq3h43fZy0H80vzf47MAY7R9Mxo.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1390:- tools/details-parity-v1/expanded-details-fixture.json:1182:    "backdrop": "https://image.tmdb.org/t/p/w1280/yzIjyPtwvyjHelxqIRXGpiaucPG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1391:- tools/details-parity-v1/expanded-details-fixture.json:1198:    "backdrop": "https://image.tmdb.org/t/p/w1280/owQeDouUZ6wI6f1aTOYEFd511zn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1392:- tools/details-parity-v1/expanded-details-fixture.json:1214:    "backdrop": "https://image.tmdb.org/t/p/w1280/lK5MyvgkTVF3d2jDn0mlL7NY9Ud.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1393:- tools/details-parity-v1/expanded-details-fixture.json:1230:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1394:- tools/details-parity-v1/expanded-details-fixture.json:1246:    "backdrop": "https://image.tmdb.org/t/p/w1280/drRxbu2OHG0DEENptZ8wI5f0uEU.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1395:- tools/details-parity-v1/expanded-details-fixture.json:1262:    "backdrop": "https://image.tmdb.org/t/p/w1280/pzGbiuYkc8B2Nu4SGzGEGIuduw4.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1396:- tools/details-parity-v1/expanded-details-fixture.json:1278:    "backdrop": "https://image.tmdb.org/t/p/w1280/1oKLEA9JOhvaBwLpqjROisvWMy7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1397:- tools/details-parity-v1/expanded-details-fixture.json:1294:    "backdrop": "https://image.tmdb.org/t/p/w1280/7mkUu1F2hVUNgz24xO8HPx0D6mK.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1398:- tools/details-parity-v1/expanded-details-fixture.json:1310:    "backdrop": "https://image.tmdb.org/t/p/w1280/eVEbRtSOrczWlYnVmwM195AnX86.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1399:- tools/details-parity-v1/expanded-details-fixture.json:1326:    "backdrop": "https://image.tmdb.org/t/p/w1280/w1DjULItqmTGKnavi5hAtOGMogA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1400:- tools/details-parity-v1/expanded-details-fixture.json:1342:    "backdrop": "https://image.tmdb.org/t/p/w1280/bd0usdz6dgmEE6HVhEhepR5r6MP.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1401:- tools/details-parity-v1/expanded-details-fixture.json:1358:    "backdrop": "https://image.tmdb.org/t/p/w1280/e9HhOb3o22t89lnpN511GzZE0Fp.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1402:- tools/details-parity-v1/expanded-details-fixture.json:1374:    "backdrop": "https://image.tmdb.org/t/p/w1280/n4hJLZmBG8kZccNn7bNgBDsVQ6a.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1403:- tools/details-parity-v1/expanded-details-fixture.json:1390:    "backdrop": "https://image.tmdb.org/t/p/w1280/yGJGwt7DdIWTUXuahLfhcH1gi7G.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1404:- tools/details-parity-v1/expanded-details-fixture.json:1406:    "backdrop": "https://image.tmdb.org/t/p/w1280/elVx0QX4pYgS6Sp3dX8sHZiX69N.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1405:- tools/details-parity-v1/expanded-details-fixture.json:1422:    "backdrop": "https://image.tmdb.org/t/p/w1280/Ak7AdQpvmZpSe9WYBd5KrgjSsSX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1406:- tools/details-parity-v1/expanded-details-fixture.json:1438:    "backdrop": "https://image.tmdb.org/t/p/w1280/1jBYTcOuiPNJsTcfYk66bbVLSBz.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1407:- tools/details-parity-v1/expanded-details-fixture.json:1454:    "backdrop": "https://image.tmdb.org/t/p/w1280/rXtSdCGmG07zjAg5h7GR1v52ogX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1408:- tools/details-parity-v1/expanded-details-fixture.json:1470:    "backdrop": "https://image.tmdb.org/t/p/w1280/5WOikKpCZ5H0zEzVDeE6eJwA8BH.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1409:- tools/details-parity-v1/expanded-details-fixture.json:1486:    "backdrop": "https://image.tmdb.org/t/p/w1280/lhQQE9vlNCKOYWamaHW8CBiI09B.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1410:- tools/details-parity-v1/expanded-details-fixture.json:1502:    "backdrop": "https://image.tmdb.org/t/p/w1280/lDmFwAaHL1kXnAfZeUTieAdUTko.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1411:- tools/details-parity-v1/expanded-details-fixture.json:1518:    "backdrop": "https://image.tmdb.org/t/p/w1280/qDq3dG4ElRohih5fUGNQRLHuBaC.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1412:- tools/details-parity-v1/expanded-details-fixture.json:1534:    "backdrop": "https://image.tmdb.org/t/p/w1280/los8S8iCRn5Q7irl0LNAp6C6Gmz.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1413:- tools/details-parity-v1/expanded-details-fixture.json:1550:    "backdrop": "https://image.tmdb.org/t/p/w1280/8mmDLb108DoFZlE8sfc64TRqLvm.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1414:- tools/details-parity-v1/expanded-details-fixture.json:1566:    "backdrop": "https://image.tmdb.org/t/p/w1280/rR3x79yEd0irce3PKT6wWgoaec5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1415:- tools/details-parity-v1/expanded-details-fixture.json:1582:    "backdrop": "https://image.tmdb.org/t/p/w1280/zbbD1f9qndLPUFb6rW4Hi5471ZE.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1416:- tools/details-parity-v1/expanded-details-fixture.json:1583:    "overview": "13th tells the story of Ritesh, a successful venture capitalist who reunites with his maverick IIT-JEE mentor, Mohit Tyagi Sir, to help scale his visionary educational institute. The series unfolds against the backdrop of India's most gruelling academic competition and a startup culture fixated on valuations. At its heart, 13th is a deeply nostalgic, human story of a master and his pupil-bound by ambition, respect, and the lessons that shape a lifetime.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1417:- tools/details-parity-v1/expanded-details-fixture.json:1598:    "backdrop": "https://image.tmdb.org/t/p/w1280/llZodlkVKRkTdUsiRxvn8h80hhx.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1418:- tools/details-parity-v1/expanded-details-fixture.json:1614:    "backdrop": "https://image.tmdb.org/t/p/w1280/biIBy2LPOOtGCgUYOls3dUEWU3v.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1419:- tools/details-parity-v1/expanded-details-fixture.json:1630:    "backdrop": "https://image.tmdb.org/t/p/w1280/1FxG2lmDYsCM1svJf7H79HNNwu2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1420:- tools/details-parity-v1/expanded-details-fixture.json:1646:    "backdrop": "https://image.tmdb.org/t/p/w1280/kukdq9ANNQUgtzM59B2hP9o059f.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1421:- tools/details-parity-v1/expanded-details-fixture.json:1662:    "backdrop": "https://image.tmdb.org/t/p/w1280/c2r31iNC052gj1noKDntFEh1VHX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1422:- tools/details-parity-v1/expanded-details-fixture.json:1678:    "backdrop": "https://image.tmdb.org/t/p/w1280/9vvPICAl7LsEMpCtOzkKuE7f2ip.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1423:- tools/details-parity-v1/expanded-details-fixture.json:1694:    "backdrop": "https://image.tmdb.org/t/p/w1280/n3TdpfHtP0yKhpQcl3bfNiGYkIG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1424:- tools/details-parity-v1/expanded-details-fixture.json:1710:    "backdrop": "https://image.tmdb.org/t/p/w1280/gavFqSLcxcGgqciAhFdnJDdnpLj.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1425:- tools/details-parity-v1/expanded-details-fixture.json:1726:    "backdrop": "https://image.tmdb.org/t/p/w1280/9EAJbb6IYjQCUcxMxb3kty4Thnm.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1426:- tools/details-parity-v1/expanded-details-fixture.json:1742:    "backdrop": "https://image.tmdb.org/t/p/w1280/cyqKNRLFKCN9Y28ln38hLMESGEj.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1427:- tools/details-parity-v1/expanded-details-fixture.json:1758:    "backdrop": "https://image.tmdb.org/t/p/w1280/efbDkbMBPcHAfnsvJ9SXCdHgMBw.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1428:- tools/details-parity-v1/expanded-details-fixture.json:1774:    "backdrop": "https://image.tmdb.org/t/p/w1280/8Q6RZ2fMRdHZm2zxLGR59KvM4xn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1429:- tools/details-parity-v1/expanded-details-fixture.json:1790:    "backdrop": "https://image.tmdb.org/t/p/w1280/48XNU2etOqdqFZ3qH7mCben1kPS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1430:- tools/details-parity-v1/expanded-details-fixture.json:1806:    "backdrop": "https://image.tmdb.org/t/p/w1280/kPOm8uBC7ajkjCWC0NM2lRbhRLs.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1431:- tools/details-parity-v1/expanded-details-fixture.json:1822:    "backdrop": "https://image.tmdb.org/t/p/w1280/7vUmiPhYSgduTvGfRMZ4SdyTWKl.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1432:- tools/details-parity-v1/expanded-details-fixture.json:1838:    "backdrop": "https://image.tmdb.org/t/p/w1280/4GAmr9BWRfVjZ3GAntm7yjVf82i.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1433:- tools/details-parity-v1/expanded-details-fixture.json:1854:    "backdrop": "https://image.tmdb.org/t/p/w1280/2c3PCbxVgWen5HrYsaukUmfu4J9.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1434:- tools/details-parity-v1/expanded-details-fixture.json:1870:    "backdrop": "https://image.tmdb.org/t/p/w1280/jKyYbESbbsDuEF0G2a9Kg5zuttG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1435:- tools/details-parity-v1/expanded-details-fixture.json:1886:    "backdrop": "https://image.tmdb.org/t/p/w1280/4pxGvtwxDlATy9nvJMvYL8u25LZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1436:- tools/details-parity-v1/expanded-details-fixture.json:1902:    "backdrop": "https://image.tmdb.org/t/p/w1280/eULa8WHAWxwDzAJIsQqH07heBg6.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1437:- tools/details-parity-v1/expanded-details-fixture.json:1918:    "backdrop": "https://image.tmdb.org/t/p/w1280/fmb8QgBVSx1lgKHbas3FNtZ9f5S.jpg",
+- tools/details-parity-v1/audit-details-fixture-gaps.js:4:const fixturePath = path.join(__dirname, "expanded-details-fixture.json");
+- tools/details-parity-v1/audit-details-fixtures.js:6:  path.join(__dirname, "expanded-details-fixture.json"),
+- tools/details-parity-v1/build-details-contract-manifest.js:21:  const fixture = process.argv[2] || path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/build-details-response-snapshot.js:40:  const fixture = process.argv[2] || path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/build-details-route-snapshot.js:35:  const fixture = process.argv[2] || path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/build-expanded-details-fixture.js:7:const outFile = path.join(outDir, "expanded-details-fixture.json");
+- tools/details-parity-v1/out/details-shadow-all-7o-20260608-202843.txt:14:Fixture: tools\details-parity-v1\expanded-details-fixture.json
+- tools/details-parity-v1/out/details-shadow-all-7o-20260608-202843.txt:39:WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+- tools/details-parity-v1/out/details-shadow-all-7o-20260608-202843.txt:40:WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:3:const fixturePath = "tools/details-parity-v1/expanded-details-fixture.json";
+- tools/details-parity-v1/test-details-contract-manifest.js:5:const fixture = path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/test-details-fixture-builder-determinism.js:5:const builder = path.join("tools", "details-parity-v1", "build-expanded-details-fixture.js");
+- tools/details-parity-v1/test-details-fixture-builder-determinism.js:6:const fixture = path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/test-details-fixture-coverage.js:4:const fixture = process.argv[2] || path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/test-details-response-parity-basic.js:4:const fixture = path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/test-details-response-snapshot.js:5:const fixture = path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/test-details-route-contract.js:4:const fixture = path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/test-details-route-roundtrip.js:4:const fixture = path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/test-details-route-snapshot.js:4:const fixture = path.join("tools", "details-parity-v1", "expanded-details-fixture.json");
+- tools/details-parity-v1/test-native-details-shadow.js:6:  path.join("tools", "details-parity-v1", "expanded-details-fixture.json")
+- tools/details-parity-v1/validate-details-fixture-schema.js:6:  path.join("tools", "details-parity-v1", "expanded-details-fixture.json")
+
+## git grep: productionCompanies
+- app/CatalogApi.hs:261:    , "productionCompanies" .= arrayOrEmpty (infoField "productionCompanies")
+- app/CatalogApi.hs:364:          , "productionCompanies" .= arrayOrEmpty (infoField "productionCompanies")
+- app/CatalogApi.hs:932:          , "productionCompanies" .= arrayOrEmpty (field "productionCompanies" m)
+- app/CatalogApi.hs:975:    ] ++ valueListText "productionCompanies" item
+- server.js:1355:    let productionCompanies = [];
+- server.js:1370:        productionCompanies = detail.production_companies.map(c => c.name);
+- server.js:1379:      productionCompanies
+- server.js:1449:      productionCompanies: info?.productionCompanies || [],
+- server.js:1488:      productionCompanies: info.productionCompanies || [],
+- server.js:1523:        productionCompanies: info.productionCompanies || [],
+- server.js:1544:      productionCompanies: info.productionCompanies || [],
+- server.js:1926:      productionCompanies: m.productionCompanies || [],
+- server.js:1950:      productionCompanies: s.productionCompanies || [],
+- server.js:2051:  const companies = Array.isArray(item?.productionCompanies)
+- server.js:2052:    ? item.productionCompanies.map((c, i) => typeof c === 'string' ? { id: i, name: c, logo: null } : c).filter(c => c?.name)
+- server.js:2074:    productionCompanies: companies,
+- server.js:2120:      productionCompanies: raw.productionCompanies || [],
+- server.js:2155:    productionCompanies: raw.productionCompanies || [],
+- server.js:2221:        companies: data.productionCompanies?.length,
+- server.js:2242:    companies: local.productionCompanies?.length,
+- server.js:2353:      language:m.language || '', productionCompanies:m.productionCompanies || [], streamUrl:m.streamUrl, isFtp:true, _sourceRank:1
+- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- server.js:2459:    ...(item.productionCompanies || [])
+- server.js:2464:  return svNormalizeSearchText([...(item.productionCompanies || []), item.studio, item.network, item.category].filter(Boolean).join(' '));
+- server.js:2540:  const raw = String([item.name,item.title,item.file,item.filename,item.category,...(item.productionCompanies || [])].filter(Boolean).join(' ')).toLowerCase();
+- server.js:3326:    productionCompanies: [],
+- server.js:3350:    (Array.isArray(data.productionCompanies) && data.productionCompanies.length) ||
+- server.js:3411:  const productionCompanies = mapCompanies(
+- server.js:3432:    companies: productionCompanies.length,
+- server.js:3455:    productionCompanies,
+- server.js:3519:  const productionCompanies = mapCompanies(
+- server.js:3540:  console.log(`[TitleDetails] production companies count: ${productionCompanies.length}`);
+- server.js:3561:    productionCompanies,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:65:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:81:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:231:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:384:- server.js:2353:      language:m.language || '', productionCompanies:m.productionCompanies || [], streamUrl:m.streamUrl, isFtp:true, _sourceRank:1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:386:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:412:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:573:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:577:## grep: productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:578:- app/CatalogApi.hs:261:    , "productionCompanies" .= arrayOrEmpty (infoField "productionCompanies")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:579:- app/CatalogApi.hs:364:          , "productionCompanies" .= arrayOrEmpty (infoField "productionCompanies")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:580:- app/CatalogApi.hs:932:          , "productionCompanies" .= arrayOrEmpty (field "productionCompanies" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:581:- app/CatalogApi.hs:975:    ] ++ valueListText "productionCompanies" item
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:582:- server.js:1355:    let productionCompanies = [];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:583:- server.js:1370:        productionCompanies = detail.production_companies.map(c => c.name);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:584:- server.js:1379:      productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:585:- server.js:1449:      productionCompanies: info?.productionCompanies || [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:586:- server.js:1488:      productionCompanies: info.productionCompanies || [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:587:- server.js:1523:        productionCompanies: info.productionCompanies || [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:588:- server.js:1544:      productionCompanies: info.productionCompanies || [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:589:- server.js:1926:      productionCompanies: m.productionCompanies || [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:590:- server.js:1950:      productionCompanies: s.productionCompanies || [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:591:- server.js:2051:  const companies = Array.isArray(item?.productionCompanies)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:592:- server.js:2052:    ? item.productionCompanies.map((c, i) => typeof c === 'string' ? { id: i, name: c, logo: null } : c).filter(c => c?.name)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:593:- server.js:2074:    productionCompanies: companies,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:594:- server.js:2120:      productionCompanies: raw.productionCompanies || [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:595:- server.js:2155:    productionCompanies: raw.productionCompanies || [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:596:- server.js:2221:        companies: data.productionCompanies?.length,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:597:- server.js:2242:    companies: local.productionCompanies?.length,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:598:- server.js:2353:      language:m.language || '', productionCompanies:m.productionCompanies || [], streamUrl:m.streamUrl, isFtp:true, _sourceRank:1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:599:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:600:- server.js:2459:    ...(item.productionCompanies || [])
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:601:- server.js:2464:  return svNormalizeSearchText([...(item.productionCompanies || []), item.studio, item.network, item.category].filter(Boolean).join(' '));
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:602:- server.js:2540:  const raw = String([item.name,item.title,item.file,item.filename,item.category,...(item.productionCompanies || [])].filter(Boolean).join(' ')).toLowerCase();
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:603:- server.js:3326:    productionCompanies: [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:604:- server.js:3350:    (Array.isArray(data.productionCompanies) && data.productionCompanies.length) ||
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:605:- server.js:3411:  const productionCompanies = mapCompanies(
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:606:- server.js:3432:    companies: productionCompanies.length,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:607:- server.js:3455:    productionCompanies,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:608:- server.js:3519:  const productionCompanies = mapCompanies(
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:609:- server.js:3540:  console.log(`[TitleDetails] production companies count: ${productionCompanies.length}`);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:610:- server.js:3561:    productionCompanies,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:611:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:612:- tools/details-parity-v1/audit-details-fixture-gaps.js:26:  "productionCompanies"
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:613:- tools/details-parity-v1/report-details-gap-priority.js:46:  "productionCompanies"
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:617:- server.js:1370:        productionCompanies = detail.production_companies.map(c => c.name);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1115:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md:23:RAW_productionCompanies=0
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/audit-details-fixture-gaps.js:26:  "productionCompanies"
+- tools/details-parity-v1/report-details-gap-priority.js:46:  "productionCompanies"
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:7:const fields = ["poster","backdrop","overview","rating","genre","runtime","language","director","productionCompanies"];
+
+## git grep: director
+- app/CatalogApi.hs:259:    , "director" .= textOr "" (infoField "director")
+- server.js:351:    .replace(/\b(?:remastered|extended|unrated|directors?|director'?s?|cut|final|theatrical|imax|open[ ._-]*matte|proper|repack|rerip|remux|internal|limited|complete|collection|converted|reencoded|encoded|recoded|recode|free)\b/ig, ' ')
+- server.js:1232:    .replace(/\b(1080p|720p|480p|4k|2160p|uhd|bluray|blu[\s-]?ray|webrip|web[\s-]?dl|hdtv|x264|x265|hevc|aac|dts|extended|remastered|director.?s?.?cut|proper|repack|hdr|dolby|atmos)\b.*/i, '')
+- server.js:1353:    let runtime = '', director = '';
+- server.js:1364:        if (dir) director = dir.name;
+- server.js:1378:      genre, runtime, director, language,
+- server.js:1447:      director: info?.director || '',
+- server.js:1521:        director: info.director || item.director,
+- server.js:1924:      director: m.director || '',
+- server.js:2044:  const director = String(item?.director || '').trim().toLowerCase();
+- server.js:2045:  if (!director) return [];
+- server.js:2046:  return allApiMoviesForDetails().filter(m => m !== item && String(m.director || '').trim().toLowerCase() === director).slice(0, 18);
+- server.js:2077:    director: item?.director || null,
+- server.js:2153:    director: raw.director || '',
+- server.js:3212:    || crew.find(p => /director/i.test(p.job || ''))
+- server.js:3224:      if (mediaType === 'movie') return /director/i.test(item.job || '');
+- server.js:3225:      return /director|creator|writer|producer|showrunner/i.test(item.job || '');
+- server.js:3329:    director: null,
+- server.js:3410:    .filter(p => /director|creator|producer|writer|screenplay|showrunner/i.test(p.job || '')), 'job', 18);
+- server.js:3418:  let directorBundle = { person: null, items: [] };
+- server.js:3420:    directorBundle = await moreByDirector(detail, credits, mediaType);
+- server.js:3422:    console.warn('[Details] more by director unavailable:', e.message);
+- server.js:3457:    moreByDirector: directorBundle.items,
+- server.js:3458:    director: directorBundle.person,
+- server.js:3518:    .filter(p => /director|creator|producer|writer|screenplay|showrunner/i.test(p.job || '')), 'job', 18);
+- server.js:3526:  let directorBundle = { person: null, items: [] };
+- server.js:3528:    directorBundle = await moreByDirector(detail, credits, mediaType);
+- server.js:3530:    console.warn('[TitleDetails] more by director unavailable:', e.message);
+- server.js:3563:    moreByDirector: directorBundle.items,
+- server.js:3564:    director: directorBundle.person,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:50:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:81:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:215:- server.js:1353:    let runtime = '', director = '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:217:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:231:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:373:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:412:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:542:## grep: director
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:543:- app/CatalogApi.hs:259:    , "director" .= textOr "" (infoField "director")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:544:- server.js:351:    .replace(/\b(?:remastered|extended|unrated|directors?|director'?s?|cut|final|theatrical|imax|open[ ._-]*matte|proper|repack|rerip|remux|internal|limited|complete|collection|converted|reencoded|encoded|recoded|recode|free)\b/ig, ' ')
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:545:- server.js:1232:    .replace(/\b(1080p|720p|480p|4k|2160p|uhd|bluray|blu[\s-]?ray|webrip|web[\s-]?dl|hdtv|x264|x265|hevc|aac|dts|extended|remastered|director.?s?.?cut|proper|repack|hdr|dolby|atmos)\b.*/i, '')
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:546:- server.js:1353:    let runtime = '', director = '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:547:- server.js:1364:        if (dir) director = dir.name;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:548:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:549:- server.js:1447:      director: info?.director || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:550:- server.js:1521:        director: info.director || item.director,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:551:- server.js:1924:      director: m.director || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:552:- server.js:2044:  const director = String(item?.director || '').trim().toLowerCase();
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:553:- server.js:2045:  if (!director) return [];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:554:- server.js:2046:  return allApiMoviesForDetails().filter(m => m !== item && String(m.director || '').trim().toLowerCase() === director).slice(0, 18);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:555:- server.js:2077:    director: item?.director || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:556:- server.js:2153:    director: raw.director || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:557:- server.js:3212:    || crew.find(p => /director/i.test(p.job || ''))
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:558:- server.js:3224:      if (mediaType === 'movie') return /director/i.test(item.job || '');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:559:- server.js:3225:      return /director|creator|writer|producer|showrunner/i.test(item.job || '');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:560:- server.js:3329:    director: null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:561:- server.js:3410:    .filter(p => /director|creator|producer|writer|screenplay|showrunner/i.test(p.job || '')), 'job', 18);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:562:- server.js:3418:  let directorBundle = { person: null, items: [] };
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:563:- server.js:3420:    directorBundle = await moreByDirector(detail, credits, mediaType);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:564:- server.js:3422:    console.warn('[Details] more by director unavailable:', e.message);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:565:- server.js:3457:    moreByDirector: directorBundle.items,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:566:- server.js:3458:    director: directorBundle.person,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:567:- server.js:3518:    .filter(p => /director|creator|producer|writer|screenplay|showrunner/i.test(p.job || '')), 'job', 18);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:568:- server.js:3526:  let directorBundle = { person: null, items: [] };
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:569:- server.js:3528:    directorBundle = await moreByDirector(detail, credits, mediaType);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:570:- server.js:3530:    console.warn('[TitleDetails] more by director unavailable:', e.message);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:571:- server.js:3563:    moreByDirector: directorBundle.items,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:572:- server.js:3564:    director: directorBundle.person,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:573:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:574:- tools/details-parity-v1/audit-details-fixture-gaps.js:25:  "director",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:575:- tools/details-parity-v1/report-details-gap-priority.js:45:  "director",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:611:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md:22:RAW_director=0
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/audit-details-fixture-gaps.js:25:  "director",
+- tools/details-parity-v1/report-details-gap-priority.js:45:  "director",
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:7:const fields = ["poster","backdrop","overview","rating","genre","runtime","language","director","productionCompanies"];
+
+## git grep: runtime
+- app/CatalogApi.hs:258:    , "runtime" .= textOr "" (infoField "runtime")
+- app/Main.hs:84:  putStrLn "warpDiagnostic=minimal Warp helper binds but does not dispatch requests on this Windows GHC runtime"
+- app/Main.hs:111:          sendJson conn HT.status200 "{\"ok\":true,\"runtime\":\"haskell-gateway\",\"server\":\"blocking-raw-socket\"}"
+- app/Main.hs:113:          sendJson conn HT.status200 "{\"ok\":true,\"runtime\":\"haskell-gateway\",\"shadow\":true,\"server\":\"blocking-raw-socket\"}"
+- server.js:1353:    let runtime = '', director = '';
+- server.js:1361:      if (!isSeries && detail.runtime) runtime = `${detail.runtime} min`;
+- server.js:1378:      genre, runtime, director, language,
+- server.js:1446:      runtime:  info?.runtime  || '',
+- server.js:1520:        runtime:  info.runtime  || item.runtime,
+- server.js:1923:      runtime: m.runtime || '',
+- server.js:2067:    runtime: item?.runtime || '',
+- server.js:2152:    runtime: raw.runtime || '',
+- server.js:3256:  const runtime = isTv
+- server.js:3258:    : detail.runtime ? `${detail.runtime} min` : '';
+- server.js:3263:    { label: 'Runtime', value: runtime },
+- server.js:3447:    runtime: mediaType === 'movie' && detail.runtime ? `${detail.runtime} min` : '',
+- server.js:3554:    runtime: mediaType === 'movie' && detail.runtime ? `${detail.runtime} min` : '',
+- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:24:* runtime-related lines: 1
+- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:32:3. Prefer metadata adapter fixes over route/runtime changes.
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:50:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:81:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:207:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:210:## grep: runtime
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:211:- app/CatalogApi.hs:258:    , "runtime" .= textOr "" (infoField "runtime")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:212:- app/Main.hs:84:  putStrLn "warpDiagnostic=minimal Warp helper binds but does not dispatch requests on this Windows GHC runtime"
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:213:- app/Main.hs:111:          sendJson conn HT.status200 "{\"ok\":true,\"runtime\":\"haskell-gateway\",\"server\":\"blocking-raw-socket\"}"
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:214:- app/Main.hs:113:          sendJson conn HT.status200 "{\"ok\":true,\"runtime\":\"haskell-gateway\",\"shadow\":true,\"server\":\"blocking-raw-socket\"}"
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:215:- server.js:1353:    let runtime = '', director = '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:216:- server.js:1361:      if (!isSeries && detail.runtime) runtime = `${detail.runtime} min`;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:217:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:218:- server.js:1446:      runtime:  info?.runtime  || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:219:- server.js:1520:        runtime:  info.runtime  || item.runtime,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:220:- server.js:1923:      runtime: m.runtime || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:221:- server.js:2067:    runtime: item?.runtime || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:222:- server.js:2152:    runtime: raw.runtime || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:223:- server.js:3256:  const runtime = isTv
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:224:- server.js:3258:    : detail.runtime ? `${detail.runtime} min` : '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:225:- server.js:3263:    { label: 'Runtime', value: runtime },
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:226:- server.js:3447:    runtime: mediaType === 'movie' && detail.runtime ? `${detail.runtime} min` : '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:227:- server.js:3554:    runtime: mediaType === 'movie' && detail.runtime ? `${detail.runtime} min` : '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:228:- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:24:* runtime-related lines: 1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:229:- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:32:3. Prefer metadata adapter fixes over route/runtime changes.
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:230:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7K.md:34:- Add only a tiny audit/fixture/report gate before runtime change.
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:231:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:232:- tools/details-parity-v1/audit-details-fixture-gaps.js:23:  "runtime",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:233:- tools/details-parity-v1/build-details-response-snapshot.js:16:    runtime: clean(r.runtime),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:234:- tools/details-parity-v1/build-expanded-details-fixture.js:27:    runtime: clean(item.runtime),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:235:- tools/details-parity-v1/expanded-details-fixture.json:11:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:236:- tools/details-parity-v1/expanded-details-fixture.json:27:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:237:- tools/details-parity-v1/expanded-details-fixture.json:43:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:238:- tools/details-parity-v1/expanded-details-fixture.json:59:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:239:- tools/details-parity-v1/expanded-details-fixture.json:75:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:240:- tools/details-parity-v1/expanded-details-fixture.json:91:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:241:- tools/details-parity-v1/expanded-details-fixture.json:107:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:242:- tools/details-parity-v1/expanded-details-fixture.json:123:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:243:- tools/details-parity-v1/expanded-details-fixture.json:139:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:244:- tools/details-parity-v1/expanded-details-fixture.json:155:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:245:- tools/details-parity-v1/expanded-details-fixture.json:171:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:246:- tools/details-parity-v1/expanded-details-fixture.json:187:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:247:- tools/details-parity-v1/expanded-details-fixture.json:203:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:248:- tools/details-parity-v1/expanded-details-fixture.json:219:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:249:- tools/details-parity-v1/expanded-details-fixture.json:235:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:250:- tools/details-parity-v1/expanded-details-fixture.json:251:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:251:- tools/details-parity-v1/expanded-details-fixture.json:267:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:252:- tools/details-parity-v1/expanded-details-fixture.json:283:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:253:- tools/details-parity-v1/expanded-details-fixture.json:299:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:254:- tools/details-parity-v1/expanded-details-fixture.json:315:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:255:- tools/details-parity-v1/expanded-details-fixture.json:331:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:256:- tools/details-parity-v1/expanded-details-fixture.json:347:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:257:- tools/details-parity-v1/expanded-details-fixture.json:363:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:258:- tools/details-parity-v1/expanded-details-fixture.json:379:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:259:- tools/details-parity-v1/expanded-details-fixture.json:395:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:260:- tools/details-parity-v1/expanded-details-fixture.json:411:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:261:- tools/details-parity-v1/expanded-details-fixture.json:427:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:262:- tools/details-parity-v1/expanded-details-fixture.json:443:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:263:- tools/details-parity-v1/expanded-details-fixture.json:459:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:264:- tools/details-parity-v1/expanded-details-fixture.json:475:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:265:- tools/details-parity-v1/expanded-details-fixture.json:491:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:266:- tools/details-parity-v1/expanded-details-fixture.json:507:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:267:- tools/details-parity-v1/expanded-details-fixture.json:523:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:268:- tools/details-parity-v1/expanded-details-fixture.json:539:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:269:- tools/details-parity-v1/expanded-details-fixture.json:555:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:270:- tools/details-parity-v1/expanded-details-fixture.json:571:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:271:- tools/details-parity-v1/expanded-details-fixture.json:587:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:272:- tools/details-parity-v1/expanded-details-fixture.json:603:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:273:- tools/details-parity-v1/expanded-details-fixture.json:619:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:274:- tools/details-parity-v1/expanded-details-fixture.json:635:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:275:- tools/details-parity-v1/expanded-details-fixture.json:651:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:276:- tools/details-parity-v1/expanded-details-fixture.json:667:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:277:- tools/details-parity-v1/expanded-details-fixture.json:683:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:278:- tools/details-parity-v1/expanded-details-fixture.json:699:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:279:- tools/details-parity-v1/expanded-details-fixture.json:715:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:280:- tools/details-parity-v1/expanded-details-fixture.json:731:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:281:- tools/details-parity-v1/expanded-details-fixture.json:747:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:282:- tools/details-parity-v1/expanded-details-fixture.json:763:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:283:- tools/details-parity-v1/expanded-details-fixture.json:779:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:284:- tools/details-parity-v1/expanded-details-fixture.json:795:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:285:- tools/details-parity-v1/expanded-details-fixture.json:811:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:286:- tools/details-parity-v1/expanded-details-fixture.json:827:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:287:- tools/details-parity-v1/expanded-details-fixture.json:843:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:288:- tools/details-parity-v1/expanded-details-fixture.json:859:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:289:- tools/details-parity-v1/expanded-details-fixture.json:875:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:290:- tools/details-parity-v1/expanded-details-fixture.json:891:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:291:- tools/details-parity-v1/expanded-details-fixture.json:907:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:292:- tools/details-parity-v1/expanded-details-fixture.json:923:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:293:- tools/details-parity-v1/expanded-details-fixture.json:939:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:294:- tools/details-parity-v1/expanded-details-fixture.json:955:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:295:- tools/details-parity-v1/expanded-details-fixture.json:971:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:296:- tools/details-parity-v1/expanded-details-fixture.json:987:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:297:- tools/details-parity-v1/expanded-details-fixture.json:1003:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:298:- tools/details-parity-v1/expanded-details-fixture.json:1019:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:299:- tools/details-parity-v1/expanded-details-fixture.json:1035:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:300:- tools/details-parity-v1/expanded-details-fixture.json:1051:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:301:- tools/details-parity-v1/expanded-details-fixture.json:1067:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:302:- tools/details-parity-v1/expanded-details-fixture.json:1083:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:303:- tools/details-parity-v1/expanded-details-fixture.json:1099:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:304:- tools/details-parity-v1/expanded-details-fixture.json:1115:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:305:- tools/details-parity-v1/expanded-details-fixture.json:1131:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:306:- tools/details-parity-v1/expanded-details-fixture.json:1147:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:307:- tools/details-parity-v1/expanded-details-fixture.json:1163:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:308:- tools/details-parity-v1/expanded-details-fixture.json:1179:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:309:- tools/details-parity-v1/expanded-details-fixture.json:1195:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:310:- tools/details-parity-v1/expanded-details-fixture.json:1211:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:311:- tools/details-parity-v1/expanded-details-fixture.json:1227:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:312:- tools/details-parity-v1/expanded-details-fixture.json:1243:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:313:- tools/details-parity-v1/expanded-details-fixture.json:1259:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:314:- tools/details-parity-v1/expanded-details-fixture.json:1275:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:315:- tools/details-parity-v1/expanded-details-fixture.json:1291:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:316:- tools/details-parity-v1/expanded-details-fixture.json:1307:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:317:- tools/details-parity-v1/expanded-details-fixture.json:1323:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:318:- tools/details-parity-v1/expanded-details-fixture.json:1339:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:319:- tools/details-parity-v1/expanded-details-fixture.json:1355:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:320:- tools/details-parity-v1/expanded-details-fixture.json:1371:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:321:- tools/details-parity-v1/expanded-details-fixture.json:1387:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:322:- tools/details-parity-v1/expanded-details-fixture.json:1403:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:323:- tools/details-parity-v1/expanded-details-fixture.json:1419:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:324:- tools/details-parity-v1/expanded-details-fixture.json:1435:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:325:- tools/details-parity-v1/expanded-details-fixture.json:1451:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:326:- tools/details-parity-v1/expanded-details-fixture.json:1467:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:327:- tools/details-parity-v1/expanded-details-fixture.json:1483:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:328:- tools/details-parity-v1/expanded-details-fixture.json:1499:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:329:- tools/details-parity-v1/expanded-details-fixture.json:1515:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:330:- tools/details-parity-v1/expanded-details-fixture.json:1531:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:331:- tools/details-parity-v1/expanded-details-fixture.json:1547:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:332:- tools/details-parity-v1/expanded-details-fixture.json:1563:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:333:- tools/details-parity-v1/expanded-details-fixture.json:1579:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:334:- tools/details-parity-v1/expanded-details-fixture.json:1595:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:335:- tools/details-parity-v1/expanded-details-fixture.json:1611:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:336:- tools/details-parity-v1/expanded-details-fixture.json:1627:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:337:- tools/details-parity-v1/expanded-details-fixture.json:1643:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:338:- tools/details-parity-v1/expanded-details-fixture.json:1659:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:339:- tools/details-parity-v1/expanded-details-fixture.json:1675:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:340:- tools/details-parity-v1/expanded-details-fixture.json:1691:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:341:- tools/details-parity-v1/expanded-details-fixture.json:1707:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:342:- tools/details-parity-v1/expanded-details-fixture.json:1723:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:343:- tools/details-parity-v1/expanded-details-fixture.json:1739:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:344:- tools/details-parity-v1/expanded-details-fixture.json:1755:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:345:- tools/details-parity-v1/expanded-details-fixture.json:1771:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:346:- tools/details-parity-v1/expanded-details-fixture.json:1787:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:347:- tools/details-parity-v1/expanded-details-fixture.json:1803:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:348:- tools/details-parity-v1/expanded-details-fixture.json:1819:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:349:- tools/details-parity-v1/expanded-details-fixture.json:1835:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:350:- tools/details-parity-v1/expanded-details-fixture.json:1851:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:351:- tools/details-parity-v1/expanded-details-fixture.json:1867:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:352:- tools/details-parity-v1/expanded-details-fixture.json:1883:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:353:- tools/details-parity-v1/expanded-details-fixture.json:1899:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:354:- tools/details-parity-v1/expanded-details-fixture.json:1915:    "runtime": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:355:- tools/details-parity-v1/report-details-gap-priority.js:43:  "runtime",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:356:- tools/details-parity-v1/test-details-fixture-coverage-negative.js:18:  runtime: "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:357:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:358:- tools/details-parity-v1/test-details-response-parity-basic.js:24:    runtime: clean(r.runtime),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:373:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:412:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:539:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:546:- server.js:1353:    let runtime = '', director = '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:548:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:573:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:611:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:820:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1082:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1256:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1440:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md:20:RAW_runtime=0
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7K.md:34:- Add only a tiny audit/fixture/report gate before runtime change.
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/audit-details-fixture-gaps.js:23:  "runtime",
+- tools/details-parity-v1/build-details-response-snapshot.js:16:    runtime: clean(r.runtime),
+- tools/details-parity-v1/build-expanded-details-fixture.js:27:    runtime: clean(item.runtime),
+- tools/details-parity-v1/expanded-details-fixture.json:11:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:27:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:43:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:59:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:75:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:91:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:107:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:123:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:139:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:155:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:171:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:187:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:203:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:219:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:235:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:251:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:267:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:283:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:299:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:315:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:331:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:347:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:363:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:379:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:395:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:411:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:427:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:443:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:459:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:475:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:491:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:507:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:523:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:539:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:555:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:571:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:587:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:603:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:619:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:635:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:651:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:667:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:683:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:699:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:715:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:731:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:747:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:763:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:779:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:795:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:811:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:827:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:843:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:859:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:875:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:891:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:907:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:923:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:939:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:955:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:971:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:987:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1003:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1019:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1035:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1051:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1067:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1083:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1099:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1115:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1131:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1147:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1163:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1179:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1195:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1211:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1227:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1243:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1259:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1275:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1291:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1307:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1323:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1339:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1355:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1371:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1387:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1403:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1419:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1435:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1451:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1467:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1483:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1499:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1515:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1531:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1547:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1563:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1579:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1595:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1611:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1627:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1643:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1659:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1675:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1691:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1707:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1723:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1739:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1755:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1771:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1787:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1803:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1819:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1835:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1851:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1867:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1883:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1899:    "runtime": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1915:    "runtime": "",
+- tools/details-parity-v1/report-details-gap-priority.js:43:  "runtime",
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:7:const fields = ["poster","backdrop","overview","rating","genre","runtime","language","director","productionCompanies"];
+- tools/details-parity-v1/test-details-fixture-coverage-negative.js:18:  runtime: "",
+- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/test-details-response-parity-basic.js:24:    runtime: clean(r.runtime),
+
+## git grep: language
+- app/CatalogApi.hs:260:    , "language" .= textOr "" (infoField "language")
+- app/CatalogApi.hs:363:          , "language" .= textOr "" (infoField "language")
+- app/CatalogApi.hs:794:        , fieldText "language" item
+- app/CatalogApi.hs:931:          , "language" .= textOr "" (field "language" m)
+- app/CatalogApi.hs:946:        [ insertFields [("_sourceRank", Number 1), ("id", String (T.pack ("ftp_series_home_" ++ show i))), ("category", textOr "" (field "category" s)), ("language", textOr "" (field "language" s))] (seriesRouteValue s)
+- app/CatalogApi.hs:973:    , fieldText "language" item
+- server.js:71:            language: s.tags?.language || 'und',
+- server.js:81:            language: s.tags?.language || 'und',
+- server.js:630:    item.language,
+- server.js:1354:    let language = result.original_language ? result.original_language.toUpperCase() : '';
+- server.js:1366:      if (detail.spoken_languages && detail.spoken_languages.length) {
+- server.js:1367:        language = detail.spoken_languages.map(l => l.english_name).slice(0,3).join(', ');
+- server.js:1378:      genre, runtime, director, language,
+- server.js:1448:      language: info?.language || '',
+- server.js:1487:      language: info.language,
+- server.js:1522:        language: info.language || item.language,
+- server.js:1543:      language: info.language || show.language,
+- server.js:1925:      language: m.language || '',
+- server.js:1949:      language: s.language || '',
+- server.js:2069:    language: item?.language || '',
+- server.js:2119:      language: raw.language || '',
+- server.js:2154:    language: raw.language || '',
+- server.js:2163:  const matrix = await tmdbGet('/movie/603?language=en-US');
+- server.js:2353:      language:m.language || '', productionCompanies:m.productionCompanies || [], streamUrl:m.streamUrl, isFtp:true, _sourceRank:1
+- server.js:2371:      genre:s.genre || '', category:s.category || '', language:s.language || '', type:'series', isFtp:true,
+- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- server.js:3065:  let data = await tmdbGet(`${endpoint}?query=${encodeURIComponent(clean)}${yearParam}&include_adult=false&language=en-US&page=1`);
+- server.js:3068:    data = await tmdbGet(`${endpoint}?query=${encodeURIComponent(clean)}&include_adult=false&language=en-US&page=1`);
+- server.js:3220:  const data = await tmdbGet(`/person/${person.id}/combined_credits?language=en-US`);
+- server.js:3246:function languageLabel(detail) {
+- server.js:3247:  if (Array.isArray(detail?.spoken_languages) && detail.spoken_languages.length) {
+- server.js:3248:    return detail.spoken_languages.map(l => l.english_name || l.name).filter(Boolean).slice(0, 3).join(', ');
+- server.js:3250:  return detail?.original_language ? String(detail.original_language).toUpperCase() : '';
+- server.js:3266:    { label: 'Language', value: languageLabel(detail) },
+- server.js:3375:    tmdbGet(`/${mediaType}/${resolvedId}?language=en-US`),
+- server.js:3376:    tmdbGet(`/${mediaType}/${resolvedId}/credits?language=en-US`),
+- server.js:3377:    tmdbGet(`/${mediaType}/${resolvedId}/videos?language=en-US`),
+- server.js:3379:    tmdbGet(`/${mediaType}/${resolvedId}/similar?language=en-US&page=1`),
+- server.js:3380:    tmdbGet(`/${mediaType}/${resolvedId}/recommendations?language=en-US&page=1`),
+- server.js:3450:    language: languageLabel(detail),
+- server.js:3483:    tmdbGet(`/${mediaType}/${resolvedId}?language=en-US`),
+- server.js:3484:    tmdbGet(`/${mediaType}/${resolvedId}/credits?language=en-US`),
+- server.js:3485:    tmdbGet(`/${mediaType}/${resolvedId}/videos?language=en-US`),
+- server.js:3487:    tmdbGet(`/${mediaType}/${resolvedId}/similar?language=en-US&page=1`),
+- server.js:3488:    tmdbGet(`/${mediaType}/${resolvedId}/recommendations?language=en-US&page=1`),
+- server.js:3556:    language: languageLabel(detail),
+- server.js:4843:      tmdbGet('/trending/movie/week?language=en-US'),
+- server.js:4844:      tmdbGet('/trending/tv/week?language=en-US')
+- server.js:4853:      language: r.original_language||'', type:'movie', streamUrl:null, isFtp:false,
+- server.js:4862:      language: r.original_language||'', type:'tv', seasons:{}
+- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:25:* language-related lines: 1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:50:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:64:- server.js:2371:      genre:s.genre || '', category:s.category || '', language:s.language || '', type:'series', isFtp:true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:65:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:81:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:207:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:217:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:231:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:357:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:360:## grep: language
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:361:- app/CatalogApi.hs:260:    , "language" .= textOr "" (infoField "language")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:362:- app/CatalogApi.hs:363:          , "language" .= textOr "" (infoField "language")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:363:- app/CatalogApi.hs:794:        , fieldText "language" item
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:364:- app/CatalogApi.hs:931:          , "language" .= textOr "" (field "language" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:365:- app/CatalogApi.hs:946:        [ insertFields [("_sourceRank", Number 1), ("id", String (T.pack ("ftp_series_home_" ++ show i))), ("category", textOr "" (field "category" s)), ("language", textOr "" (field "language" s))] (seriesRouteValue s)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:366:- app/CatalogApi.hs:973:    , fieldText "language" item
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:367:- server.js:71:            language: s.tags?.language || 'und',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:368:- server.js:81:            language: s.tags?.language || 'und',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:369:- server.js:630:    item.language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:370:- server.js:1354:    let language = result.original_language ? result.original_language.toUpperCase() : '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:371:- server.js:1366:      if (detail.spoken_languages && detail.spoken_languages.length) {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:372:- server.js:1367:        language = detail.spoken_languages.map(l => l.english_name).slice(0,3).join(', ');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:373:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:374:- server.js:1448:      language: info?.language || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:375:- server.js:1487:      language: info.language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:376:- server.js:1522:        language: info.language || item.language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:377:- server.js:1543:      language: info.language || show.language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:378:- server.js:1925:      language: m.language || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:379:- server.js:1949:      language: s.language || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:380:- server.js:2069:    language: item?.language || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:381:- server.js:2119:      language: raw.language || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:382:- server.js:2154:    language: raw.language || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:383:- server.js:2163:  const matrix = await tmdbGet('/movie/603?language=en-US');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:384:- server.js:2353:      language:m.language || '', productionCompanies:m.productionCompanies || [], streamUrl:m.streamUrl, isFtp:true, _sourceRank:1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:385:- server.js:2371:      genre:s.genre || '', category:s.category || '', language:s.language || '', type:'series', isFtp:true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:386:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:387:- server.js:3065:  let data = await tmdbGet(`${endpoint}?query=${encodeURIComponent(clean)}${yearParam}&include_adult=false&language=en-US&page=1`);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:388:- server.js:3068:    data = await tmdbGet(`${endpoint}?query=${encodeURIComponent(clean)}&include_adult=false&language=en-US&page=1`);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:389:- server.js:3220:  const data = await tmdbGet(`/person/${person.id}/combined_credits?language=en-US`);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:390:- server.js:3246:function languageLabel(detail) {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:391:- server.js:3247:  if (Array.isArray(detail?.spoken_languages) && detail.spoken_languages.length) {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:392:- server.js:3248:    return detail.spoken_languages.map(l => l.english_name || l.name).filter(Boolean).slice(0, 3).join(', ');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:393:- server.js:3250:  return detail?.original_language ? String(detail.original_language).toUpperCase() : '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:394:- server.js:3266:    { label: 'Language', value: languageLabel(detail) },
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:395:- server.js:3375:    tmdbGet(`/${mediaType}/${resolvedId}?language=en-US`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:396:- server.js:3376:    tmdbGet(`/${mediaType}/${resolvedId}/credits?language=en-US`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:397:- server.js:3377:    tmdbGet(`/${mediaType}/${resolvedId}/videos?language=en-US`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:398:- server.js:3379:    tmdbGet(`/${mediaType}/${resolvedId}/similar?language=en-US&page=1`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:399:- server.js:3380:    tmdbGet(`/${mediaType}/${resolvedId}/recommendations?language=en-US&page=1`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:400:- server.js:3450:    language: languageLabel(detail),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:401:- server.js:3483:    tmdbGet(`/${mediaType}/${resolvedId}?language=en-US`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:402:- server.js:3484:    tmdbGet(`/${mediaType}/${resolvedId}/credits?language=en-US`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:403:- server.js:3485:    tmdbGet(`/${mediaType}/${resolvedId}/videos?language=en-US`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:404:- server.js:3487:    tmdbGet(`/${mediaType}/${resolvedId}/similar?language=en-US&page=1`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:405:- server.js:3488:    tmdbGet(`/${mediaType}/${resolvedId}/recommendations?language=en-US&page=1`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:406:- server.js:3556:    language: languageLabel(detail),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:407:- server.js:4843:      tmdbGet('/trending/movie/week?language=en-US'),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:408:- server.js:4844:      tmdbGet('/trending/tv/week?language=en-US')
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:409:- server.js:4853:      language: r.original_language||'', type:'movie', streamUrl:null, isFtp:false,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:410:- server.js:4862:      language: r.original_language||'', type:'tv', seasons:{}
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:411:- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:25:* language-related lines: 1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:412:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:413:- tools/details-parity-v1/audit-details-fixture-gaps.js:24:  "language",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:414:- tools/details-parity-v1/build-details-response-snapshot.js:17:    language: clean(r.language),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:415:- tools/details-parity-v1/build-expanded-details-fixture.js:28:    language: clean(item.language),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:416:- tools/details-parity-v1/expanded-details-fixture.json:12:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:417:- tools/details-parity-v1/expanded-details-fixture.json:28:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:418:- tools/details-parity-v1/expanded-details-fixture.json:44:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:419:- tools/details-parity-v1/expanded-details-fixture.json:60:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:420:- tools/details-parity-v1/expanded-details-fixture.json:76:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:421:- tools/details-parity-v1/expanded-details-fixture.json:92:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:422:- tools/details-parity-v1/expanded-details-fixture.json:108:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:423:- tools/details-parity-v1/expanded-details-fixture.json:124:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:424:- tools/details-parity-v1/expanded-details-fixture.json:140:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:425:- tools/details-parity-v1/expanded-details-fixture.json:156:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:426:- tools/details-parity-v1/expanded-details-fixture.json:172:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:427:- tools/details-parity-v1/expanded-details-fixture.json:188:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:428:- tools/details-parity-v1/expanded-details-fixture.json:204:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:429:- tools/details-parity-v1/expanded-details-fixture.json:220:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:430:- tools/details-parity-v1/expanded-details-fixture.json:236:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:431:- tools/details-parity-v1/expanded-details-fixture.json:252:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:432:- tools/details-parity-v1/expanded-details-fixture.json:268:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:433:- tools/details-parity-v1/expanded-details-fixture.json:284:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:434:- tools/details-parity-v1/expanded-details-fixture.json:300:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:435:- tools/details-parity-v1/expanded-details-fixture.json:316:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:436:- tools/details-parity-v1/expanded-details-fixture.json:332:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:437:- tools/details-parity-v1/expanded-details-fixture.json:348:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:438:- tools/details-parity-v1/expanded-details-fixture.json:364:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:439:- tools/details-parity-v1/expanded-details-fixture.json:380:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:440:- tools/details-parity-v1/expanded-details-fixture.json:396:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:441:- tools/details-parity-v1/expanded-details-fixture.json:412:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:442:- tools/details-parity-v1/expanded-details-fixture.json:428:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:443:- tools/details-parity-v1/expanded-details-fixture.json:444:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:444:- tools/details-parity-v1/expanded-details-fixture.json:460:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:445:- tools/details-parity-v1/expanded-details-fixture.json:476:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:446:- tools/details-parity-v1/expanded-details-fixture.json:492:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:447:- tools/details-parity-v1/expanded-details-fixture.json:508:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:448:- tools/details-parity-v1/expanded-details-fixture.json:524:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:449:- tools/details-parity-v1/expanded-details-fixture.json:540:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:450:- tools/details-parity-v1/expanded-details-fixture.json:556:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:451:- tools/details-parity-v1/expanded-details-fixture.json:572:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:452:- tools/details-parity-v1/expanded-details-fixture.json:588:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:453:- tools/details-parity-v1/expanded-details-fixture.json:604:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:454:- tools/details-parity-v1/expanded-details-fixture.json:620:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:455:- tools/details-parity-v1/expanded-details-fixture.json:623:    "overview": "Singh vs Kaur 2 is an upcoming Indian Punjabi-language romantic comedy film directed by Navaniat Singh and produced by Gippy Grewal's Humble Motion Pictures and SVF Entertainment. Serving as a standalone sequel to the 2013 film Singh vs Kaur, it stars Gippy Grewal and Shehnaaz Gill, scheduled for worldwide release on 24th April 2026.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:456:- tools/details-parity-v1/expanded-details-fixture.json:636:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:457:- tools/details-parity-v1/expanded-details-fixture.json:652:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:458:- tools/details-parity-v1/expanded-details-fixture.json:668:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:459:- tools/details-parity-v1/expanded-details-fixture.json:684:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:460:- tools/details-parity-v1/expanded-details-fixture.json:700:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:461:- tools/details-parity-v1/expanded-details-fixture.json:716:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:462:- tools/details-parity-v1/expanded-details-fixture.json:732:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:463:- tools/details-parity-v1/expanded-details-fixture.json:748:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:464:- tools/details-parity-v1/expanded-details-fixture.json:764:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:465:- tools/details-parity-v1/expanded-details-fixture.json:780:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:466:- tools/details-parity-v1/expanded-details-fixture.json:796:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:467:- tools/details-parity-v1/expanded-details-fixture.json:812:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:468:- tools/details-parity-v1/expanded-details-fixture.json:828:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:469:- tools/details-parity-v1/expanded-details-fixture.json:844:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:470:- tools/details-parity-v1/expanded-details-fixture.json:860:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:471:- tools/details-parity-v1/expanded-details-fixture.json:876:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:472:- tools/details-parity-v1/expanded-details-fixture.json:892:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:473:- tools/details-parity-v1/expanded-details-fixture.json:908:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:474:- tools/details-parity-v1/expanded-details-fixture.json:924:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:475:- tools/details-parity-v1/expanded-details-fixture.json:940:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:476:- tools/details-parity-v1/expanded-details-fixture.json:956:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:477:- tools/details-parity-v1/expanded-details-fixture.json:972:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:478:- tools/details-parity-v1/expanded-details-fixture.json:988:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:479:- tools/details-parity-v1/expanded-details-fixture.json:1004:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:480:- tools/details-parity-v1/expanded-details-fixture.json:1020:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:481:- tools/details-parity-v1/expanded-details-fixture.json:1036:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:482:- tools/details-parity-v1/expanded-details-fixture.json:1052:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:483:- tools/details-parity-v1/expanded-details-fixture.json:1068:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:484:- tools/details-parity-v1/expanded-details-fixture.json:1084:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:485:- tools/details-parity-v1/expanded-details-fixture.json:1100:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:486:- tools/details-parity-v1/expanded-details-fixture.json:1116:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:487:- tools/details-parity-v1/expanded-details-fixture.json:1132:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:488:- tools/details-parity-v1/expanded-details-fixture.json:1148:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:489:- tools/details-parity-v1/expanded-details-fixture.json:1164:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:490:- tools/details-parity-v1/expanded-details-fixture.json:1180:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:491:- tools/details-parity-v1/expanded-details-fixture.json:1196:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:492:- tools/details-parity-v1/expanded-details-fixture.json:1212:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:493:- tools/details-parity-v1/expanded-details-fixture.json:1228:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:494:- tools/details-parity-v1/expanded-details-fixture.json:1244:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:495:- tools/details-parity-v1/expanded-details-fixture.json:1260:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:496:- tools/details-parity-v1/expanded-details-fixture.json:1276:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:497:- tools/details-parity-v1/expanded-details-fixture.json:1292:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:498:- tools/details-parity-v1/expanded-details-fixture.json:1308:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:499:- tools/details-parity-v1/expanded-details-fixture.json:1324:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:500:- tools/details-parity-v1/expanded-details-fixture.json:1340:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:501:- tools/details-parity-v1/expanded-details-fixture.json:1356:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:502:- tools/details-parity-v1/expanded-details-fixture.json:1372:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:503:- tools/details-parity-v1/expanded-details-fixture.json:1388:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:504:- tools/details-parity-v1/expanded-details-fixture.json:1404:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:505:- tools/details-parity-v1/expanded-details-fixture.json:1420:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:506:- tools/details-parity-v1/expanded-details-fixture.json:1436:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:507:- tools/details-parity-v1/expanded-details-fixture.json:1452:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:508:- tools/details-parity-v1/expanded-details-fixture.json:1468:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:509:- tools/details-parity-v1/expanded-details-fixture.json:1484:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:510:- tools/details-parity-v1/expanded-details-fixture.json:1500:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:511:- tools/details-parity-v1/expanded-details-fixture.json:1516:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:512:- tools/details-parity-v1/expanded-details-fixture.json:1532:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:513:- tools/details-parity-v1/expanded-details-fixture.json:1548:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:514:- tools/details-parity-v1/expanded-details-fixture.json:1564:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:515:- tools/details-parity-v1/expanded-details-fixture.json:1580:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:516:- tools/details-parity-v1/expanded-details-fixture.json:1596:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:517:- tools/details-parity-v1/expanded-details-fixture.json:1612:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:518:- tools/details-parity-v1/expanded-details-fixture.json:1628:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:519:- tools/details-parity-v1/expanded-details-fixture.json:1644:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:520:- tools/details-parity-v1/expanded-details-fixture.json:1660:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:521:- tools/details-parity-v1/expanded-details-fixture.json:1676:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:522:- tools/details-parity-v1/expanded-details-fixture.json:1692:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:523:- tools/details-parity-v1/expanded-details-fixture.json:1708:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:524:- tools/details-parity-v1/expanded-details-fixture.json:1724:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:525:- tools/details-parity-v1/expanded-details-fixture.json:1740:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:526:- tools/details-parity-v1/expanded-details-fixture.json:1756:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:527:- tools/details-parity-v1/expanded-details-fixture.json:1772:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:528:- tools/details-parity-v1/expanded-details-fixture.json:1788:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:529:- tools/details-parity-v1/expanded-details-fixture.json:1804:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:530:- tools/details-parity-v1/expanded-details-fixture.json:1820:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:531:- tools/details-parity-v1/expanded-details-fixture.json:1836:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:532:- tools/details-parity-v1/expanded-details-fixture.json:1852:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:533:- tools/details-parity-v1/expanded-details-fixture.json:1868:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:534:- tools/details-parity-v1/expanded-details-fixture.json:1884:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:535:- tools/details-parity-v1/expanded-details-fixture.json:1900:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:536:- tools/details-parity-v1/expanded-details-fixture.json:1916:    "language": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:537:- tools/details-parity-v1/report-details-gap-priority.js:44:  "language",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:538:- tools/details-parity-v1/test-details-fixture-coverage-negative.js:19:  language: "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:539:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:540:- tools/details-parity-v1/test-details-response-parity-basic.js:25:    language: clean(r.language),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:548:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:573:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:598:- server.js:2353:      language:m.language || '', productionCompanies:m.productionCompanies || [], streamUrl:m.streamUrl, isFtp:true, _sourceRank:1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:599:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:611:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:820:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1082:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1115:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1172:- tools/details-parity-v1/expanded-details-fixture.json:623:    "overview": "Singh vs Kaur 2 is an upcoming Indian Punjabi-language romantic comedy film directed by Navaniat Singh and produced by Gippy Grewal's Humble Motion Pictures and SVF Entertainment. Serving as a standalone sequel to the 2013 film Singh vs Kaur, it stars Gippy Grewal and Shehnaaz Gill, scheduled for worldwide release on 24th April 2026.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1256:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1440:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md:21:RAW_language=0
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/audit-details-fixture-gaps.js:24:  "language",
+- tools/details-parity-v1/build-details-response-snapshot.js:17:    language: clean(r.language),
+- tools/details-parity-v1/build-expanded-details-fixture.js:28:    language: clean(item.language),
+- tools/details-parity-v1/expanded-details-fixture.json:12:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:28:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:44:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:60:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:76:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:92:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:108:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:124:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:140:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:156:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:172:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:188:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:204:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:220:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:236:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:252:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:268:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:284:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:300:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:316:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:332:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:348:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:364:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:380:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:396:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:412:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:428:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:444:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:460:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:476:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:492:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:508:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:524:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:540:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:556:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:572:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:588:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:604:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:620:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:623:    "overview": "Singh vs Kaur 2 is an upcoming Indian Punjabi-language romantic comedy film directed by Navaniat Singh and produced by Gippy Grewal's Humble Motion Pictures and SVF Entertainment. Serving as a standalone sequel to the 2013 film Singh vs Kaur, it stars Gippy Grewal and Shehnaaz Gill, scheduled for worldwide release on 24th April 2026.",
+- tools/details-parity-v1/expanded-details-fixture.json:636:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:652:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:668:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:684:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:700:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:716:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:732:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:748:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:764:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:780:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:796:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:812:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:828:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:844:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:860:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:876:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:892:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:908:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:924:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:940:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:956:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:972:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:988:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1004:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1020:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1036:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1052:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1068:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1084:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1100:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1116:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1132:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1148:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1164:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1180:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1196:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1212:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1228:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1244:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1260:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1276:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1292:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1308:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1324:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1340:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1356:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1372:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1388:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1404:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1420:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1436:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1452:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1468:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1484:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1500:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1516:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1532:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1548:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1564:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1580:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1596:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1612:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1628:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1644:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1660:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1676:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1692:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1708:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1724:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1740:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1756:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1772:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1788:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1804:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1820:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1836:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1852:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1868:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1884:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1900:    "language": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1916:    "language": "",
+- tools/details-parity-v1/report-details-gap-priority.js:44:  "language",
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:7:const fields = ["poster","backdrop","overview","rating","genre","runtime","language","director","productionCompanies"];
+- tools/details-parity-v1/test-details-fixture-coverage-negative.js:19:  language: "",
+- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/test-details-response-parity-basic.js:25:    language: clean(r.language),
+
+## git grep: genre
+- app/CatalogApi.hs:215:      genre = T.toLower (fieldText "genre" item)
+- app/CatalogApi.hs:217:      hay = T.unpack (T.unwords [name, genre, filename])
+- app/CatalogApi.hs:225:  in "animation" `T.isInfixOf` genre || "anime" `T.isInfixOf` genre || any (`isInfixOf` hay) bad
+- app/CatalogApi.hs:257:    , "genre" .= textOr "" (infoField "genre")
+- app/CatalogApi.hs:362:          , "genre" .= textOr "" (infoField "genre")
+- app/CatalogApi.hs:641:    , "genre" .= textOr "" (field "genre" m)
+- app/CatalogApi.hs:691:    , "genre" .= textOr "" (field "genre" s)
+- app/CatalogApi.hs:792:        , fieldText "genre" item
+- app/CatalogApi.hs:929:          , "genre" .= textOr "" (field "genre" m)
+- app/CatalogApi.hs:971:    , fieldText "genre" item
+- server.js:248:  const genre = (item.genre || '').toLowerCase();
+- server.js:251:  // 1. Exclude by genre
+- server.js:252:  if (genre.includes('animation') || genre.includes('anime')) return true;
+- server.js:447:            genre: '',
+- server.js:484:        genre: '',
+- server.js:525:      genre: item.genre || '',
+- server.js:553:  item.genre = item.genre || hit.genre || '';
+- server.js:629:    item.genre,
+- server.js:735:    type:'movie', genre:m.genre || '', category:m.category || '', streamUrl:m.streamUrl, isFtp:true
+- server.js:741:    type:'series', genre:s.genre || '', category:s.category || 'Series', seasons:s.seasons || [], isFtp:true, _isSeries:true
+- server.js:915:  return [kind, q, req.query.genre || '', req.query.lang || '', req.query.yearRange || '', req.query.minRating || '', req.query.publisher || '', req.query.sort || '', req.query.page || '', req.query.limit || '', count].join('|');
+- server.js:1350:    const genreIds= result.genre_ids || [];
+- server.js:1351:    const genre   = genreIds.slice(0,3).map(id => TMDB_GENRES[id]).filter(Boolean).join(', ');
+- server.js:1378:      genre, runtime, director, language,
+- server.js:1445:      genre:    info?.genre    || '',
+- server.js:1486:      genre:    info.genre,
+- server.js:1519:        genre:    info.genre    || item.genre,
+- server.js:1542:      genre:    info.genre    || show.genre,
+- server.js:1921:      genre: m.genre || '',
+- server.js:1947:      genre: s.genre || '',
+- server.js:2019:  const genres = splitDetailGenres(item?.genre);
+- server.js:2027:      const otherGenres = splitDetailGenres(other.genre);
+- server.js:2029:      let score = genres.length ? otherGenres.filter(g => genres.some(seed => g.includes(seed) || seed.includes(g))).length * 4 : 0;
+- server.js:2068:    genres: item?.genre || '',
+- server.js:2117:      genre: raw.genre || '',
+- server.js:2150:    genre: raw.genre || '',
+- server.js:2352:      year:m.year || '', rating:m.rating || null, type:'movie', genre:m.genre || '', category:m.category || '',
+- server.js:2371:      genre:s.genre || '', category:s.category || '', language:s.language || '', type:'series', isFtp:true,
+- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- server.js:2748:        genre:     m.genre     || '',
+- server.js:2839:    let genre = m.genre || '';
+- server.js:2848:        genre  = genre  || cacheHit.genre  || '';
+- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- server.js:2879:        genre:  s.genre   || '',
+- server.js:3089:    genre: (item.genre_ids || []).slice(0, 3).map(id => TMDB_GENRES[id]).filter(Boolean).join(', '),
+- server.js:3265:    { label: 'Genres', value: (detail.genres || []).map(g => g.name).join(', ') },
+- server.js:3395:    genres: [],
+- server.js:3448:    genres: (detail.genres || []).map(g => g.name).join(', '),
+- server.js:3449:    genre: (detail.genres || []).map(g => g.name).join(', '),
+- server.js:3503:    genres: [],
+- server.js:3555:    genres: (detail.genres || []).map(g => g.name).join(', '),
+- server.js:4852:      genre:    (r.genre_ids||[]).slice(0,3).map(id=>TMDB_GENRES[id]).filter(Boolean).join(', '),
+- server.js:4861:      genre:    (r.genre_ids||[]).slice(0,3).map(id=>TMDB_GENRES[id]).filter(Boolean).join(', '),
+- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:23:* genre-related lines: 1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:26:## grep: genre
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:27:- app/CatalogApi.hs:215:      genre = T.toLower (fieldText "genre" item)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:28:- app/CatalogApi.hs:217:      hay = T.unpack (T.unwords [name, genre, filename])
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:29:- app/CatalogApi.hs:225:  in "animation" `T.isInfixOf` genre || "anime" `T.isInfixOf` genre || any (`isInfixOf` hay) bad
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:30:- app/CatalogApi.hs:257:    , "genre" .= textOr "" (infoField "genre")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:31:- app/CatalogApi.hs:362:          , "genre" .= textOr "" (infoField "genre")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:32:- app/CatalogApi.hs:641:    , "genre" .= textOr "" (field "genre" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:33:- app/CatalogApi.hs:691:    , "genre" .= textOr "" (field "genre" s)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:34:- app/CatalogApi.hs:792:        , fieldText "genre" item
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:35:- app/CatalogApi.hs:929:          , "genre" .= textOr "" (field "genre" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:36:- app/CatalogApi.hs:971:    , fieldText "genre" item
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:37:- server.js:248:  const genre = (item.genre || '').toLowerCase();
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:38:- server.js:251:  // 1. Exclude by genre
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:39:- server.js:252:  if (genre.includes('animation') || genre.includes('anime')) return true;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:40:- server.js:447:            genre: '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:41:- server.js:484:        genre: '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:42:- server.js:525:      genre: item.genre || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:43:- server.js:553:  item.genre = item.genre || hit.genre || '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:44:- server.js:629:    item.genre,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:45:- server.js:735:    type:'movie', genre:m.genre || '', category:m.category || '', streamUrl:m.streamUrl, isFtp:true
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:46:- server.js:741:    type:'series', genre:s.genre || '', category:s.category || 'Series', seasons:s.seasons || [], isFtp:true, _isSeries:true
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:47:- server.js:915:  return [kind, q, req.query.genre || '', req.query.lang || '', req.query.yearRange || '', req.query.minRating || '', req.query.publisher || '', req.query.sort || '', req.query.page || '', req.query.limit || '', count].join('|');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:48:- server.js:1350:    const genreIds= result.genre_ids || [];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:49:- server.js:1351:    const genre   = genreIds.slice(0,3).map(id => TMDB_GENRES[id]).filter(Boolean).join(', ');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:50:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:51:- server.js:1445:      genre:    info?.genre    || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:52:- server.js:1486:      genre:    info.genre,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:53:- server.js:1519:        genre:    info.genre    || item.genre,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:54:- server.js:1542:      genre:    info.genre    || show.genre,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:55:- server.js:1921:      genre: m.genre || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:56:- server.js:1947:      genre: s.genre || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:57:- server.js:2019:  const genres = splitDetailGenres(item?.genre);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:58:- server.js:2027:      const otherGenres = splitDetailGenres(other.genre);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:59:- server.js:2029:      let score = genres.length ? otherGenres.filter(g => genres.some(seed => g.includes(seed) || seed.includes(g))).length * 4 : 0;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:60:- server.js:2068:    genres: item?.genre || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:61:- server.js:2117:      genre: raw.genre || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:62:- server.js:2150:    genre: raw.genre || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:63:- server.js:2352:      year:m.year || '', rating:m.rating || null, type:'movie', genre:m.genre || '', category:m.category || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:64:- server.js:2371:      genre:s.genre || '', category:s.category || '', language:s.language || '', type:'series', isFtp:true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:65:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:66:- server.js:2748:        genre:     m.genre     || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:67:- server.js:2839:    let genre = m.genre || '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:68:- server.js:2848:        genre  = genre  || cacheHit.genre  || '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:69:- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:70:- server.js:2879:        genre:  s.genre   || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:71:- server.js:3089:    genre: (item.genre_ids || []).slice(0, 3).map(id => TMDB_GENRES[id]).filter(Boolean).join(', '),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:72:- server.js:3265:    { label: 'Genres', value: (detail.genres || []).map(g => g.name).join(', ') },
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:73:- server.js:3395:    genres: [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:74:- server.js:3448:    genres: (detail.genres || []).map(g => g.name).join(', '),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:75:- server.js:3449:    genre: (detail.genres || []).map(g => g.name).join(', '),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:76:- server.js:3503:    genres: [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:77:- server.js:3555:    genres: (detail.genres || []).map(g => g.name).join(', '),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:78:- server.js:4852:      genre:    (r.genre_ids||[]).slice(0,3).map(id=>TMDB_GENRES[id]).filter(Boolean).join(', '),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:79:- server.js:4861:      genre:    (r.genre_ids||[]).slice(0,3).map(id=>TMDB_GENRES[id]).filter(Boolean).join(', '),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:80:- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:23:* genre-related lines: 1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:81:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:82:- tools/details-parity-v1/audit-details-fixture-gaps.js:22:  "genre",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:83:- tools/details-parity-v1/build-details-response-snapshot.js:15:    genre: clean(r.genre),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:84:- tools/details-parity-v1/build-expanded-details-fixture.js:26:    genre: clean(item.genre),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:85:- tools/details-parity-v1/expanded-details-fixture.json:10:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:86:- tools/details-parity-v1/expanded-details-fixture.json:26:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:87:- tools/details-parity-v1/expanded-details-fixture.json:42:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:88:- tools/details-parity-v1/expanded-details-fixture.json:58:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:89:- tools/details-parity-v1/expanded-details-fixture.json:74:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:90:- tools/details-parity-v1/expanded-details-fixture.json:90:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:91:- tools/details-parity-v1/expanded-details-fixture.json:106:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:92:- tools/details-parity-v1/expanded-details-fixture.json:122:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:93:- tools/details-parity-v1/expanded-details-fixture.json:138:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:94:- tools/details-parity-v1/expanded-details-fixture.json:154:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:95:- tools/details-parity-v1/expanded-details-fixture.json:170:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:96:- tools/details-parity-v1/expanded-details-fixture.json:186:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:97:- tools/details-parity-v1/expanded-details-fixture.json:202:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:98:- tools/details-parity-v1/expanded-details-fixture.json:218:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:99:- tools/details-parity-v1/expanded-details-fixture.json:234:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:100:- tools/details-parity-v1/expanded-details-fixture.json:250:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:101:- tools/details-parity-v1/expanded-details-fixture.json:266:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:102:- tools/details-parity-v1/expanded-details-fixture.json:282:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:103:- tools/details-parity-v1/expanded-details-fixture.json:298:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:104:- tools/details-parity-v1/expanded-details-fixture.json:314:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:105:- tools/details-parity-v1/expanded-details-fixture.json:330:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:106:- tools/details-parity-v1/expanded-details-fixture.json:346:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:107:- tools/details-parity-v1/expanded-details-fixture.json:362:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:108:- tools/details-parity-v1/expanded-details-fixture.json:378:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:109:- tools/details-parity-v1/expanded-details-fixture.json:394:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:110:- tools/details-parity-v1/expanded-details-fixture.json:410:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:111:- tools/details-parity-v1/expanded-details-fixture.json:426:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:112:- tools/details-parity-v1/expanded-details-fixture.json:442:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:113:- tools/details-parity-v1/expanded-details-fixture.json:458:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:114:- tools/details-parity-v1/expanded-details-fixture.json:474:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:115:- tools/details-parity-v1/expanded-details-fixture.json:490:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:116:- tools/details-parity-v1/expanded-details-fixture.json:506:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:117:- tools/details-parity-v1/expanded-details-fixture.json:522:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:118:- tools/details-parity-v1/expanded-details-fixture.json:538:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:119:- tools/details-parity-v1/expanded-details-fixture.json:554:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:120:- tools/details-parity-v1/expanded-details-fixture.json:570:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:121:- tools/details-parity-v1/expanded-details-fixture.json:586:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:122:- tools/details-parity-v1/expanded-details-fixture.json:602:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:123:- tools/details-parity-v1/expanded-details-fixture.json:618:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:124:- tools/details-parity-v1/expanded-details-fixture.json:634:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:125:- tools/details-parity-v1/expanded-details-fixture.json:650:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:126:- tools/details-parity-v1/expanded-details-fixture.json:666:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:127:- tools/details-parity-v1/expanded-details-fixture.json:682:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:128:- tools/details-parity-v1/expanded-details-fixture.json:698:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:129:- tools/details-parity-v1/expanded-details-fixture.json:714:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:130:- tools/details-parity-v1/expanded-details-fixture.json:730:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:131:- tools/details-parity-v1/expanded-details-fixture.json:746:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:132:- tools/details-parity-v1/expanded-details-fixture.json:762:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:133:- tools/details-parity-v1/expanded-details-fixture.json:778:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:134:- tools/details-parity-v1/expanded-details-fixture.json:794:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:135:- tools/details-parity-v1/expanded-details-fixture.json:810:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:136:- tools/details-parity-v1/expanded-details-fixture.json:826:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:137:- tools/details-parity-v1/expanded-details-fixture.json:842:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:138:- tools/details-parity-v1/expanded-details-fixture.json:858:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:139:- tools/details-parity-v1/expanded-details-fixture.json:874:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:140:- tools/details-parity-v1/expanded-details-fixture.json:890:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:141:- tools/details-parity-v1/expanded-details-fixture.json:906:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:142:- tools/details-parity-v1/expanded-details-fixture.json:922:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:143:- tools/details-parity-v1/expanded-details-fixture.json:938:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:144:- tools/details-parity-v1/expanded-details-fixture.json:954:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:145:- tools/details-parity-v1/expanded-details-fixture.json:970:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:146:- tools/details-parity-v1/expanded-details-fixture.json:986:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:147:- tools/details-parity-v1/expanded-details-fixture.json:1002:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:148:- tools/details-parity-v1/expanded-details-fixture.json:1018:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:149:- tools/details-parity-v1/expanded-details-fixture.json:1034:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:150:- tools/details-parity-v1/expanded-details-fixture.json:1050:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:151:- tools/details-parity-v1/expanded-details-fixture.json:1066:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:152:- tools/details-parity-v1/expanded-details-fixture.json:1082:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:153:- tools/details-parity-v1/expanded-details-fixture.json:1098:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:154:- tools/details-parity-v1/expanded-details-fixture.json:1114:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:155:- tools/details-parity-v1/expanded-details-fixture.json:1130:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:156:- tools/details-parity-v1/expanded-details-fixture.json:1146:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:157:- tools/details-parity-v1/expanded-details-fixture.json:1162:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:158:- tools/details-parity-v1/expanded-details-fixture.json:1178:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:159:- tools/details-parity-v1/expanded-details-fixture.json:1194:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:160:- tools/details-parity-v1/expanded-details-fixture.json:1210:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:161:- tools/details-parity-v1/expanded-details-fixture.json:1226:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:162:- tools/details-parity-v1/expanded-details-fixture.json:1242:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:163:- tools/details-parity-v1/expanded-details-fixture.json:1258:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:164:- tools/details-parity-v1/expanded-details-fixture.json:1274:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:165:- tools/details-parity-v1/expanded-details-fixture.json:1290:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:166:- tools/details-parity-v1/expanded-details-fixture.json:1306:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:167:- tools/details-parity-v1/expanded-details-fixture.json:1322:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:168:- tools/details-parity-v1/expanded-details-fixture.json:1338:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:169:- tools/details-parity-v1/expanded-details-fixture.json:1354:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:170:- tools/details-parity-v1/expanded-details-fixture.json:1370:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:171:- tools/details-parity-v1/expanded-details-fixture.json:1386:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:172:- tools/details-parity-v1/expanded-details-fixture.json:1402:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:173:- tools/details-parity-v1/expanded-details-fixture.json:1418:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:174:- tools/details-parity-v1/expanded-details-fixture.json:1434:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:175:- tools/details-parity-v1/expanded-details-fixture.json:1450:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:176:- tools/details-parity-v1/expanded-details-fixture.json:1466:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:177:- tools/details-parity-v1/expanded-details-fixture.json:1482:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:178:- tools/details-parity-v1/expanded-details-fixture.json:1498:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:179:- tools/details-parity-v1/expanded-details-fixture.json:1514:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:180:- tools/details-parity-v1/expanded-details-fixture.json:1530:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:181:- tools/details-parity-v1/expanded-details-fixture.json:1546:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:182:- tools/details-parity-v1/expanded-details-fixture.json:1562:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:183:- tools/details-parity-v1/expanded-details-fixture.json:1578:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:184:- tools/details-parity-v1/expanded-details-fixture.json:1594:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:185:- tools/details-parity-v1/expanded-details-fixture.json:1610:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:186:- tools/details-parity-v1/expanded-details-fixture.json:1626:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:187:- tools/details-parity-v1/expanded-details-fixture.json:1642:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:188:- tools/details-parity-v1/expanded-details-fixture.json:1658:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:189:- tools/details-parity-v1/expanded-details-fixture.json:1674:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:190:- tools/details-parity-v1/expanded-details-fixture.json:1690:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:191:- tools/details-parity-v1/expanded-details-fixture.json:1706:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:192:- tools/details-parity-v1/expanded-details-fixture.json:1722:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:193:- tools/details-parity-v1/expanded-details-fixture.json:1738:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:194:- tools/details-parity-v1/expanded-details-fixture.json:1754:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:195:- tools/details-parity-v1/expanded-details-fixture.json:1770:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:196:- tools/details-parity-v1/expanded-details-fixture.json:1786:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:197:- tools/details-parity-v1/expanded-details-fixture.json:1802:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:198:- tools/details-parity-v1/expanded-details-fixture.json:1818:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:199:- tools/details-parity-v1/expanded-details-fixture.json:1834:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:200:- tools/details-parity-v1/expanded-details-fixture.json:1850:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:201:- tools/details-parity-v1/expanded-details-fixture.json:1866:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:202:- tools/details-parity-v1/expanded-details-fixture.json:1882:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:203:- tools/details-parity-v1/expanded-details-fixture.json:1898:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:204:- tools/details-parity-v1/expanded-details-fixture.json:1914:    "genre": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:205:- tools/details-parity-v1/report-details-gap-priority.js:42:  "genre",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:206:- tools/details-parity-v1/test-details-fixture-coverage-negative.js:17:  genre: "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:207:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:208:- tools/details-parity-v1/test-details-response-parity-basic.js:23:    genre: clean(r.genre),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:217:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:231:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:357:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:373:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:385:- server.js:2371:      genre:s.genre || '', category:s.category || '', language:s.language || '', type:'series', isFtp:true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:386:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:412:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:539:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:548:- server.js:1378:      genre, runtime, director, language,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:573:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:599:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:611:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:659:- server.js:2352:      year:m.year || '', rating:m.rating || null, type:'movie', genre:m.genre || '', category:m.category || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:669:- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:820:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:928:- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1082:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1115:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1256:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1440:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md:19:RAW_genre=0
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:13:- Full missing expansion class: genre, runtime, language, director, productionCompanies
+- tools/details-parity-v1/audit-details-fixture-gaps.js:22:  "genre",
+- tools/details-parity-v1/build-details-response-snapshot.js:15:    genre: clean(r.genre),
+- tools/details-parity-v1/build-expanded-details-fixture.js:26:    genre: clean(item.genre),
+- tools/details-parity-v1/expanded-details-fixture.json:10:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:26:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:42:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:58:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:74:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:90:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:106:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:122:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:138:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:154:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:170:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:186:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:202:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:218:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:234:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:250:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:266:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:282:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:298:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:314:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:330:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:346:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:362:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:378:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:394:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:410:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:426:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:442:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:458:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:474:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:490:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:506:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:522:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:538:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:554:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:570:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:586:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:602:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:618:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:634:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:650:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:666:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:682:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:698:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:714:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:730:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:746:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:762:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:778:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:794:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:810:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:826:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:842:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:858:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:874:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:890:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:906:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:922:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:938:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:954:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:970:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:986:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1002:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1018:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1034:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1050:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1066:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1082:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1098:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1114:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1130:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1146:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1162:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1178:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1194:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1210:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1226:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1242:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1258:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1274:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1290:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1306:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1322:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1338:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1354:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1370:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1386:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1402:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1418:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1434:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1450:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1466:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1482:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1498:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1514:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1530:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1546:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1562:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1578:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1594:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1610:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1626:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1642:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1658:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1674:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1690:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1706:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1722:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1738:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1754:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1770:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1786:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1802:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1818:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1834:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1850:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1866:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1882:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1898:    "genre": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1914:    "genre": "",
+- tools/details-parity-v1/report-details-gap-priority.js:42:  "genre",
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:7:const fields = ["poster","backdrop","overview","rating","genre","runtime","language","director","productionCompanies"];
+- tools/details-parity-v1/test-details-fixture-coverage-negative.js:17:  genre: "",
+- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/test-details-response-parity-basic.js:23:    genre: clean(r.genre),
+
+## git grep: poster
+- app/CatalogApi.hs:55:  posterCache <- readJsonObject (root </> "poster-cache.json")
+- app/CatalogApi.hs:57:  localMovies <- buildLocalMovies root posterCache
+- app/CatalogApi.hs:58:  localSeriesItems <- buildLocalSeries root posterCache
+- app/CatalogApi.hs:237:buildLocalMovies root posters = do
+- app/CatalogApi.hs:239:  pure [localMovie posters idx file | (idx, file) <- zip [(0 :: Int)..] files]
+- app/CatalogApi.hs:242:localMovie posters idx file =
+- app/CatalogApi.hs:245:      info = lookupObject key posters
+- app/CatalogApi.hs:251:    , "poster" .= nullish (infoField "poster")
+- app/CatalogApi.hs:278:buildLocalSeries root posters = do
+- app/CatalogApi.hs:284:  pure (map (localSeries posters) grouped)
+- app/CatalogApi.hs:345:localSeries posters (showName, eps) =
+- app/CatalogApi.hs:347:      info = lookupObject key posters
+- app/CatalogApi.hs:357:          [ "poster" .= nullish (infoField "poster")
+- app/CatalogApi.hs:507:         , "icon" .= textFallback (firstText ["icon", "poster", "image"] item) ""
+- app/CatalogApi.hs:635:    , "poster" .= nullish (field "poster" m)
+- app/CatalogApi.hs:636:    , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- app/CatalogApi.hs:686:    , "poster" .= nullish (field "poster" s)
+- app/CatalogApi.hs:687:    , "backdrop" .= fallbackValue (field "backdrop" s) (field "poster" s)
+- app/CatalogApi.hs:803:      art = if field "poster" item /= Null || field "backdrop" item /= Null then 420 else 0
+- app/CatalogApi.hs:922:          , "poster" .= nullish (field "poster" m)
+- app/CatalogApi.hs:923:          , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- app/CatalogApi.hs:981:hasArt item = field "poster" item /= Null || field "backdrop" item /= Null
+- server.js:19:const CACHE_FILE   = path.join(__dirname, 'poster-cache.json');
+- server.js:213:let posterCache  = {};
+- server.js:227:posterCache  = loadJSON(CACHE_FILE,    {});
+- server.js:444:            poster: null,
+- server.js:478:        poster: null,
+- server.js:516:    const poster = item.poster || item.backdrop;
+- server.js:517:    if (!poster) return;
+- server.js:522:      poster: item.poster || null,
+- server.js:523:      backdrop: item.backdrop || item.poster || null,
+- server.js:533:    if (exactKey && (!map.has(exactKey) || (!map.get(exactKey).poster && data.poster))) map.set(exactKey, data);
+- server.js:534:    if (looseKey && (!map.has(looseKey) || (!map.get(looseKey).poster && data.poster))) map.set(looseKey, data);
+- server.js:541:  console.log(`≡ƒû╝∩╕Å Search poster bridge ready: ${map.size.toLocaleString()} keys`);
+- server.js:545:  if (!item || item.poster || item.backdrop) return item;
+- server.js:550:  item.poster = item.poster || hit.poster || null;
+- server.js:551:  item.backdrop = item.backdrop || hit.backdrop || item.poster || null;
+- server.js:568:  return !!(item && (item.poster || item.backdrop));
+- server.js:733:    id:`ftp_${i}`, name:m.title, title:m.title, file:m.filename || '', poster:m.poster || null,
+- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- server.js:739:    id:`ftp_series_${i}`, name:s.title, title:s.title, file:s.title || '', poster:s.poster || null,
+- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- server.js:903:  if (item.poster) score += 420;
+- server.js:905:  if (item.isMassiveCatalog && !item.poster && !item.backdrop) score -= 850;
+- server.js:944:  // If poster-rich results exist, hide blank massive release variants completely.
+- server.js:945:  // If nothing poster-rich exists, keep a small exact fallback so rare catalog-only files remain findable.
+- server.js:1224:function saveCache()   { try { fs.writeFileSync(CACHE_FILE,   JSON.stringify(posterCache,  null, 2)); } catch {} }
+- server.js:1341:    const result = j.results.find(r => r.poster_path) || j.results[0];
+- server.js:1344:    const poster   = result.poster_path   ? `${TMDB_IMG}/w500${result.poster_path}`    : null;
+- server.js:1346:    if (!poster) return null;
+- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- server.js:1386:  if (posterCache[key]) return posterCache[key];
+- server.js:1388:  if (info) { posterCache[key] = info; saveCache(); }
+- server.js:1425:// ΓöÇΓöÇ Build instant movie list (sync ΓÇö reads only from posterCache) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+- server.js:1434:    const info = posterCache[key] || null;
+- server.js:1439:      poster:   info?.poster   || null,
+- server.js:1455:// ΓöÇΓöÇ Build instant series list (sync ΓÇö reads only from posterCache) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+- server.js:1479:    const info = posterCache[key] || null;
+- server.js:1481:      poster:   info.poster,
+- server.js:1499:    _movieList.filter(m => m.poster).length } movies with posters, ${ 
+- server.js:1500:    _seriesList.filter(s => s.poster).length } series with posters)`);
+- server.js:1503:// ΓöÇΓöÇ Background TMDB enrichment ΓÇö runs after startup, fills missing posters ΓöÇΓöÇΓöÇΓöÇ
+- server.js:1510:    if (item.poster) continue;
+- server.js:1514:        poster:   info.poster,
+- server.js:1529:    if (show.poster) continue;
+- server.js:1531:    let info = posterCache[key];
+- server.js:1534:      if (info) { posterCache[key] = info; saveCache(); }
+- server.js:1537:      poster:   info.poster,
+- server.js:1592:// Keeps poster loading working even when the frontend requests /poster-cache?url=...
+- server.js:1593:app.get('/poster-cache', (req, res) => {
+- server.js:1595:  if (!target) return res.status(400).send('Missing poster url');
+- server.js:1598:  catch { return res.status(400).send('Invalid poster url'); }
+- server.js:1599:  if (!['http:', 'https:'].includes(parsed.protocol)) return res.status(400).send('Unsupported poster protocol');
+- server.js:1913:      poster: m.poster || null,
+- server.js:1914:      backdrop: m.backdrop || m.poster || null,
+- server.js:1940:      poster: s.poster || null,
+- server.js:1941:      backdrop: s.backdrop || s.poster || null,
+- server.js:2032:      if (other.poster) score += 0.5;
+- server.js:2063:    poster: item?.poster || null,
+- server.js:2064:    backdrop: item?.backdrop || item?.poster || null,
+- server.js:2110:      poster: raw.poster || null,
+- server.js:2111:      backdrop: raw.backdrop || raw.poster || null,
+- server.js:2142:    poster: raw.poster || null,
+- server.js:2143:    backdrop: raw.backdrop || raw.poster || null,
+- server.js:2350:      id:`ftp_home_${i}`, name:m.title, title:m.title, file:m.filename || '', poster:m.poster || null,
+- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- server.js:2369:      id:`ftp_series_home_${i}`, name:s.title, title:s.title, poster:s.poster || null, backdrop:s.backdrop || s.poster || null,
+- server.js:2399:    const bp = (b.poster || b.backdrop ? 1 : 0) - (a.poster || a.backdrop ? 1 : 0);
+- server.js:2552:  const art = item.backdrop ? 9000 : (item.poster ? 6500 : 0);
+- server.js:2567:  const artA = (a.item.backdrop ? 3 : 0) + (a.item.poster ? 2 : 0);
+- server.js:2568:  const artB = (b.item.backdrop ? 3 : 0) + (b.item.poster ? 2 : 0);
+- server.js:2583:  if (next.poster) next.poster = svUpgradeTmdbImage(next.poster, false);
+- server.js:2585:  if (!next.backdrop && next.poster) next.backdrop = next.poster;
+- server.js:2592:    if (!item || !(item.poster || item.backdrop)) continue;
+- server.js:2618:  const art = (item.poster || item.backdrop) ? 60 : 0;
+- server.js:2685:    case 'hiddenMasterpieces': return svHomeSort(all.filter(i => svRatingNum(i) >= 7 && (i.poster || i.backdrop))).slice(0, 500);
+- server.js:2720:      .filter(item => item.poster || item.backdrop)
+- server.js:2742:        poster:    m.poster    || null,
+- server.js:2743:        backdrop:  m.backdrop   || m.poster || null,
+- server.js:2759:    // Default movies page stays poster-rich and does not pollute homepage/browse with 500k null-poster items.
+- server.js:2836:    let poster = m.poster || null;
+- server.js:2840:    if (!poster) {
+- server.js:2842:      const cacheHit = posterCache[cleaned] || Object.values(posterCache).find(v =>
+- server.js:2846:        poster = cacheHit.poster || null;
+- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- server.js:2874:        poster: s.poster  || null,
+- server.js:2875:        backdrop: s.backdrop || s.poster || null,
+- server.js:3046:      if (item.poster_path) score += 2;
+- server.js:3084:    poster: tmdbImage('w500', item.poster_path),
+- server.js:3389:    poster_path: searchResult?.poster_path || null,
+- server.js:3443:    poster: tmdbImage('w500', detail.poster_path),
+- server.js:3497:    poster_path: searchResult?.poster_path || null,
+- server.js:3550:    poster: tmdbImage('w500', detail.poster_path),
+- server.js:3709:  const { id, progress, name, poster, duration } = req.body;
+- server.js:3712:  watchHistory[id] = { progress, name: String(name || '').slice(0, 200), poster: poster || null, duration: duration || 0, updatedAt: Date.now() };
+- server.js:3724:// ΓöÇΓöÇ Refresh poster ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+- server.js:3725:app.get('/api/refresh-poster/:id', async (req, res) => {
+- server.js:3730:  delete posterCache[key];
+- server.js:3733:  if (info) { posterCache[key] = info; saveCache(); res.json(info); }
+- server.js:4698:      if (['node_modules','.git','cache','scan-output','poster-cache'].includes(ent.name)) continue;
+- server.js:4761:    icon: item.icon || item.poster || item.image || '',
+- server.js:4848:      poster:   r.poster_path   ? `${TMDB_IMG}/w500${r.poster_path}`    : null,
+- server.js:4857:      poster:   r.poster_path   ? `${TMDB_IMG}/w500${r.poster_path}`    : null,
+- server.js:4889:setTimeout(() => runBackgroundEnrichment(), 60000);    // ≡ƒöä fill missing posters after startup settles
+- server.js:4909:  console.log(TMDB_TOKEN ? 'Γ£à TMDB enabled (HD posters + backdrops)' : 'ΓÜá∩╕Å  TMDB token missing');
+- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:20:* poster-related lines: 3
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:69:- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:207:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:357:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:539:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:641:- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:642:- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:669:- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:693:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:820:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:823:## grep: poster
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:824:- app/CatalogApi.hs:55:  posterCache <- readJsonObject (root </> "poster-cache.json")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:825:- app/CatalogApi.hs:57:  localMovies <- buildLocalMovies root posterCache
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:826:- app/CatalogApi.hs:58:  localSeriesItems <- buildLocalSeries root posterCache
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:827:- app/CatalogApi.hs:237:buildLocalMovies root posters = do
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:828:- app/CatalogApi.hs:239:  pure [localMovie posters idx file | (idx, file) <- zip [(0 :: Int)..] files]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:829:- app/CatalogApi.hs:242:localMovie posters idx file =
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:830:- app/CatalogApi.hs:245:      info = lookupObject key posters
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:831:- app/CatalogApi.hs:251:    , "poster" .= nullish (infoField "poster")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:832:- app/CatalogApi.hs:278:buildLocalSeries root posters = do
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:833:- app/CatalogApi.hs:284:  pure (map (localSeries posters) grouped)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:834:- app/CatalogApi.hs:345:localSeries posters (showName, eps) =
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:835:- app/CatalogApi.hs:347:      info = lookupObject key posters
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:836:- app/CatalogApi.hs:357:          [ "poster" .= nullish (infoField "poster")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:837:- app/CatalogApi.hs:507:         , "icon" .= textFallback (firstText ["icon", "poster", "image"] item) ""
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:838:- app/CatalogApi.hs:635:    , "poster" .= nullish (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:839:- app/CatalogApi.hs:636:    , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:840:- app/CatalogApi.hs:686:    , "poster" .= nullish (field "poster" s)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:841:- app/CatalogApi.hs:687:    , "backdrop" .= fallbackValue (field "backdrop" s) (field "poster" s)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:842:- app/CatalogApi.hs:803:      art = if field "poster" item /= Null || field "backdrop" item /= Null then 420 else 0
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:843:- app/CatalogApi.hs:922:          , "poster" .= nullish (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:844:- app/CatalogApi.hs:923:          , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:845:- app/CatalogApi.hs:981:hasArt item = field "poster" item /= Null || field "backdrop" item /= Null
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:846:- server.js:19:const CACHE_FILE   = path.join(__dirname, 'poster-cache.json');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:847:- server.js:213:let posterCache  = {};
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:848:- server.js:227:posterCache  = loadJSON(CACHE_FILE,    {});
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:849:- server.js:444:            poster: null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:850:- server.js:478:        poster: null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:851:- server.js:516:    const poster = item.poster || item.backdrop;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:852:- server.js:517:    if (!poster) return;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:853:- server.js:522:      poster: item.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:854:- server.js:523:      backdrop: item.backdrop || item.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:855:- server.js:533:    if (exactKey && (!map.has(exactKey) || (!map.get(exactKey).poster && data.poster))) map.set(exactKey, data);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:856:- server.js:534:    if (looseKey && (!map.has(looseKey) || (!map.get(looseKey).poster && data.poster))) map.set(looseKey, data);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:857:- server.js:541:  console.log(`Γëí╞Æ├╗Γò¥Γê⌐Γòò├à Search poster bridge ready: ${map.size.toLocaleString()} keys`);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:858:- server.js:545:  if (!item || item.poster || item.backdrop) return item;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:859:- server.js:550:  item.poster = item.poster || hit.poster || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:860:- server.js:551:  item.backdrop = item.backdrop || hit.backdrop || item.poster || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:861:- server.js:568:  return !!(item && (item.poster || item.backdrop));
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:862:- server.js:733:    id:`ftp_${i}`, name:m.title, title:m.title, file:m.filename || '', poster:m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:863:- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:864:- server.js:739:    id:`ftp_series_${i}`, name:s.title, title:s.title, file:s.title || '', poster:s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:865:- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:866:- server.js:903:  if (item.poster) score += 420;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:867:- server.js:905:  if (item.isMassiveCatalog && !item.poster && !item.backdrop) score -= 850;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:868:- server.js:944:  // If poster-rich results exist, hide blank massive release variants completely.
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:869:- server.js:945:  // If nothing poster-rich exists, keep a small exact fallback so rare catalog-only files remain findable.
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:870:- server.js:1224:function saveCache()   { try { fs.writeFileSync(CACHE_FILE,   JSON.stringify(posterCache,  null, 2)); } catch {} }
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:871:- server.js:1341:    const result = j.results.find(r => r.poster_path) || j.results[0];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:872:- server.js:1344:    const poster   = result.poster_path   ? `${TMDB_IMG}/w500${result.poster_path}`    : null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:873:- server.js:1346:    if (!poster) return null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:874:- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:875:- server.js:1386:  if (posterCache[key]) return posterCache[key];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:876:- server.js:1388:  if (info) { posterCache[key] = info; saveCache(); }
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:877:- server.js:1425:// ╬ô├╢├ç╬ô├╢├ç Build instant movie list (sync ╬ô├ç├╢ reads only from posterCache) ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:878:- server.js:1434:    const info = posterCache[key] || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:879:- server.js:1439:      poster:   info?.poster   || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:880:- server.js:1455:// ╬ô├╢├ç╬ô├╢├ç Build instant series list (sync ╬ô├ç├╢ reads only from posterCache) ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:881:- server.js:1479:    const info = posterCache[key] || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:882:- server.js:1481:      poster:   info.poster,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:883:- server.js:1499:    _movieList.filter(m => m.poster).length } movies with posters, ${ 
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:884:- server.js:1500:    _seriesList.filter(s => s.poster).length } series with posters)`);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:885:- server.js:1503:// ╬ô├╢├ç╬ô├╢├ç Background TMDB enrichment ╬ô├ç├╢ runs after startup, fills missing posters ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:886:- server.js:1510:    if (item.poster) continue;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:887:- server.js:1514:        poster:   info.poster,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:888:- server.js:1529:    if (show.poster) continue;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:889:- server.js:1531:    let info = posterCache[key];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:890:- server.js:1534:      if (info) { posterCache[key] = info; saveCache(); }
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:891:- server.js:1537:      poster:   info.poster,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:892:- server.js:1592:// Keeps poster loading working even when the frontend requests /poster-cache?url=...
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:893:- server.js:1593:app.get('/poster-cache', (req, res) => {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:894:- server.js:1595:  if (!target) return res.status(400).send('Missing poster url');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:895:- server.js:1598:  catch { return res.status(400).send('Invalid poster url'); }
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:896:- server.js:1599:  if (!['http:', 'https:'].includes(parsed.protocol)) return res.status(400).send('Unsupported poster protocol');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:897:- server.js:1913:      poster: m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:898:- server.js:1914:      backdrop: m.backdrop || m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:899:- server.js:1940:      poster: s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:900:- server.js:1941:      backdrop: s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:901:- server.js:2032:      if (other.poster) score += 0.5;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:902:- server.js:2063:    poster: item?.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:903:- server.js:2064:    backdrop: item?.backdrop || item?.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:904:- server.js:2110:      poster: raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:905:- server.js:2111:      backdrop: raw.backdrop || raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:906:- server.js:2142:    poster: raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:907:- server.js:2143:    backdrop: raw.backdrop || raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:908:- server.js:2350:      id:`ftp_home_${i}`, name:m.title, title:m.title, file:m.filename || '', poster:m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:909:- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:910:- server.js:2369:      id:`ftp_series_home_${i}`, name:s.title, title:s.title, poster:s.poster || null, backdrop:s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:911:- server.js:2399:    const bp = (b.poster || b.backdrop ? 1 : 0) - (a.poster || a.backdrop ? 1 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:912:- server.js:2552:  const art = item.backdrop ? 9000 : (item.poster ? 6500 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:913:- server.js:2567:  const artA = (a.item.backdrop ? 3 : 0) + (a.item.poster ? 2 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:914:- server.js:2568:  const artB = (b.item.backdrop ? 3 : 0) + (b.item.poster ? 2 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:915:- server.js:2583:  if (next.poster) next.poster = svUpgradeTmdbImage(next.poster, false);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:916:- server.js:2585:  if (!next.backdrop && next.poster) next.backdrop = next.poster;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:917:- server.js:2592:    if (!item || !(item.poster || item.backdrop)) continue;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:918:- server.js:2618:  const art = (item.poster || item.backdrop) ? 60 : 0;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:919:- server.js:2685:    case 'hiddenMasterpieces': return svHomeSort(all.filter(i => svRatingNum(i) >= 7 && (i.poster || i.backdrop))).slice(0, 500);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:920:- server.js:2720:      .filter(item => item.poster || item.backdrop)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:921:- server.js:2742:        poster:    m.poster    || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:922:- server.js:2743:        backdrop:  m.backdrop   || m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:923:- server.js:2759:    // Default movies page stays poster-rich and does not pollute homepage/browse with 500k null-poster items.
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:924:- server.js:2836:    let poster = m.poster || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:925:- server.js:2840:    if (!poster) {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:926:- server.js:2842:      const cacheHit = posterCache[cleaned] || Object.values(posterCache).find(v =>
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:927:- server.js:2846:        poster = cacheHit.poster || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:928:- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:929:- server.js:2874:        poster: s.poster  || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:930:- server.js:2875:        backdrop: s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:931:- server.js:3046:      if (item.poster_path) score += 2;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:932:- server.js:3084:    poster: tmdbImage('w500', item.poster_path),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:933:- server.js:3389:    poster_path: searchResult?.poster_path || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:934:- server.js:3443:    poster: tmdbImage('w500', detail.poster_path),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:935:- server.js:3497:    poster_path: searchResult?.poster_path || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:936:- server.js:3550:    poster: tmdbImage('w500', detail.poster_path),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:937:- server.js:3709:  const { id, progress, name, poster, duration } = req.body;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:938:- server.js:3712:  watchHistory[id] = { progress, name: String(name || '').slice(0, 200), poster: poster || null, duration: duration || 0, updatedAt: Date.now() };
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:939:- server.js:3724:// ╬ô├╢├ç╬ô├╢├ç Refresh poster ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:940:- server.js:3725:app.get('/api/refresh-poster/:id', async (req, res) => {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:941:- server.js:3730:  delete posterCache[key];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:942:- server.js:3733:  if (info) { posterCache[key] = info; saveCache(); res.json(info); }
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:943:- server.js:4698:      if (['node_modules','.git','cache','scan-output','poster-cache'].includes(ent.name)) continue;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:944:- server.js:4761:    icon: item.icon || item.poster || item.image || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:945:- server.js:4848:      poster:   r.poster_path   ? `${TMDB_IMG}/w500${r.poster_path}`    : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:946:- server.js:4857:      poster:   r.poster_path   ? `${TMDB_IMG}/w500${r.poster_path}`    : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:947:- server.js:4889:setTimeout(() => runBackgroundEnrichment(), 60000);    // Γëí╞Æ├╢├ñ fill missing posters after startup settles
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:948:- server.js:4909:  console.log(TMDB_TOKEN ? '╬ô┬ú├á TMDB enabled (HD posters + backdrops)' : '╬ô├£├íΓê⌐Γòò├à  TMDB token missing');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:949:- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:20:* poster-related lines: 3
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:950:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7E.md:20:- posters: 116
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:951:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7F.md:24:- posters: 116
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:952:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7H.md:28:- posters: 116
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:953:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:11:- Smallest partial gap: poster
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:954:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:955:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:22:- Add one small fixture expansion for poster-gap rows first.
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:956:- tools/details-parity-v1/DETAILS_SHADOW_GATES.md:17:5. details:shadow:fixture:coverage - movie/tv/poster/overview coverage
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:957:- tools/details-parity-v1/audit-details-fixture-gaps.js:18:  "poster",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:958:- tools/details-parity-v1/build-details-response-snapshot.js:18:    poster: clean(r.poster),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:959:- tools/details-parity-v1/build-expanded-details-fixture.js:29:    poster: clean(item.poster),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:960:- tools/details-parity-v1/expanded-details-fixture.json:13:    "poster": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:961:- tools/details-parity-v1/expanded-details-fixture.json:29:    "poster": "https://image.tmdb.org/t/p/w500/dZIj0MxV54VLf39RaD4xjzjjLOY.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:962:- tools/details-parity-v1/expanded-details-fixture.json:45:    "poster": "https://image.tmdb.org/t/p/w500/aEUH2ECoZHvSmoMzJpca0STF2CZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:963:- tools/details-parity-v1/expanded-details-fixture.json:61:    "poster": "https://image.tmdb.org/t/p/w500/7azHIOSrxo0VC5wYiwtGOnVehsH.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:964:- tools/details-parity-v1/expanded-details-fixture.json:77:    "poster": "https://image.tmdb.org/t/p/w500/1fwV2QQByqvbdCzPqfV9Cu4fhHM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:965:- tools/details-parity-v1/expanded-details-fixture.json:93:    "poster": "https://image.tmdb.org/t/p/w500/298clyKoBbZPp4zgUiDSxhCO0wk.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:966:- tools/details-parity-v1/expanded-details-fixture.json:109:    "poster": "https://image.tmdb.org/t/p/w500/7wIBfBl2gejt6xHxNSK0reVIm7E.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:967:- tools/details-parity-v1/expanded-details-fixture.json:125:    "poster": "https://image.tmdb.org/t/p/w500/fYqSOkix4rbDiZW0ACNnvZCpT6X.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:968:- tools/details-parity-v1/expanded-details-fixture.json:141:    "poster": "https://image.tmdb.org/t/p/w500/kW7tPdLcNQ72YpMoNVLvSAbeZqp.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:969:- tools/details-parity-v1/expanded-details-fixture.json:157:    "poster": "https://image.tmdb.org/t/p/w500/yihdXomYb5kTeSivtFndMy5iDmf.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:970:- tools/details-parity-v1/expanded-details-fixture.json:173:    "poster": "https://image.tmdb.org/t/p/w500/sTPUg3XtdcKRAS5Vwsi1GYPFhNZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:971:- tools/details-parity-v1/expanded-details-fixture.json:189:    "poster": "https://image.tmdb.org/t/p/w500/rWcfOdY7TU6lTdazWj0ebDZnAfO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:972:- tools/details-parity-v1/expanded-details-fixture.json:205:    "poster": "https://image.tmdb.org/t/p/w500/z97hrgI5wbGbZvSVkBfAeBnFKAg.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:973:- tools/details-parity-v1/expanded-details-fixture.json:221:    "poster": "https://image.tmdb.org/t/p/w500/9u7sUTYPPTxGCXbkcw8FTq50PnO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:974:- tools/details-parity-v1/expanded-details-fixture.json:237:    "poster": "https://image.tmdb.org/t/p/w500/v7CCosgX9LcSpt7bXmqw5OzTFTV.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:975:- tools/details-parity-v1/expanded-details-fixture.json:253:    "poster": "https://image.tmdb.org/t/p/w500/kK1BGkG3KAvWB0WMV1DfOx9yTMZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:976:- tools/details-parity-v1/expanded-details-fixture.json:269:    "poster": "https://image.tmdb.org/t/p/w500/pfqkETJ2A3zXZJuNcufZbAJNnKA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:977:- tools/details-parity-v1/expanded-details-fixture.json:285:    "poster": "https://image.tmdb.org/t/p/w500/tVvpFIoteRHNnoZMhdnwIVwJpCA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:978:- tools/details-parity-v1/expanded-details-fixture.json:301:    "poster": "https://image.tmdb.org/t/p/w500/z2tqCJLsw6uEJ8nJV8BsQXGa3dr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:979:- tools/details-parity-v1/expanded-details-fixture.json:317:    "poster": "https://image.tmdb.org/t/p/w500/pyok1kZJCfyuFapYXzHcy7BLlQa.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:980:- tools/details-parity-v1/expanded-details-fixture.json:333:    "poster": "https://image.tmdb.org/t/p/w500/gRMalasZEzsZi4w2VFuYusfSfqf.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:981:- tools/details-parity-v1/expanded-details-fixture.json:349:    "poster": "https://image.tmdb.org/t/p/w500/peG6482ALJQ9Tbvv2P38BquVk0f.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:982:- tools/details-parity-v1/expanded-details-fixture.json:365:    "poster": "https://image.tmdb.org/t/p/w500/jjyuk0edLiW8vOSnlfwWCCLpbh5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:983:- tools/details-parity-v1/expanded-details-fixture.json:381:    "poster": "https://image.tmdb.org/t/p/w500/mjkS2iAgWj3ik1DTjvI15nHZ7yl.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:984:- tools/details-parity-v1/expanded-details-fixture.json:397:    "poster": "https://image.tmdb.org/t/p/w500/buPFnHZ3xQy6vZEHxbHgL1Pc6CR.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:985:- tools/details-parity-v1/expanded-details-fixture.json:413:    "poster": "https://image.tmdb.org/t/p/w500/dl1cA7wdwePc9QU2Rc24EPqlcyJ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:986:- tools/details-parity-v1/expanded-details-fixture.json:429:    "poster": "https://image.tmdb.org/t/p/w500/eZo31Dhl5BQ6GfbMNf3oU0tUvPZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:987:- tools/details-parity-v1/expanded-details-fixture.json:445:    "poster": "https://image.tmdb.org/t/p/w500/yPHwX78mcwJw3I6YOJ9qh2wQBFr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:988:- tools/details-parity-v1/expanded-details-fixture.json:461:    "poster": "https://image.tmdb.org/t/p/w500/gbVwHl4YPSq6BcC92TQpe7qUTh6.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:989:- tools/details-parity-v1/expanded-details-fixture.json:477:    "poster": "https://image.tmdb.org/t/p/w500/tlPgDzwIE7VYYIIAGCTUOnN4wI1.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:990:- tools/details-parity-v1/expanded-details-fixture.json:493:    "poster": "https://image.tmdb.org/t/p/w500/3YBce6dTh1D5oCMITXk2S5QhPt.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:991:- tools/details-parity-v1/expanded-details-fixture.json:509:    "poster": "https://image.tmdb.org/t/p/w500/82bX2GK4PhaJQtfkTnfmd2P7erG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:992:- tools/details-parity-v1/expanded-details-fixture.json:525:    "poster": "https://image.tmdb.org/t/p/w500/dvRtAQKk3FxW4UnU54UJGEjMJzZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:993:- tools/details-parity-v1/expanded-details-fixture.json:541:    "poster": "https://image.tmdb.org/t/p/w500/dHxLBtHw4InwsVumnthupZYz6NM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:994:- tools/details-parity-v1/expanded-details-fixture.json:557:    "poster": "https://image.tmdb.org/t/p/w500/rWcfOdY7TU6lTdazWj0ebDZnAfO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:995:- tools/details-parity-v1/expanded-details-fixture.json:573:    "poster": "https://image.tmdb.org/t/p/w500/j8fWiWwrAncNoBaclg8ZAVBPrh6.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:996:- tools/details-parity-v1/expanded-details-fixture.json:589:    "poster": "https://image.tmdb.org/t/p/w500/srvDYDyaYTh27ObUvOcggyT1ZGn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:997:- tools/details-parity-v1/expanded-details-fixture.json:605:    "poster": "https://image.tmdb.org/t/p/w500/jpKXZyWh6WN55UJ3rqkwbzWeD5Q.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:998:- tools/details-parity-v1/expanded-details-fixture.json:621:    "poster": "https://image.tmdb.org/t/p/w500/aF2mmcB0hu3xtZj35dySOj4eqtD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:999:- tools/details-parity-v1/expanded-details-fixture.json:637:    "poster": "https://image.tmdb.org/t/p/w500/dHxLBtHw4InwsVumnthupZYz6NM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1000:- tools/details-parity-v1/expanded-details-fixture.json:653:    "poster": "https://image.tmdb.org/t/p/w500/cJAj6j473SJFrdnViVN8xOsgvhb.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1001:- tools/details-parity-v1/expanded-details-fixture.json:669:    "poster": "https://image.tmdb.org/t/p/w500/si4RdbdCGZSy39N2EzN8dabszim.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1002:- tools/details-parity-v1/expanded-details-fixture.json:685:    "poster": "https://image.tmdb.org/t/p/w500/xkTrpl8WPUjDitBViQTHbnKErCk.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1003:- tools/details-parity-v1/expanded-details-fixture.json:701:    "poster": "https://image.tmdb.org/t/p/w500/lsg0IxNQCUxKqs63YjturEuY0qQ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1004:- tools/details-parity-v1/expanded-details-fixture.json:717:    "poster": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1005:- tools/details-parity-v1/expanded-details-fixture.json:733:    "poster": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1006:- tools/details-parity-v1/expanded-details-fixture.json:749:    "poster": "https://image.tmdb.org/t/p/w500/ov8vrRLZGoXHpYjSY9Vpv1tHJX7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1007:- tools/details-parity-v1/expanded-details-fixture.json:765:    "poster": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1008:- tools/details-parity-v1/expanded-details-fixture.json:781:    "poster": "https://image.tmdb.org/t/p/w500/hIC4knJmcAO02JPjF840FJBI4ib.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1009:- tools/details-parity-v1/expanded-details-fixture.json:797:    "poster": "https://image.tmdb.org/t/p/w500/3KFcPRcv7hNUhaxlCU14FybwkcP.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1010:- tools/details-parity-v1/expanded-details-fixture.json:813:    "poster": "https://image.tmdb.org/t/p/w500/72AoFPC5TY4DfJwXXS9rPwPeReD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1011:- tools/details-parity-v1/expanded-details-fixture.json:829:    "poster": "https://image.tmdb.org/t/p/w500/iuVlVRoBL1fHhBlVjS58MpBES05.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1012:- tools/details-parity-v1/expanded-details-fixture.json:845:    "poster": "https://image.tmdb.org/t/p/w500/wUcttG71zo9deP4m9sDhYPUcvi5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1013:- tools/details-parity-v1/expanded-details-fixture.json:861:    "poster": "https://image.tmdb.org/t/p/w500/ov8vrRLZGoXHpYjSY9Vpv1tHJX7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1014:- tools/details-parity-v1/expanded-details-fixture.json:877:    "poster": "https://image.tmdb.org/t/p/w500/p8yPjT9NAH87oD9TedclRaAW7RY.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1015:- tools/details-parity-v1/expanded-details-fixture.json:893:    "poster": "https://image.tmdb.org/t/p/w500/A3zKx7XpXY1ykL8CLbyCN0OCsT8.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1016:- tools/details-parity-v1/expanded-details-fixture.json:909:    "poster": "https://image.tmdb.org/t/p/w500/tZJBXGNyDanSne6a2TLRU45Uhwu.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1017:- tools/details-parity-v1/expanded-details-fixture.json:925:    "poster": "https://image.tmdb.org/t/p/w500/8PWu0V10nMqG5SrA13wLRXTD2fH.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1018:- tools/details-parity-v1/expanded-details-fixture.json:941:    "poster": "https://image.tmdb.org/t/p/w500/dHxLBtHw4InwsVumnthupZYz6NM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1019:- tools/details-parity-v1/expanded-details-fixture.json:957:    "poster": "https://image.tmdb.org/t/p/w500/aTnIGrfVv03FIDsNDuabNsp9yFM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1020:- tools/details-parity-v1/expanded-details-fixture.json:973:    "poster": "https://image.tmdb.org/t/p/w500/zjgWWOIsEqYNSa1fGRr82mBo3gv.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1021:- tools/details-parity-v1/expanded-details-fixture.json:989:    "poster": "https://image.tmdb.org/t/p/w500/97jAFQcAnspd416cupbAbGMNT9z.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1022:- tools/details-parity-v1/expanded-details-fixture.json:1005:    "poster": "https://image.tmdb.org/t/p/w500/nUPnA0I1MTaZRVCsUQc5DS5JA8W.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1023:- tools/details-parity-v1/expanded-details-fixture.json:1021:    "poster": "https://image.tmdb.org/t/p/w500/bAtgrD2Syuna8vB5deDipTqupKN.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1024:- tools/details-parity-v1/expanded-details-fixture.json:1037:    "poster": "https://image.tmdb.org/t/p/w500/wlimwHMelt9PRdgFhS5bWJWPrjr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1025:- tools/details-parity-v1/expanded-details-fixture.json:1053:    "poster": "https://image.tmdb.org/t/p/w500/7V029fFThWiUjr335ic6rVUUian.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1026:- tools/details-parity-v1/expanded-details-fixture.json:1069:    "poster": "https://image.tmdb.org/t/p/w500/lV8Yuhz36hds5dvEIwB7DThixH.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1027:- tools/details-parity-v1/expanded-details-fixture.json:1085:    "poster": "https://image.tmdb.org/t/p/w500/30fQ2nYMyv5TjyEm3j9JwgTa3ZW.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1028:- tools/details-parity-v1/expanded-details-fixture.json:1101:    "poster": "https://image.tmdb.org/t/p/w500/rF6txsM6cgF9vg6Ra5sNbkvUwrw.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1029:- tools/details-parity-v1/expanded-details-fixture.json:1117:    "poster": "https://image.tmdb.org/t/p/w500/xjtWQ2CL1mpmMNwuU5HeS4Iuwuu.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1030:- tools/details-parity-v1/expanded-details-fixture.json:1133:    "poster": "https://image.tmdb.org/t/p/w500/o5M5mjnfRO50t3Wha1QPD04oHfT.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1031:- tools/details-parity-v1/expanded-details-fixture.json:1149:    "poster": "https://image.tmdb.org/t/p/w500/enxF32km4P9gXYhAUXWgoVfQqg5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1032:- tools/details-parity-v1/expanded-details-fixture.json:1165:    "poster": "https://image.tmdb.org/t/p/w500/wfuqMlaExcoYiUEvKfVpUTt1v4u.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1033:- tools/details-parity-v1/expanded-details-fixture.json:1181:    "poster": "https://image.tmdb.org/t/p/w500/uye25uG7k8r3NNPLyPiKOiRnFRF.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1034:- tools/details-parity-v1/expanded-details-fixture.json:1197:    "poster": "https://image.tmdb.org/t/p/w500/ov8vrRLZGoXHpYjSY9Vpv1tHJX7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1035:- tools/details-parity-v1/expanded-details-fixture.json:1213:    "poster": "https://image.tmdb.org/t/p/w500/gBqGMMWdMthsCHO6hvBKAZUvnzI.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1036:- tools/details-parity-v1/expanded-details-fixture.json:1229:    "poster": "https://image.tmdb.org/t/p/w500/e90BK2TO5qs1ge2PbRQ0b1DuSAQ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1037:- tools/details-parity-v1/expanded-details-fixture.json:1245:    "poster": "https://image.tmdb.org/t/p/w500/rWcfOdY7TU6lTdazWj0ebDZnAfO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1038:- tools/details-parity-v1/expanded-details-fixture.json:1261:    "poster": "https://image.tmdb.org/t/p/w500/llbEOPs3adtMqnU0EUL2ecKadsz.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1039:- tools/details-parity-v1/expanded-details-fixture.json:1277:    "poster": "https://image.tmdb.org/t/p/w500/rnIOUhzwJDfgQakx8EjoNyItKgs.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1040:- tools/details-parity-v1/expanded-details-fixture.json:1293:    "poster": "https://image.tmdb.org/t/p/w500/k8yARbD9iYn2nRX2HvsopfKDN2r.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1041:- tools/details-parity-v1/expanded-details-fixture.json:1309:    "poster": "https://image.tmdb.org/t/p/w500/3uRQi9HDEAGSadoKee1UHoFCaU9.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1042:- tools/details-parity-v1/expanded-details-fixture.json:1325:    "poster": "https://image.tmdb.org/t/p/w500/ShizRVGvyFCmGqv7tFA0hxzQ8E.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1043:- tools/details-parity-v1/expanded-details-fixture.json:1341:    "poster": "https://image.tmdb.org/t/p/w500/wvAwkKeIs7bkb6EJAYRzpANhfxM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1044:- tools/details-parity-v1/expanded-details-fixture.json:1357:    "poster": "https://image.tmdb.org/t/p/w500/j61dmzEq4aRWJZk5tPyjzpHj8T2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1045:- tools/details-parity-v1/expanded-details-fixture.json:1373:    "poster": "https://image.tmdb.org/t/p/w500/cDSXLVQLkCSBIpBx3UW04TsfZ5c.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1046:- tools/details-parity-v1/expanded-details-fixture.json:1389:    "poster": "https://image.tmdb.org/t/p/w500/nInfaveN1iFpRIcMGNKENoVVUT2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1047:- tools/details-parity-v1/expanded-details-fixture.json:1405:    "poster": "https://image.tmdb.org/t/p/w500/volCKl2AP5v9oEVOLwQ8pSbF7fA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1048:- tools/details-parity-v1/expanded-details-fixture.json:1421:    "poster": "https://image.tmdb.org/t/p/w500/rwKS6rSAqMGnXwBVteYkHxeDLWX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1049:- tools/details-parity-v1/expanded-details-fixture.json:1437:    "poster": "https://image.tmdb.org/t/p/w500/frKxKytEHIA2vXg4RAz14Sc0UmS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1050:- tools/details-parity-v1/expanded-details-fixture.json:1453:    "poster": "https://image.tmdb.org/t/p/w500/m4JnADIJkF5ck6jq7GUEcPBKxd0.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1051:- tools/details-parity-v1/expanded-details-fixture.json:1469:    "poster": "https://image.tmdb.org/t/p/w500/25fKRXvQLBq4nXu9vjOVJcvCiiD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1052:- tools/details-parity-v1/expanded-details-fixture.json:1485:    "poster": "https://image.tmdb.org/t/p/w500/lRpnGxVYlhWoemkkP4OYgqGrew0.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1053:- tools/details-parity-v1/expanded-details-fixture.json:1501:    "poster": "https://image.tmdb.org/t/p/w500/jJfk8NXauN4UgFQ1qn9lFzEk7ib.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1054:- tools/details-parity-v1/expanded-details-fixture.json:1517:    "poster": "https://image.tmdb.org/t/p/w500/hdEQWvSbDQsbdseeYjUS0NgrfT2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1055:- tools/details-parity-v1/expanded-details-fixture.json:1533:    "poster": "https://image.tmdb.org/t/p/w500/6yy9nQlFt2l6UVWzrfhszFCaZ5C.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1056:- tools/details-parity-v1/expanded-details-fixture.json:1549:    "poster": "https://image.tmdb.org/t/p/w500/h3s0Cd2JppeWA4UjTuSRauL52P7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1057:- tools/details-parity-v1/expanded-details-fixture.json:1565:    "poster": "https://image.tmdb.org/t/p/w500/zOzGMbqxNL49U4Z6TlDxSSvHSf0.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1058:- tools/details-parity-v1/expanded-details-fixture.json:1581:    "poster": "https://image.tmdb.org/t/p/w500/tnX7FsJBDZ6xmS8YuUnz2FLpwGl.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1059:- tools/details-parity-v1/expanded-details-fixture.json:1597:    "poster": "https://image.tmdb.org/t/p/w500/20i4nShZZg1g1VFHSB8xpaYM4r7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1060:- tools/details-parity-v1/expanded-details-fixture.json:1613:    "poster": "https://image.tmdb.org/t/p/w500/yueXS3q8BtoWekcHOATFHicLl3e.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1061:- tools/details-parity-v1/expanded-details-fixture.json:1629:    "poster": "https://image.tmdb.org/t/p/w500/ff0s9OHGNSZL6cVteIb7LNvTnJD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1062:- tools/details-parity-v1/expanded-details-fixture.json:1645:    "poster": "https://image.tmdb.org/t/p/w500/wXVttISNv9GkbTCojifhZXeITG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1063:- tools/details-parity-v1/expanded-details-fixture.json:1661:    "poster": "https://image.tmdb.org/t/p/w500/d55nhKP5A3YEwwOa91Qh7bs3yOt.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1064:- tools/details-parity-v1/expanded-details-fixture.json:1677:    "poster": "https://image.tmdb.org/t/p/w500/ldO5HuJC3pUMOJRtGyG50KEF4YU.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1065:- tools/details-parity-v1/expanded-details-fixture.json:1693:    "poster": "https://image.tmdb.org/t/p/w500/hINeNo3c3ycZPlSh8MXqofZLMBw.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1066:- tools/details-parity-v1/expanded-details-fixture.json:1709:    "poster": "https://image.tmdb.org/t/p/w500/vHQGu6ducKC7JcDU6lqWyx7tWW5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1067:- tools/details-parity-v1/expanded-details-fixture.json:1725:    "poster": "https://image.tmdb.org/t/p/w500/nERRTZKsieX3v3IhHPCviegcxaR.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1068:- tools/details-parity-v1/expanded-details-fixture.json:1741:    "poster": "https://image.tmdb.org/t/p/w500/hNVb60dPG34wYjazGgFolJhqfxp.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1069:- tools/details-parity-v1/expanded-details-fixture.json:1757:    "poster": "https://image.tmdb.org/t/p/w500/4e9CraVtGY00jLP2YGwsuEtaIjR.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1070:- tools/details-parity-v1/expanded-details-fixture.json:1773:    "poster": "https://image.tmdb.org/t/p/w500/u6Gs1IzzPJsmXKdc9alGaxtChQu.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1071:- tools/details-parity-v1/expanded-details-fixture.json:1789:    "poster": "https://image.tmdb.org/t/p/w500/6PXpJDC6wRhD6H8OCGPjSLpaXoZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1072:- tools/details-parity-v1/expanded-details-fixture.json:1805:    "poster": "https://image.tmdb.org/t/p/w500/8x1W0TR2VIe7ORaRI9zwDqeJn9q.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1073:- tools/details-parity-v1/expanded-details-fixture.json:1821:    "poster": "https://image.tmdb.org/t/p/w500/AoRaqmBGeJt1H23cbMatnWMMxTA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1074:- tools/details-parity-v1/expanded-details-fixture.json:1837:    "poster": "https://image.tmdb.org/t/p/w500/62TJdt6GlzdRbyWY9RYWjljgg3b.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1075:- tools/details-parity-v1/expanded-details-fixture.json:1853:    "poster": "https://image.tmdb.org/t/p/w500/8Mckh3qJRTzXTQNZtpb133RHmO4.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1076:- tools/details-parity-v1/expanded-details-fixture.json:1869:    "poster": "https://image.tmdb.org/t/p/w500/n4rguIB7Cf4h3l1IyqMo3THW5xn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1077:- tools/details-parity-v1/expanded-details-fixture.json:1885:    "poster": "https://image.tmdb.org/t/p/w500/gcSNS5cy1iOmYawIdJCzoc873rQ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1078:- tools/details-parity-v1/expanded-details-fixture.json:1901:    "poster": "https://image.tmdb.org/t/p/w500/9puBY2DdW3xOynWK5cqH3M2ZwJG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1079:- tools/details-parity-v1/expanded-details-fixture.json:1917:    "poster": "https://image.tmdb.org/t/p/w500/ezT0x7ZdAjrR5mFtkNjWxOFcTIB.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1080:- tools/details-parity-v1/report-details-gap-priority.js:35:  ["poster", Number(values.GAP_MISSING_POSTER || 0)],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1081:- tools/details-parity-v1/test-details-fixture-coverage-negative.js:20:  poster: "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1082:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1083:- tools/details-parity-v1/test-details-fixture-coverage.js:21:const posterCount = rows.filter(r => String(r.poster || "").trim()).length;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1084:- tools/details-parity-v1/test-details-fixture-coverage.js:27:console.log("COVERAGE_POSTERS=" + posterCount);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1085:- tools/details-parity-v1/test-details-fixture-coverage.js:33:if (posterCount < 20) bad++;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1086:- tools/details-parity-v1/test-details-response-parity-basic.js:26:    poster: clean(r.poster),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1087:- tools/details-parity-v1/test-details-response-parity-basic.js:32:  const required = ["ok","status","type","title","name","year","poster","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1088:- tools/details-parity-v1/test-details-response-parity-negative.js:17:    poster: "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1089:- tools/details-parity-v1/test-details-response-snapshot-negative.js:13:      poster: null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1090:- tools/details-parity-v1/validate-details-fixture-schema.js:60:      if ("poster" in r && !isString(r.poster)) {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1091:- tools/details-parity-v1/validate-details-fixture-schema.js:62:        problems.push(prefix + ": poster must be string");
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1102:- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1113:- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1129:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1130:- tools/details-parity-v1/DETAILS_SHADOW_GATES.md:17:5. details:shadow:fixture:coverage - movie/tv/poster/overview coverage
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1256:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1261:- tools/details-parity-v1/test-details-response-parity-basic.js:32:  const required = ["ok","status","type","title","name","year","poster","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1268:- app/CatalogApi.hs:636:    , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1269:- app/CatalogApi.hs:687:    , "backdrop" .= fallbackValue (field "backdrop" s) (field "poster" s)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1270:- app/CatalogApi.hs:803:      art = if field "poster" item /= Null || field "backdrop" item /= Null then 420 else 0
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1271:- app/CatalogApi.hs:923:          , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1272:- app/CatalogApi.hs:981:hasArt item = field "poster" item /= Null || field "backdrop" item /= Null
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1275:- server.js:516:    const poster = item.poster || item.backdrop;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1276:- server.js:523:      backdrop: item.backdrop || item.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1277:- server.js:545:  if (!item || item.poster || item.backdrop) return item;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1278:- server.js:551:  item.backdrop = item.backdrop || hit.backdrop || item.poster || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1279:- server.js:568:  return !!(item && (item.poster || item.backdrop));
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1280:- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1281:- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1283:- server.js:905:  if (item.isMassiveCatalog && !item.poster && !item.backdrop) score -= 850;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1285:- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1286:- server.js:1914:      backdrop: m.backdrop || m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1287:- server.js:1941:      backdrop: s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1288:- server.js:2064:    backdrop: item?.backdrop || item?.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1289:- server.js:2111:      backdrop: raw.backdrop || raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1290:- server.js:2143:    backdrop: raw.backdrop || raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1291:- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1292:- server.js:2369:      id:`ftp_series_home_${i}`, name:s.title, title:s.title, poster:s.poster || null, backdrop:s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1293:- server.js:2399:    const bp = (b.poster || b.backdrop ? 1 : 0) - (a.poster || a.backdrop ? 1 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1294:- server.js:2552:  const art = item.backdrop ? 9000 : (item.poster ? 6500 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1295:- server.js:2567:  const artA = (a.item.backdrop ? 3 : 0) + (a.item.poster ? 2 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1296:- server.js:2568:  const artB = (b.item.backdrop ? 3 : 0) + (b.item.poster ? 2 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1298:- server.js:2585:  if (!next.backdrop && next.poster) next.backdrop = next.poster;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1299:- server.js:2592:    if (!item || !(item.poster || item.backdrop)) continue;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1300:- server.js:2618:  const art = (item.poster || item.backdrop) ? 60 : 0;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1301:- server.js:2685:    case 'hiddenMasterpieces': return svHomeSort(all.filter(i => svRatingNum(i) >= 7 && (i.poster || i.backdrop))).slice(0, 500);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1302:- server.js:2720:      .filter(item => item.poster || item.backdrop)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1303:- server.js:2743:        backdrop:  m.backdrop   || m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1304:- server.js:2875:        backdrop: s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1312:- server.js:4909:  console.log(TMDB_TOKEN ? '╬ô┬ú├á TMDB enabled (HD posters + backdrops)' : '╬ô├£├íΓê⌐Γòò├à  TMDB token missing');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1313:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1440:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md:15:RAW_poster=116
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7E.md:20:- posters: 116
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7F.md:24:- posters: 116
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7H.md:28:- posters: 116
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:11:- Smallest partial gap: poster
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:22:- Add one small fixture expansion for poster-gap rows first.
+- tools/details-parity-v1/DETAILS_SHADOW_GATES.md:17:5. details:shadow:fixture:coverage - movie/tv/poster/overview coverage
+- tools/details-parity-v1/audit-details-fixture-gaps.js:18:  "poster",
+- tools/details-parity-v1/build-details-response-snapshot.js:18:    poster: clean(r.poster),
+- tools/details-parity-v1/build-expanded-details-fixture.js:29:    poster: clean(item.poster),
+- tools/details-parity-v1/expanded-details-fixture.json:13:    "poster": "",
+- tools/details-parity-v1/expanded-details-fixture.json:29:    "poster": "https://image.tmdb.org/t/p/w500/dZIj0MxV54VLf39RaD4xjzjjLOY.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:45:    "poster": "https://image.tmdb.org/t/p/w500/aEUH2ECoZHvSmoMzJpca0STF2CZ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:61:    "poster": "https://image.tmdb.org/t/p/w500/7azHIOSrxo0VC5wYiwtGOnVehsH.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:77:    "poster": "https://image.tmdb.org/t/p/w500/1fwV2QQByqvbdCzPqfV9Cu4fhHM.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:93:    "poster": "https://image.tmdb.org/t/p/w500/298clyKoBbZPp4zgUiDSxhCO0wk.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:109:    "poster": "https://image.tmdb.org/t/p/w500/7wIBfBl2gejt6xHxNSK0reVIm7E.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:125:    "poster": "https://image.tmdb.org/t/p/w500/fYqSOkix4rbDiZW0ACNnvZCpT6X.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:141:    "poster": "https://image.tmdb.org/t/p/w500/kW7tPdLcNQ72YpMoNVLvSAbeZqp.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:157:    "poster": "https://image.tmdb.org/t/p/w500/yihdXomYb5kTeSivtFndMy5iDmf.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:173:    "poster": "https://image.tmdb.org/t/p/w500/sTPUg3XtdcKRAS5Vwsi1GYPFhNZ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:189:    "poster": "https://image.tmdb.org/t/p/w500/rWcfOdY7TU6lTdazWj0ebDZnAfO.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:205:    "poster": "https://image.tmdb.org/t/p/w500/z97hrgI5wbGbZvSVkBfAeBnFKAg.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:221:    "poster": "https://image.tmdb.org/t/p/w500/9u7sUTYPPTxGCXbkcw8FTq50PnO.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:237:    "poster": "https://image.tmdb.org/t/p/w500/v7CCosgX9LcSpt7bXmqw5OzTFTV.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:253:    "poster": "https://image.tmdb.org/t/p/w500/kK1BGkG3KAvWB0WMV1DfOx9yTMZ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:269:    "poster": "https://image.tmdb.org/t/p/w500/pfqkETJ2A3zXZJuNcufZbAJNnKA.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:285:    "poster": "https://image.tmdb.org/t/p/w500/tVvpFIoteRHNnoZMhdnwIVwJpCA.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:301:    "poster": "https://image.tmdb.org/t/p/w500/z2tqCJLsw6uEJ8nJV8BsQXGa3dr.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:317:    "poster": "https://image.tmdb.org/t/p/w500/pyok1kZJCfyuFapYXzHcy7BLlQa.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:333:    "poster": "https://image.tmdb.org/t/p/w500/gRMalasZEzsZi4w2VFuYusfSfqf.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:349:    "poster": "https://image.tmdb.org/t/p/w500/peG6482ALJQ9Tbvv2P38BquVk0f.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:365:    "poster": "https://image.tmdb.org/t/p/w500/jjyuk0edLiW8vOSnlfwWCCLpbh5.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:381:    "poster": "https://image.tmdb.org/t/p/w500/mjkS2iAgWj3ik1DTjvI15nHZ7yl.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:397:    "poster": "https://image.tmdb.org/t/p/w500/buPFnHZ3xQy6vZEHxbHgL1Pc6CR.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:413:    "poster": "https://image.tmdb.org/t/p/w500/dl1cA7wdwePc9QU2Rc24EPqlcyJ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:429:    "poster": "https://image.tmdb.org/t/p/w500/eZo31Dhl5BQ6GfbMNf3oU0tUvPZ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:445:    "poster": "https://image.tmdb.org/t/p/w500/yPHwX78mcwJw3I6YOJ9qh2wQBFr.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:461:    "poster": "https://image.tmdb.org/t/p/w500/gbVwHl4YPSq6BcC92TQpe7qUTh6.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:477:    "poster": "https://image.tmdb.org/t/p/w500/tlPgDzwIE7VYYIIAGCTUOnN4wI1.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:493:    "poster": "https://image.tmdb.org/t/p/w500/3YBce6dTh1D5oCMITXk2S5QhPt.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:509:    "poster": "https://image.tmdb.org/t/p/w500/82bX2GK4PhaJQtfkTnfmd2P7erG.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:525:    "poster": "https://image.tmdb.org/t/p/w500/dvRtAQKk3FxW4UnU54UJGEjMJzZ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:541:    "poster": "https://image.tmdb.org/t/p/w500/dHxLBtHw4InwsVumnthupZYz6NM.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:557:    "poster": "https://image.tmdb.org/t/p/w500/rWcfOdY7TU6lTdazWj0ebDZnAfO.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:573:    "poster": "https://image.tmdb.org/t/p/w500/j8fWiWwrAncNoBaclg8ZAVBPrh6.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:589:    "poster": "https://image.tmdb.org/t/p/w500/srvDYDyaYTh27ObUvOcggyT1ZGn.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:605:    "poster": "https://image.tmdb.org/t/p/w500/jpKXZyWh6WN55UJ3rqkwbzWeD5Q.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:621:    "poster": "https://image.tmdb.org/t/p/w500/aF2mmcB0hu3xtZj35dySOj4eqtD.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:637:    "poster": "https://image.tmdb.org/t/p/w500/dHxLBtHw4InwsVumnthupZYz6NM.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:653:    "poster": "https://image.tmdb.org/t/p/w500/cJAj6j473SJFrdnViVN8xOsgvhb.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:669:    "poster": "https://image.tmdb.org/t/p/w500/si4RdbdCGZSy39N2EzN8dabszim.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:685:    "poster": "https://image.tmdb.org/t/p/w500/xkTrpl8WPUjDitBViQTHbnKErCk.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:701:    "poster": "https://image.tmdb.org/t/p/w500/lsg0IxNQCUxKqs63YjturEuY0qQ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:717:    "poster": "",
+- tools/details-parity-v1/expanded-details-fixture.json:733:    "poster": "",
+- tools/details-parity-v1/expanded-details-fixture.json:749:    "poster": "https://image.tmdb.org/t/p/w500/ov8vrRLZGoXHpYjSY9Vpv1tHJX7.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:765:    "poster": "",
+- tools/details-parity-v1/expanded-details-fixture.json:781:    "poster": "https://image.tmdb.org/t/p/w500/hIC4knJmcAO02JPjF840FJBI4ib.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:797:    "poster": "https://image.tmdb.org/t/p/w500/3KFcPRcv7hNUhaxlCU14FybwkcP.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:813:    "poster": "https://image.tmdb.org/t/p/w500/72AoFPC5TY4DfJwXXS9rPwPeReD.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:829:    "poster": "https://image.tmdb.org/t/p/w500/iuVlVRoBL1fHhBlVjS58MpBES05.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:845:    "poster": "https://image.tmdb.org/t/p/w500/wUcttG71zo9deP4m9sDhYPUcvi5.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:861:    "poster": "https://image.tmdb.org/t/p/w500/ov8vrRLZGoXHpYjSY9Vpv1tHJX7.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:877:    "poster": "https://image.tmdb.org/t/p/w500/p8yPjT9NAH87oD9TedclRaAW7RY.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:893:    "poster": "https://image.tmdb.org/t/p/w500/A3zKx7XpXY1ykL8CLbyCN0OCsT8.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:909:    "poster": "https://image.tmdb.org/t/p/w500/tZJBXGNyDanSne6a2TLRU45Uhwu.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:925:    "poster": "https://image.tmdb.org/t/p/w500/8PWu0V10nMqG5SrA13wLRXTD2fH.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:941:    "poster": "https://image.tmdb.org/t/p/w500/dHxLBtHw4InwsVumnthupZYz6NM.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:957:    "poster": "https://image.tmdb.org/t/p/w500/aTnIGrfVv03FIDsNDuabNsp9yFM.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:973:    "poster": "https://image.tmdb.org/t/p/w500/zjgWWOIsEqYNSa1fGRr82mBo3gv.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:989:    "poster": "https://image.tmdb.org/t/p/w500/97jAFQcAnspd416cupbAbGMNT9z.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1005:    "poster": "https://image.tmdb.org/t/p/w500/nUPnA0I1MTaZRVCsUQc5DS5JA8W.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1021:    "poster": "https://image.tmdb.org/t/p/w500/bAtgrD2Syuna8vB5deDipTqupKN.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1037:    "poster": "https://image.tmdb.org/t/p/w500/wlimwHMelt9PRdgFhS5bWJWPrjr.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1053:    "poster": "https://image.tmdb.org/t/p/w500/7V029fFThWiUjr335ic6rVUUian.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1069:    "poster": "https://image.tmdb.org/t/p/w500/lV8Yuhz36hds5dvEIwB7DThixH.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1085:    "poster": "https://image.tmdb.org/t/p/w500/30fQ2nYMyv5TjyEm3j9JwgTa3ZW.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1101:    "poster": "https://image.tmdb.org/t/p/w500/rF6txsM6cgF9vg6Ra5sNbkvUwrw.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1117:    "poster": "https://image.tmdb.org/t/p/w500/xjtWQ2CL1mpmMNwuU5HeS4Iuwuu.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1133:    "poster": "https://image.tmdb.org/t/p/w500/o5M5mjnfRO50t3Wha1QPD04oHfT.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1149:    "poster": "https://image.tmdb.org/t/p/w500/enxF32km4P9gXYhAUXWgoVfQqg5.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1165:    "poster": "https://image.tmdb.org/t/p/w500/wfuqMlaExcoYiUEvKfVpUTt1v4u.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1181:    "poster": "https://image.tmdb.org/t/p/w500/uye25uG7k8r3NNPLyPiKOiRnFRF.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1197:    "poster": "https://image.tmdb.org/t/p/w500/ov8vrRLZGoXHpYjSY9Vpv1tHJX7.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1213:    "poster": "https://image.tmdb.org/t/p/w500/gBqGMMWdMthsCHO6hvBKAZUvnzI.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1229:    "poster": "https://image.tmdb.org/t/p/w500/e90BK2TO5qs1ge2PbRQ0b1DuSAQ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1245:    "poster": "https://image.tmdb.org/t/p/w500/rWcfOdY7TU6lTdazWj0ebDZnAfO.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1261:    "poster": "https://image.tmdb.org/t/p/w500/llbEOPs3adtMqnU0EUL2ecKadsz.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1277:    "poster": "https://image.tmdb.org/t/p/w500/rnIOUhzwJDfgQakx8EjoNyItKgs.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1293:    "poster": "https://image.tmdb.org/t/p/w500/k8yARbD9iYn2nRX2HvsopfKDN2r.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1309:    "poster": "https://image.tmdb.org/t/p/w500/3uRQi9HDEAGSadoKee1UHoFCaU9.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1325:    "poster": "https://image.tmdb.org/t/p/w500/ShizRVGvyFCmGqv7tFA0hxzQ8E.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1341:    "poster": "https://image.tmdb.org/t/p/w500/wvAwkKeIs7bkb6EJAYRzpANhfxM.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1357:    "poster": "https://image.tmdb.org/t/p/w500/j61dmzEq4aRWJZk5tPyjzpHj8T2.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1373:    "poster": "https://image.tmdb.org/t/p/w500/cDSXLVQLkCSBIpBx3UW04TsfZ5c.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1389:    "poster": "https://image.tmdb.org/t/p/w500/nInfaveN1iFpRIcMGNKENoVVUT2.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1405:    "poster": "https://image.tmdb.org/t/p/w500/volCKl2AP5v9oEVOLwQ8pSbF7fA.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1421:    "poster": "https://image.tmdb.org/t/p/w500/rwKS6rSAqMGnXwBVteYkHxeDLWX.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1437:    "poster": "https://image.tmdb.org/t/p/w500/frKxKytEHIA2vXg4RAz14Sc0UmS.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1453:    "poster": "https://image.tmdb.org/t/p/w500/m4JnADIJkF5ck6jq7GUEcPBKxd0.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1469:    "poster": "https://image.tmdb.org/t/p/w500/25fKRXvQLBq4nXu9vjOVJcvCiiD.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1485:    "poster": "https://image.tmdb.org/t/p/w500/lRpnGxVYlhWoemkkP4OYgqGrew0.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1501:    "poster": "https://image.tmdb.org/t/p/w500/jJfk8NXauN4UgFQ1qn9lFzEk7ib.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1517:    "poster": "https://image.tmdb.org/t/p/w500/hdEQWvSbDQsbdseeYjUS0NgrfT2.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1533:    "poster": "https://image.tmdb.org/t/p/w500/6yy9nQlFt2l6UVWzrfhszFCaZ5C.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1549:    "poster": "https://image.tmdb.org/t/p/w500/h3s0Cd2JppeWA4UjTuSRauL52P7.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1565:    "poster": "https://image.tmdb.org/t/p/w500/zOzGMbqxNL49U4Z6TlDxSSvHSf0.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1581:    "poster": "https://image.tmdb.org/t/p/w500/tnX7FsJBDZ6xmS8YuUnz2FLpwGl.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1597:    "poster": "https://image.tmdb.org/t/p/w500/20i4nShZZg1g1VFHSB8xpaYM4r7.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1613:    "poster": "https://image.tmdb.org/t/p/w500/yueXS3q8BtoWekcHOATFHicLl3e.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1629:    "poster": "https://image.tmdb.org/t/p/w500/ff0s9OHGNSZL6cVteIb7LNvTnJD.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1645:    "poster": "https://image.tmdb.org/t/p/w500/wXVttISNv9GkbTCojifhZXeITG.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1661:    "poster": "https://image.tmdb.org/t/p/w500/d55nhKP5A3YEwwOa91Qh7bs3yOt.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1677:    "poster": "https://image.tmdb.org/t/p/w500/ldO5HuJC3pUMOJRtGyG50KEF4YU.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1693:    "poster": "https://image.tmdb.org/t/p/w500/hINeNo3c3ycZPlSh8MXqofZLMBw.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1709:    "poster": "https://image.tmdb.org/t/p/w500/vHQGu6ducKC7JcDU6lqWyx7tWW5.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1725:    "poster": "https://image.tmdb.org/t/p/w500/nERRTZKsieX3v3IhHPCviegcxaR.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1741:    "poster": "https://image.tmdb.org/t/p/w500/hNVb60dPG34wYjazGgFolJhqfxp.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1757:    "poster": "https://image.tmdb.org/t/p/w500/4e9CraVtGY00jLP2YGwsuEtaIjR.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1773:    "poster": "https://image.tmdb.org/t/p/w500/u6Gs1IzzPJsmXKdc9alGaxtChQu.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1789:    "poster": "https://image.tmdb.org/t/p/w500/6PXpJDC6wRhD6H8OCGPjSLpaXoZ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1805:    "poster": "https://image.tmdb.org/t/p/w500/8x1W0TR2VIe7ORaRI9zwDqeJn9q.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1821:    "poster": "https://image.tmdb.org/t/p/w500/AoRaqmBGeJt1H23cbMatnWMMxTA.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1837:    "poster": "https://image.tmdb.org/t/p/w500/62TJdt6GlzdRbyWY9RYWjljgg3b.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1853:    "poster": "https://image.tmdb.org/t/p/w500/8Mckh3qJRTzXTQNZtpb133RHmO4.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1869:    "poster": "https://image.tmdb.org/t/p/w500/n4rguIB7Cf4h3l1IyqMo3THW5xn.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1885:    "poster": "https://image.tmdb.org/t/p/w500/gcSNS5cy1iOmYawIdJCzoc873rQ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1901:    "poster": "https://image.tmdb.org/t/p/w500/9puBY2DdW3xOynWK5cqH3M2ZwJG.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1917:    "poster": "https://image.tmdb.org/t/p/w500/ezT0x7ZdAjrR5mFtkNjWxOFcTIB.jpg",
+- tools/details-parity-v1/report-details-gap-priority.js:35:  ["poster", Number(values.GAP_MISSING_POSTER || 0)],
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:7:const fields = ["poster","backdrop","overview","rating","genre","runtime","language","director","productionCompanies"];
+- tools/details-parity-v1/test-details-fixture-coverage-negative.js:20:  poster: "",
+- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/test-details-fixture-coverage.js:21:const posterCount = rows.filter(r => String(r.poster || "").trim()).length;
+- tools/details-parity-v1/test-details-fixture-coverage.js:27:console.log("COVERAGE_POSTERS=" + posterCount);
+- tools/details-parity-v1/test-details-fixture-coverage.js:33:if (posterCount < 20) bad++;
+- tools/details-parity-v1/test-details-response-parity-basic.js:26:    poster: clean(r.poster),
+- tools/details-parity-v1/test-details-response-parity-basic.js:32:  const required = ["ok","status","type","title","name","year","poster","overview","streamUrl"];
+- tools/details-parity-v1/test-details-response-parity-negative.js:17:    poster: "",
+- tools/details-parity-v1/test-details-response-snapshot-negative.js:13:      poster: null,
+- tools/details-parity-v1/validate-details-fixture-schema.js:60:      if ("poster" in r && !isString(r.poster)) {
+- tools/details-parity-v1/validate-details-fixture-schema.js:62:        problems.push(prefix + ": poster must be string");
+
+## git grep: backdrop
+- app/CatalogApi.hs:636:    , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- app/CatalogApi.hs:687:    , "backdrop" .= fallbackValue (field "backdrop" s) (field "poster" s)
+- app/CatalogApi.hs:803:      art = if field "poster" item /= Null || field "backdrop" item /= Null then 420 else 0
+- app/CatalogApi.hs:923:          , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- app/CatalogApi.hs:981:hasArt item = field "poster" item /= Null || field "backdrop" item /= Null
+- server.js:445:            backdrop: null,
+- server.js:479:        backdrop: null,
+- server.js:516:    const poster = item.poster || item.backdrop;
+- server.js:523:      backdrop: item.backdrop || item.poster || null,
+- server.js:545:  if (!item || item.poster || item.backdrop) return item;
+- server.js:551:  item.backdrop = item.backdrop || hit.backdrop || item.poster || null;
+- server.js:568:  return !!(item && (item.poster || item.backdrop));
+- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- server.js:904:  if (item.backdrop) score += 90;
+- server.js:905:  if (item.isMassiveCatalog && !item.poster && !item.backdrop) score -= 850;
+- server.js:1345:    const backdrop = result.backdrop_path ? `${TMDB_IMG}/w1280${result.backdrop_path}` : null;
+- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- server.js:1914:      backdrop: m.backdrop || m.poster || null,
+- server.js:1941:      backdrop: s.backdrop || s.poster || null,
+- server.js:2064:    backdrop: item?.backdrop || item?.poster || null,
+- server.js:2111:      backdrop: raw.backdrop || raw.poster || null,
+- server.js:2143:    backdrop: raw.backdrop || raw.poster || null,
+- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- server.js:2369:      id:`ftp_series_home_${i}`, name:s.title, title:s.title, poster:s.poster || null, backdrop:s.backdrop || s.poster || null,
+- server.js:2399:    const bp = (b.poster || b.backdrop ? 1 : 0) - (a.poster || a.backdrop ? 1 : 0);
+- server.js:2552:  const art = item.backdrop ? 9000 : (item.poster ? 6500 : 0);
+- server.js:2567:  const artA = (a.item.backdrop ? 3 : 0) + (a.item.poster ? 2 : 0);
+- server.js:2568:  const artB = (b.item.backdrop ? 3 : 0) + (b.item.poster ? 2 : 0);
+- server.js:2584:  if (next.backdrop) next.backdrop = svUpgradeTmdbImage(next.backdrop, true);
+- server.js:2585:  if (!next.backdrop && next.poster) next.backdrop = next.poster;
+- server.js:2592:    if (!item || !(item.poster || item.backdrop)) continue;
+- server.js:2618:  const art = (item.poster || item.backdrop) ? 60 : 0;
+- server.js:2685:    case 'hiddenMasterpieces': return svHomeSort(all.filter(i => svRatingNum(i) >= 7 && (i.poster || i.backdrop))).slice(0, 500);
+- server.js:2720:      .filter(item => item.poster || item.backdrop)
+- server.js:2743:        backdrop:  m.backdrop   || m.poster || null,
+- server.js:2875:        backdrop: s.backdrop || s.poster || null,
+- server.js:3085:    backdrop: tmdbImage('w1280', item.backdrop_path),
+- server.js:3390:    backdrop_path: searchResult?.backdrop_path || null,
+- server.js:3444:    backdrop: tmdbImage('w1280', detail.backdrop_path),
+- server.js:3498:    backdrop_path: searchResult?.backdrop_path || null,
+- server.js:3551:    backdrop: tmdbImage('w1280', detail.backdrop_path),
+- server.js:4849:      backdrop: r.backdrop_path ? `${TMDB_IMG}/w1280${r.backdrop_path}` : null,
+- server.js:4858:      backdrop: r.backdrop_path ? `${TMDB_IMG}/w1280${r.backdrop_path}` : null,
+- server.js:4909:  console.log(TMDB_TOKEN ? 'Γ£à TMDB enabled (HD posters + backdrops)' : 'ΓÜá∩╕Å  TMDB token missing');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:207:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:357:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:539:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:641:- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:642:- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:693:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:820:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:839:- app/CatalogApi.hs:636:    , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:841:- app/CatalogApi.hs:687:    , "backdrop" .= fallbackValue (field "backdrop" s) (field "poster" s)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:842:- app/CatalogApi.hs:803:      art = if field "poster" item /= Null || field "backdrop" item /= Null then 420 else 0
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:844:- app/CatalogApi.hs:923:          , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:845:- app/CatalogApi.hs:981:hasArt item = field "poster" item /= Null || field "backdrop" item /= Null
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:851:- server.js:516:    const poster = item.poster || item.backdrop;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:854:- server.js:523:      backdrop: item.backdrop || item.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:858:- server.js:545:  if (!item || item.poster || item.backdrop) return item;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:860:- server.js:551:  item.backdrop = item.backdrop || hit.backdrop || item.poster || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:861:- server.js:568:  return !!(item && (item.poster || item.backdrop));
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:863:- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:865:- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:867:- server.js:905:  if (item.isMassiveCatalog && !item.poster && !item.backdrop) score -= 850;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:874:- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:898:- server.js:1914:      backdrop: m.backdrop || m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:900:- server.js:1941:      backdrop: s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:903:- server.js:2064:    backdrop: item?.backdrop || item?.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:905:- server.js:2111:      backdrop: raw.backdrop || raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:907:- server.js:2143:    backdrop: raw.backdrop || raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:909:- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:910:- server.js:2369:      id:`ftp_series_home_${i}`, name:s.title, title:s.title, poster:s.poster || null, backdrop:s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:911:- server.js:2399:    const bp = (b.poster || b.backdrop ? 1 : 0) - (a.poster || a.backdrop ? 1 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:912:- server.js:2552:  const art = item.backdrop ? 9000 : (item.poster ? 6500 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:913:- server.js:2567:  const artA = (a.item.backdrop ? 3 : 0) + (a.item.poster ? 2 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:914:- server.js:2568:  const artB = (b.item.backdrop ? 3 : 0) + (b.item.poster ? 2 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:916:- server.js:2585:  if (!next.backdrop && next.poster) next.backdrop = next.poster;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:917:- server.js:2592:    if (!item || !(item.poster || item.backdrop)) continue;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:918:- server.js:2618:  const art = (item.poster || item.backdrop) ? 60 : 0;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:919:- server.js:2685:    case 'hiddenMasterpieces': return svHomeSort(all.filter(i => svRatingNum(i) >= 7 && (i.poster || i.backdrop))).slice(0, 500);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:920:- server.js:2720:      .filter(item => item.poster || item.backdrop)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:922:- server.js:2743:        backdrop:  m.backdrop   || m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:930:- server.js:2875:        backdrop: s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:948:- server.js:4909:  console.log(TMDB_TOKEN ? '╬ô┬ú├á TMDB enabled (HD posters + backdrops)' : '╬ô├£├íΓê⌐Γòò├à  TMDB token missing');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:954:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1082:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1102:- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1113:- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1129:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1232:- tools/details-parity-v1/expanded-details-fixture.json:1583:    "overview": "13th tells the story of Ritesh, a successful venture capitalist who reunites with his maverick IIT-JEE mentor, Mohit Tyagi Sir, to help scale his visionary educational institute. The series unfolds against the backdrop of India's most gruelling academic competition and a startup culture fixated on valuations. At its heart, 13th is a deeply nostalgic, human story of a master and his pupil-bound by ambition, respect, and the lessons that shape a lifetime.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1256:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1267:## grep: backdrop
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1268:- app/CatalogApi.hs:636:    , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1269:- app/CatalogApi.hs:687:    , "backdrop" .= fallbackValue (field "backdrop" s) (field "poster" s)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1270:- app/CatalogApi.hs:803:      art = if field "poster" item /= Null || field "backdrop" item /= Null then 420 else 0
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1271:- app/CatalogApi.hs:923:          , "backdrop" .= fallbackValue (field "backdrop" m) (field "poster" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1272:- app/CatalogApi.hs:981:hasArt item = field "poster" item /= Null || field "backdrop" item /= Null
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1273:- server.js:445:            backdrop: null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1274:- server.js:479:        backdrop: null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1275:- server.js:516:    const poster = item.poster || item.backdrop;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1276:- server.js:523:      backdrop: item.backdrop || item.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1277:- server.js:545:  if (!item || item.poster || item.backdrop) return item;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1278:- server.js:551:  item.backdrop = item.backdrop || hit.backdrop || item.poster || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1279:- server.js:568:  return !!(item && (item.poster || item.backdrop));
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1280:- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1281:- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1282:- server.js:904:  if (item.backdrop) score += 90;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1283:- server.js:905:  if (item.isMassiveCatalog && !item.poster && !item.backdrop) score -= 850;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1284:- server.js:1345:    const backdrop = result.backdrop_path ? `${TMDB_IMG}/w1280${result.backdrop_path}` : null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1285:- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1286:- server.js:1914:      backdrop: m.backdrop || m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1287:- server.js:1941:      backdrop: s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1288:- server.js:2064:    backdrop: item?.backdrop || item?.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1289:- server.js:2111:      backdrop: raw.backdrop || raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1290:- server.js:2143:    backdrop: raw.backdrop || raw.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1291:- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1292:- server.js:2369:      id:`ftp_series_home_${i}`, name:s.title, title:s.title, poster:s.poster || null, backdrop:s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1293:- server.js:2399:    const bp = (b.poster || b.backdrop ? 1 : 0) - (a.poster || a.backdrop ? 1 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1294:- server.js:2552:  const art = item.backdrop ? 9000 : (item.poster ? 6500 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1295:- server.js:2567:  const artA = (a.item.backdrop ? 3 : 0) + (a.item.poster ? 2 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1296:- server.js:2568:  const artB = (b.item.backdrop ? 3 : 0) + (b.item.poster ? 2 : 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1297:- server.js:2584:  if (next.backdrop) next.backdrop = svUpgradeTmdbImage(next.backdrop, true);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1298:- server.js:2585:  if (!next.backdrop && next.poster) next.backdrop = next.poster;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1299:- server.js:2592:    if (!item || !(item.poster || item.backdrop)) continue;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1300:- server.js:2618:  const art = (item.poster || item.backdrop) ? 60 : 0;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1301:- server.js:2685:    case 'hiddenMasterpieces': return svHomeSort(all.filter(i => svRatingNum(i) >= 7 && (i.poster || i.backdrop))).slice(0, 500);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1302:- server.js:2720:      .filter(item => item.poster || item.backdrop)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1303:- server.js:2743:        backdrop:  m.backdrop   || m.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1304:- server.js:2875:        backdrop: s.backdrop || s.poster || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1305:- server.js:3085:    backdrop: tmdbImage('w1280', item.backdrop_path),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1306:- server.js:3390:    backdrop_path: searchResult?.backdrop_path || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1307:- server.js:3444:    backdrop: tmdbImage('w1280', detail.backdrop_path),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1308:- server.js:3498:    backdrop_path: searchResult?.backdrop_path || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1309:- server.js:3551:    backdrop: tmdbImage('w1280', detail.backdrop_path),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1310:- server.js:4849:      backdrop: r.backdrop_path ? `${TMDB_IMG}/w1280${r.backdrop_path}` : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1311:- server.js:4858:      backdrop: r.backdrop_path ? `${TMDB_IMG}/w1280${r.backdrop_path}` : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1312:- server.js:4909:  console.log(TMDB_TOKEN ? '╬ô┬ú├á TMDB enabled (HD posters + backdrops)' : '╬ô├£├íΓê⌐Γòò├à  TMDB token missing');
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1313:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1314:- tools/details-parity-v1/audit-details-fixture-gaps.js:19:  "backdrop",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1315:- tools/details-parity-v1/build-details-response-snapshot.js:19:    backdrop: clean(r.backdrop),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1316:- tools/details-parity-v1/build-expanded-details-fixture.js:30:    backdrop: clean(item.backdrop),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1317:- tools/details-parity-v1/expanded-details-fixture.json:14:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1318:- tools/details-parity-v1/expanded-details-fixture.json:30:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1319:- tools/details-parity-v1/expanded-details-fixture.json:46:    "backdrop": "https://image.tmdb.org/t/p/w1280/ru0r5MYhIwcU0IddhRLqJpIPkiV.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1320:- tools/details-parity-v1/expanded-details-fixture.json:62:    "backdrop": "https://image.tmdb.org/t/p/w1280/80K8REhL8wVESLmJk16zTMIS2BJ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1321:- tools/details-parity-v1/expanded-details-fixture.json:78:    "backdrop": "https://image.tmdb.org/t/p/w1280/unnhYUBP8DGw1nNdpiroc7OPiA0.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1322:- tools/details-parity-v1/expanded-details-fixture.json:94:    "backdrop": "https://image.tmdb.org/t/p/w1280/shFeiPJ1MBFdkjiWWigvrOOxvMY.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1323:- tools/details-parity-v1/expanded-details-fixture.json:110:    "backdrop": "https://image.tmdb.org/t/p/w1280/1x9e0qWonw634NhIsRdvnneeqvN.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1324:- tools/details-parity-v1/expanded-details-fixture.json:126:    "backdrop": "https://image.tmdb.org/t/p/w1280/eUERZRVjCTNdgnESlQxyaOJ2d4K.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1325:- tools/details-parity-v1/expanded-details-fixture.json:142:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1326:- tools/details-parity-v1/expanded-details-fixture.json:158:    "backdrop": "https://image.tmdb.org/t/p/w1280/8Tfys3mDZVp4tNoH2ktm06a0Tau.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1327:- tools/details-parity-v1/expanded-details-fixture.json:174:    "backdrop": "https://image.tmdb.org/t/p/w1280/rhuEN18ZimDOva3guaWZA4hYgLB.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1328:- tools/details-parity-v1/expanded-details-fixture.json:190:    "backdrop": "https://image.tmdb.org/t/p/w1280/drRxbu2OHG0DEENptZ8wI5f0uEU.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1329:- tools/details-parity-v1/expanded-details-fixture.json:206:    "backdrop": "https://image.tmdb.org/t/p/w1280/9uakM2woks0JV8HKIc4oatIVS88.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1330:- tools/details-parity-v1/expanded-details-fixture.json:222:    "backdrop": "https://image.tmdb.org/t/p/w1280/nBTUocp7lHmyrTmD8mTBOYem4ok.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1331:- tools/details-parity-v1/expanded-details-fixture.json:238:    "backdrop": "https://image.tmdb.org/t/p/w1280/bUktSJyiZIs4qPpMopjz2NMY0s9.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1332:- tools/details-parity-v1/expanded-details-fixture.json:254:    "backdrop": "https://image.tmdb.org/t/p/w1280/hHDNOlATHhre4eZ7aYz5cdyJLik.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1333:- tools/details-parity-v1/expanded-details-fixture.json:270:    "backdrop": "https://image.tmdb.org/t/p/w1280/puqQGxK9HYITUKhCdREg3XOLlZd.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1334:- tools/details-parity-v1/expanded-details-fixture.json:286:    "backdrop": "https://image.tmdb.org/t/p/w1280/vG42HeYtoTFflqwP42wYD7tBuNr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1335:- tools/details-parity-v1/expanded-details-fixture.json:302:    "backdrop": "https://image.tmdb.org/t/p/w1280/wns4x1GyxCudgOZRyhXKjXVJf3T.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1336:- tools/details-parity-v1/expanded-details-fixture.json:318:    "backdrop": "https://image.tmdb.org/t/p/w1280/po1niVuud0tX86xOFegO5omQ2wX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1337:- tools/details-parity-v1/expanded-details-fixture.json:334:    "backdrop": "https://image.tmdb.org/t/p/w1280/61BiigHOW0ReOZvV039UfeFM2gW.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1338:- tools/details-parity-v1/expanded-details-fixture.json:350:    "backdrop": "https://image.tmdb.org/t/p/w1280/qth56RA3rkUlhbDRDKGeMJEssdi.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1339:- tools/details-parity-v1/expanded-details-fixture.json:366:    "backdrop": "https://image.tmdb.org/t/p/w1280/hz7TdCrpLLt2Dz7S3PS2HG9rpAO.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1340:- tools/details-parity-v1/expanded-details-fixture.json:382:    "backdrop": "https://image.tmdb.org/t/p/w1280/gCmfeKmEAZBP5gcXpiqb0gii9rS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1341:- tools/details-parity-v1/expanded-details-fixture.json:398:    "backdrop": "https://image.tmdb.org/t/p/w1280/nHxWyy18SvAZ8jJeemtS8k1UNjM.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1342:- tools/details-parity-v1/expanded-details-fixture.json:414:    "backdrop": "https://image.tmdb.org/t/p/w1280/rbFqLPKj6D2JyRh5mOfA7jqX0Qk.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1343:- tools/details-parity-v1/expanded-details-fixture.json:430:    "backdrop": "https://image.tmdb.org/t/p/w1280/3F2EXWF1thX0BdrVaKvnm6mAhqh.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1344:- tools/details-parity-v1/expanded-details-fixture.json:446:    "backdrop": "https://image.tmdb.org/t/p/w1280/fPfDB0IHOqvmKIzFP9CA51OOS1N.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1345:- tools/details-parity-v1/expanded-details-fixture.json:462:    "backdrop": "https://image.tmdb.org/t/p/w1280/cz4vLJrmaV1zJlRYbxqtvLzeLWB.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1346:- tools/details-parity-v1/expanded-details-fixture.json:478:    "backdrop": "https://image.tmdb.org/t/p/w1280/6yeVcxFR0j08vlv2OlL6zbewm4D.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1347:- tools/details-parity-v1/expanded-details-fixture.json:494:    "backdrop": "https://image.tmdb.org/t/p/w1280/vSQSYd2zZTqc0zmHImwWEGGluMI.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1348:- tools/details-parity-v1/expanded-details-fixture.json:510:    "backdrop": "https://image.tmdb.org/t/p/w1280/5KFThZkdBEQkp9gPWWWNb5CI5yD.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1349:- tools/details-parity-v1/expanded-details-fixture.json:526:    "backdrop": "https://image.tmdb.org/t/p/w1280/skj7fo58v0cTLpmTXtCPbtOIWjs.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1350:- tools/details-parity-v1/expanded-details-fixture.json:542:    "backdrop": "https://image.tmdb.org/t/p/w1280/pfcyWSaPKGagqdunfBXQYCqZHxx.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1351:- tools/details-parity-v1/expanded-details-fixture.json:558:    "backdrop": "https://image.tmdb.org/t/p/w1280/drRxbu2OHG0DEENptZ8wI5f0uEU.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1352:- tools/details-parity-v1/expanded-details-fixture.json:574:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1353:- tools/details-parity-v1/expanded-details-fixture.json:590:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1354:- tools/details-parity-v1/expanded-details-fixture.json:606:    "backdrop": "https://image.tmdb.org/t/p/w1280/oPECip1U8I0pTcSsrsPSdPb5e9p.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1355:- tools/details-parity-v1/expanded-details-fixture.json:622:    "backdrop": "https://image.tmdb.org/t/p/w1280/jxE6XT9LTgm3GWN8QuEpizHqDlh.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1356:- tools/details-parity-v1/expanded-details-fixture.json:638:    "backdrop": "https://image.tmdb.org/t/p/w1280/pfcyWSaPKGagqdunfBXQYCqZHxx.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1357:- tools/details-parity-v1/expanded-details-fixture.json:654:    "backdrop": "https://image.tmdb.org/t/p/w1280/o0PUws61EjIokuqX0sbQs4CZguL.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1358:- tools/details-parity-v1/expanded-details-fixture.json:670:    "backdrop": "https://image.tmdb.org/t/p/w1280/rILHQgcOgE3DPsYSFWAuKJ7P0wk.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1359:- tools/details-parity-v1/expanded-details-fixture.json:686:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1360:- tools/details-parity-v1/expanded-details-fixture.json:702:    "backdrop": "https://image.tmdb.org/t/p/w1280/g7y8EDiXvlZYrIKDLlhtbcAPnxS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1361:- tools/details-parity-v1/expanded-details-fixture.json:718:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1362:- tools/details-parity-v1/expanded-details-fixture.json:734:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1363:- tools/details-parity-v1/expanded-details-fixture.json:750:    "backdrop": "https://image.tmdb.org/t/p/w1280/owQeDouUZ6wI6f1aTOYEFd511zn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1364:- tools/details-parity-v1/expanded-details-fixture.json:766:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1365:- tools/details-parity-v1/expanded-details-fixture.json:782:    "backdrop": "https://image.tmdb.org/t/p/w1280/okL1DAWIi4fuAKq9q0xdk9Ylp0o.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1366:- tools/details-parity-v1/expanded-details-fixture.json:798:    "backdrop": "https://image.tmdb.org/t/p/w1280/5z7eorMubo7nB11P8s5a0GMXf2D.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1367:- tools/details-parity-v1/expanded-details-fixture.json:814:    "backdrop": "https://image.tmdb.org/t/p/w1280/gM1kQRPwOVW1Eos5tVWqcYmHR5S.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1368:- tools/details-parity-v1/expanded-details-fixture.json:830:    "backdrop": "https://image.tmdb.org/t/p/w1280/yJqMynHqnCqx5oi0IuTtQtTKC6m.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1369:- tools/details-parity-v1/expanded-details-fixture.json:846:    "backdrop": "https://image.tmdb.org/t/p/w1280/fzo85eKFEjfmJ781gubJQjpQAwF.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1370:- tools/details-parity-v1/expanded-details-fixture.json:862:    "backdrop": "https://image.tmdb.org/t/p/w1280/owQeDouUZ6wI6f1aTOYEFd511zn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1371:- tools/details-parity-v1/expanded-details-fixture.json:878:    "backdrop": "https://image.tmdb.org/t/p/w1280/ApvEXB4XrrsgUHFlKDG1Z1V3MWC.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1372:- tools/details-parity-v1/expanded-details-fixture.json:894:    "backdrop": "https://image.tmdb.org/t/p/w1280/khdLhsQqnmrN6JUaEbhlZSMkKck.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1373:- tools/details-parity-v1/expanded-details-fixture.json:910:    "backdrop": "https://image.tmdb.org/t/p/w1280/gsLYR8uALrt2p33iOpqReNW6XyQ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1374:- tools/details-parity-v1/expanded-details-fixture.json:926:    "backdrop": "https://image.tmdb.org/t/p/w1280/wbhoYwvqgadchfMgUOfOp87QZDS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1375:- tools/details-parity-v1/expanded-details-fixture.json:942:    "backdrop": "https://image.tmdb.org/t/p/w1280/pfcyWSaPKGagqdunfBXQYCqZHxx.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1376:- tools/details-parity-v1/expanded-details-fixture.json:958:    "backdrop": "https://image.tmdb.org/t/p/w1280/7AypNX6eZrqyUPZl77jvwTfHgeV.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1377:- tools/details-parity-v1/expanded-details-fixture.json:974:    "backdrop": "https://image.tmdb.org/t/p/w1280/qTwn0p318YB4oXvQSIhSrhuTcpj.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1378:- tools/details-parity-v1/expanded-details-fixture.json:990:    "backdrop": "https://image.tmdb.org/t/p/w1280/lalZuTh46pR318FTNpJB5MZFk1m.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1379:- tools/details-parity-v1/expanded-details-fixture.json:1006:    "backdrop": "https://image.tmdb.org/t/p/w1280/zIOBTZAqGwdKnOb5c6SvzxP7x86.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1380:- tools/details-parity-v1/expanded-details-fixture.json:1022:    "backdrop": "https://image.tmdb.org/t/p/w1280/js26IayVJ5It0Vxc6M6c12ShBcr.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1381:- tools/details-parity-v1/expanded-details-fixture.json:1038:    "backdrop": "https://image.tmdb.org/t/p/w1280/9mgKDddLVQouKpXcb4ul1tUwUO9.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1382:- tools/details-parity-v1/expanded-details-fixture.json:1054:    "backdrop": "https://image.tmdb.org/t/p/w1280/g3bx3kTMC0GjaWD5qfkoyYp22Hg.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1383:- tools/details-parity-v1/expanded-details-fixture.json:1070:    "backdrop": "https://image.tmdb.org/t/p/w1280/6nlqYWDUpNem3v2bDCxQNSg41aY.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1384:- tools/details-parity-v1/expanded-details-fixture.json:1086:    "backdrop": "https://image.tmdb.org/t/p/w1280/t0Vd1QDmDC1jBuL8GEukJsSY2O2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1385:- tools/details-parity-v1/expanded-details-fixture.json:1102:    "backdrop": "https://image.tmdb.org/t/p/w1280/55e59Ls6zc37c7orbaWDyriyGPi.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1386:- tools/details-parity-v1/expanded-details-fixture.json:1118:    "backdrop": "https://image.tmdb.org/t/p/w1280/u53UYu5XG2hNgWGvs3xGhAVzypl.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1387:- tools/details-parity-v1/expanded-details-fixture.json:1134:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1388:- tools/details-parity-v1/expanded-details-fixture.json:1150:    "backdrop": "https://image.tmdb.org/t/p/w1280/q0YwDyjYc7ymp1xml95ZPxIHUej.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1389:- tools/details-parity-v1/expanded-details-fixture.json:1166:    "backdrop": "https://image.tmdb.org/t/p/w1280/tq3h43fZy0H80vzf47MAY7R9Mxo.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1390:- tools/details-parity-v1/expanded-details-fixture.json:1182:    "backdrop": "https://image.tmdb.org/t/p/w1280/yzIjyPtwvyjHelxqIRXGpiaucPG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1391:- tools/details-parity-v1/expanded-details-fixture.json:1198:    "backdrop": "https://image.tmdb.org/t/p/w1280/owQeDouUZ6wI6f1aTOYEFd511zn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1392:- tools/details-parity-v1/expanded-details-fixture.json:1214:    "backdrop": "https://image.tmdb.org/t/p/w1280/lK5MyvgkTVF3d2jDn0mlL7NY9Ud.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1393:- tools/details-parity-v1/expanded-details-fixture.json:1230:    "backdrop": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1394:- tools/details-parity-v1/expanded-details-fixture.json:1246:    "backdrop": "https://image.tmdb.org/t/p/w1280/drRxbu2OHG0DEENptZ8wI5f0uEU.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1395:- tools/details-parity-v1/expanded-details-fixture.json:1262:    "backdrop": "https://image.tmdb.org/t/p/w1280/pzGbiuYkc8B2Nu4SGzGEGIuduw4.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1396:- tools/details-parity-v1/expanded-details-fixture.json:1278:    "backdrop": "https://image.tmdb.org/t/p/w1280/1oKLEA9JOhvaBwLpqjROisvWMy7.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1397:- tools/details-parity-v1/expanded-details-fixture.json:1294:    "backdrop": "https://image.tmdb.org/t/p/w1280/7mkUu1F2hVUNgz24xO8HPx0D6mK.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1398:- tools/details-parity-v1/expanded-details-fixture.json:1310:    "backdrop": "https://image.tmdb.org/t/p/w1280/eVEbRtSOrczWlYnVmwM195AnX86.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1399:- tools/details-parity-v1/expanded-details-fixture.json:1326:    "backdrop": "https://image.tmdb.org/t/p/w1280/w1DjULItqmTGKnavi5hAtOGMogA.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1400:- tools/details-parity-v1/expanded-details-fixture.json:1342:    "backdrop": "https://image.tmdb.org/t/p/w1280/bd0usdz6dgmEE6HVhEhepR5r6MP.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1401:- tools/details-parity-v1/expanded-details-fixture.json:1358:    "backdrop": "https://image.tmdb.org/t/p/w1280/e9HhOb3o22t89lnpN511GzZE0Fp.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1402:- tools/details-parity-v1/expanded-details-fixture.json:1374:    "backdrop": "https://image.tmdb.org/t/p/w1280/n4hJLZmBG8kZccNn7bNgBDsVQ6a.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1403:- tools/details-parity-v1/expanded-details-fixture.json:1390:    "backdrop": "https://image.tmdb.org/t/p/w1280/yGJGwt7DdIWTUXuahLfhcH1gi7G.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1404:- tools/details-parity-v1/expanded-details-fixture.json:1406:    "backdrop": "https://image.tmdb.org/t/p/w1280/elVx0QX4pYgS6Sp3dX8sHZiX69N.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1405:- tools/details-parity-v1/expanded-details-fixture.json:1422:    "backdrop": "https://image.tmdb.org/t/p/w1280/Ak7AdQpvmZpSe9WYBd5KrgjSsSX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1406:- tools/details-parity-v1/expanded-details-fixture.json:1438:    "backdrop": "https://image.tmdb.org/t/p/w1280/1jBYTcOuiPNJsTcfYk66bbVLSBz.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1407:- tools/details-parity-v1/expanded-details-fixture.json:1454:    "backdrop": "https://image.tmdb.org/t/p/w1280/rXtSdCGmG07zjAg5h7GR1v52ogX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1408:- tools/details-parity-v1/expanded-details-fixture.json:1470:    "backdrop": "https://image.tmdb.org/t/p/w1280/5WOikKpCZ5H0zEzVDeE6eJwA8BH.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1409:- tools/details-parity-v1/expanded-details-fixture.json:1486:    "backdrop": "https://image.tmdb.org/t/p/w1280/lhQQE9vlNCKOYWamaHW8CBiI09B.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1410:- tools/details-parity-v1/expanded-details-fixture.json:1502:    "backdrop": "https://image.tmdb.org/t/p/w1280/lDmFwAaHL1kXnAfZeUTieAdUTko.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1411:- tools/details-parity-v1/expanded-details-fixture.json:1518:    "backdrop": "https://image.tmdb.org/t/p/w1280/qDq3dG4ElRohih5fUGNQRLHuBaC.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1412:- tools/details-parity-v1/expanded-details-fixture.json:1534:    "backdrop": "https://image.tmdb.org/t/p/w1280/los8S8iCRn5Q7irl0LNAp6C6Gmz.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1413:- tools/details-parity-v1/expanded-details-fixture.json:1550:    "backdrop": "https://image.tmdb.org/t/p/w1280/8mmDLb108DoFZlE8sfc64TRqLvm.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1414:- tools/details-parity-v1/expanded-details-fixture.json:1566:    "backdrop": "https://image.tmdb.org/t/p/w1280/rR3x79yEd0irce3PKT6wWgoaec5.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1415:- tools/details-parity-v1/expanded-details-fixture.json:1582:    "backdrop": "https://image.tmdb.org/t/p/w1280/zbbD1f9qndLPUFb6rW4Hi5471ZE.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1416:- tools/details-parity-v1/expanded-details-fixture.json:1583:    "overview": "13th tells the story of Ritesh, a successful venture capitalist who reunites with his maverick IIT-JEE mentor, Mohit Tyagi Sir, to help scale his visionary educational institute. The series unfolds against the backdrop of India's most gruelling academic competition and a startup culture fixated on valuations. At its heart, 13th is a deeply nostalgic, human story of a master and his pupil-bound by ambition, respect, and the lessons that shape a lifetime.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1417:- tools/details-parity-v1/expanded-details-fixture.json:1598:    "backdrop": "https://image.tmdb.org/t/p/w1280/llZodlkVKRkTdUsiRxvn8h80hhx.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1418:- tools/details-parity-v1/expanded-details-fixture.json:1614:    "backdrop": "https://image.tmdb.org/t/p/w1280/biIBy2LPOOtGCgUYOls3dUEWU3v.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1419:- tools/details-parity-v1/expanded-details-fixture.json:1630:    "backdrop": "https://image.tmdb.org/t/p/w1280/1FxG2lmDYsCM1svJf7H79HNNwu2.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1420:- tools/details-parity-v1/expanded-details-fixture.json:1646:    "backdrop": "https://image.tmdb.org/t/p/w1280/kukdq9ANNQUgtzM59B2hP9o059f.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1421:- tools/details-parity-v1/expanded-details-fixture.json:1662:    "backdrop": "https://image.tmdb.org/t/p/w1280/c2r31iNC052gj1noKDntFEh1VHX.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1422:- tools/details-parity-v1/expanded-details-fixture.json:1678:    "backdrop": "https://image.tmdb.org/t/p/w1280/9vvPICAl7LsEMpCtOzkKuE7f2ip.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1423:- tools/details-parity-v1/expanded-details-fixture.json:1694:    "backdrop": "https://image.tmdb.org/t/p/w1280/n3TdpfHtP0yKhpQcl3bfNiGYkIG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1424:- tools/details-parity-v1/expanded-details-fixture.json:1710:    "backdrop": "https://image.tmdb.org/t/p/w1280/gavFqSLcxcGgqciAhFdnJDdnpLj.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1425:- tools/details-parity-v1/expanded-details-fixture.json:1726:    "backdrop": "https://image.tmdb.org/t/p/w1280/9EAJbb6IYjQCUcxMxb3kty4Thnm.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1426:- tools/details-parity-v1/expanded-details-fixture.json:1742:    "backdrop": "https://image.tmdb.org/t/p/w1280/cyqKNRLFKCN9Y28ln38hLMESGEj.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1427:- tools/details-parity-v1/expanded-details-fixture.json:1758:    "backdrop": "https://image.tmdb.org/t/p/w1280/efbDkbMBPcHAfnsvJ9SXCdHgMBw.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1428:- tools/details-parity-v1/expanded-details-fixture.json:1774:    "backdrop": "https://image.tmdb.org/t/p/w1280/8Q6RZ2fMRdHZm2zxLGR59KvM4xn.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1429:- tools/details-parity-v1/expanded-details-fixture.json:1790:    "backdrop": "https://image.tmdb.org/t/p/w1280/48XNU2etOqdqFZ3qH7mCben1kPS.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1430:- tools/details-parity-v1/expanded-details-fixture.json:1806:    "backdrop": "https://image.tmdb.org/t/p/w1280/kPOm8uBC7ajkjCWC0NM2lRbhRLs.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1431:- tools/details-parity-v1/expanded-details-fixture.json:1822:    "backdrop": "https://image.tmdb.org/t/p/w1280/7vUmiPhYSgduTvGfRMZ4SdyTWKl.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1432:- tools/details-parity-v1/expanded-details-fixture.json:1838:    "backdrop": "https://image.tmdb.org/t/p/w1280/4GAmr9BWRfVjZ3GAntm7yjVf82i.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1433:- tools/details-parity-v1/expanded-details-fixture.json:1854:    "backdrop": "https://image.tmdb.org/t/p/w1280/2c3PCbxVgWen5HrYsaukUmfu4J9.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1434:- tools/details-parity-v1/expanded-details-fixture.json:1870:    "backdrop": "https://image.tmdb.org/t/p/w1280/jKyYbESbbsDuEF0G2a9Kg5zuttG.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1435:- tools/details-parity-v1/expanded-details-fixture.json:1886:    "backdrop": "https://image.tmdb.org/t/p/w1280/4pxGvtwxDlATy9nvJMvYL8u25LZ.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1436:- tools/details-parity-v1/expanded-details-fixture.json:1902:    "backdrop": "https://image.tmdb.org/t/p/w1280/eULa8WHAWxwDzAJIsQqH07heBg6.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1437:- tools/details-parity-v1/expanded-details-fixture.json:1918:    "backdrop": "https://image.tmdb.org/t/p/w1280/fmb8QgBVSx1lgKHbas3FNtZ9f5S.jpg",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1438:- tools/details-parity-v1/report-details-gap-priority.js:37:  ["backdrop", Number(values.GAP_MISSING_BACKDROP || 0)],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1439:- tools/details-parity-v1/test-details-fixture-coverage-negative.js:21:  backdrop: "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1440:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1441:- tools/details-parity-v1/test-details-response-parity-basic.js:27:    backdrop: clean(r.backdrop),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1442:- tools/details-parity-v1/validate-details-fixture-schema.js:64:      if ("backdrop" in r && !isString(r.backdrop)) {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1443:- tools/details-parity-v1/validate-details-fixture-schema.js:66:        problems.push(prefix + ": backdrop must be string");
+- tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md:16:RAW_backdrop=109
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/audit-details-fixture-gaps.js:19:  "backdrop",
+- tools/details-parity-v1/build-details-response-snapshot.js:19:    backdrop: clean(r.backdrop),
+- tools/details-parity-v1/build-expanded-details-fixture.js:30:    backdrop: clean(item.backdrop),
+- tools/details-parity-v1/expanded-details-fixture.json:14:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:30:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:46:    "backdrop": "https://image.tmdb.org/t/p/w1280/ru0r5MYhIwcU0IddhRLqJpIPkiV.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:62:    "backdrop": "https://image.tmdb.org/t/p/w1280/80K8REhL8wVESLmJk16zTMIS2BJ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:78:    "backdrop": "https://image.tmdb.org/t/p/w1280/unnhYUBP8DGw1nNdpiroc7OPiA0.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:94:    "backdrop": "https://image.tmdb.org/t/p/w1280/shFeiPJ1MBFdkjiWWigvrOOxvMY.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:110:    "backdrop": "https://image.tmdb.org/t/p/w1280/1x9e0qWonw634NhIsRdvnneeqvN.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:126:    "backdrop": "https://image.tmdb.org/t/p/w1280/eUERZRVjCTNdgnESlQxyaOJ2d4K.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:142:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:158:    "backdrop": "https://image.tmdb.org/t/p/w1280/8Tfys3mDZVp4tNoH2ktm06a0Tau.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:174:    "backdrop": "https://image.tmdb.org/t/p/w1280/rhuEN18ZimDOva3guaWZA4hYgLB.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:190:    "backdrop": "https://image.tmdb.org/t/p/w1280/drRxbu2OHG0DEENptZ8wI5f0uEU.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:206:    "backdrop": "https://image.tmdb.org/t/p/w1280/9uakM2woks0JV8HKIc4oatIVS88.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:222:    "backdrop": "https://image.tmdb.org/t/p/w1280/nBTUocp7lHmyrTmD8mTBOYem4ok.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:238:    "backdrop": "https://image.tmdb.org/t/p/w1280/bUktSJyiZIs4qPpMopjz2NMY0s9.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:254:    "backdrop": "https://image.tmdb.org/t/p/w1280/hHDNOlATHhre4eZ7aYz5cdyJLik.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:270:    "backdrop": "https://image.tmdb.org/t/p/w1280/puqQGxK9HYITUKhCdREg3XOLlZd.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:286:    "backdrop": "https://image.tmdb.org/t/p/w1280/vG42HeYtoTFflqwP42wYD7tBuNr.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:302:    "backdrop": "https://image.tmdb.org/t/p/w1280/wns4x1GyxCudgOZRyhXKjXVJf3T.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:318:    "backdrop": "https://image.tmdb.org/t/p/w1280/po1niVuud0tX86xOFegO5omQ2wX.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:334:    "backdrop": "https://image.tmdb.org/t/p/w1280/61BiigHOW0ReOZvV039UfeFM2gW.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:350:    "backdrop": "https://image.tmdb.org/t/p/w1280/qth56RA3rkUlhbDRDKGeMJEssdi.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:366:    "backdrop": "https://image.tmdb.org/t/p/w1280/hz7TdCrpLLt2Dz7S3PS2HG9rpAO.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:382:    "backdrop": "https://image.tmdb.org/t/p/w1280/gCmfeKmEAZBP5gcXpiqb0gii9rS.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:398:    "backdrop": "https://image.tmdb.org/t/p/w1280/nHxWyy18SvAZ8jJeemtS8k1UNjM.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:414:    "backdrop": "https://image.tmdb.org/t/p/w1280/rbFqLPKj6D2JyRh5mOfA7jqX0Qk.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:430:    "backdrop": "https://image.tmdb.org/t/p/w1280/3F2EXWF1thX0BdrVaKvnm6mAhqh.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:446:    "backdrop": "https://image.tmdb.org/t/p/w1280/fPfDB0IHOqvmKIzFP9CA51OOS1N.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:462:    "backdrop": "https://image.tmdb.org/t/p/w1280/cz4vLJrmaV1zJlRYbxqtvLzeLWB.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:478:    "backdrop": "https://image.tmdb.org/t/p/w1280/6yeVcxFR0j08vlv2OlL6zbewm4D.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:494:    "backdrop": "https://image.tmdb.org/t/p/w1280/vSQSYd2zZTqc0zmHImwWEGGluMI.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:510:    "backdrop": "https://image.tmdb.org/t/p/w1280/5KFThZkdBEQkp9gPWWWNb5CI5yD.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:526:    "backdrop": "https://image.tmdb.org/t/p/w1280/skj7fo58v0cTLpmTXtCPbtOIWjs.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:542:    "backdrop": "https://image.tmdb.org/t/p/w1280/pfcyWSaPKGagqdunfBXQYCqZHxx.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:558:    "backdrop": "https://image.tmdb.org/t/p/w1280/drRxbu2OHG0DEENptZ8wI5f0uEU.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:574:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:590:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:606:    "backdrop": "https://image.tmdb.org/t/p/w1280/oPECip1U8I0pTcSsrsPSdPb5e9p.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:622:    "backdrop": "https://image.tmdb.org/t/p/w1280/jxE6XT9LTgm3GWN8QuEpizHqDlh.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:638:    "backdrop": "https://image.tmdb.org/t/p/w1280/pfcyWSaPKGagqdunfBXQYCqZHxx.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:654:    "backdrop": "https://image.tmdb.org/t/p/w1280/o0PUws61EjIokuqX0sbQs4CZguL.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:670:    "backdrop": "https://image.tmdb.org/t/p/w1280/rILHQgcOgE3DPsYSFWAuKJ7P0wk.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:686:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:702:    "backdrop": "https://image.tmdb.org/t/p/w1280/g7y8EDiXvlZYrIKDLlhtbcAPnxS.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:718:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:734:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:750:    "backdrop": "https://image.tmdb.org/t/p/w1280/owQeDouUZ6wI6f1aTOYEFd511zn.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:766:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:782:    "backdrop": "https://image.tmdb.org/t/p/w1280/okL1DAWIi4fuAKq9q0xdk9Ylp0o.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:798:    "backdrop": "https://image.tmdb.org/t/p/w1280/5z7eorMubo7nB11P8s5a0GMXf2D.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:814:    "backdrop": "https://image.tmdb.org/t/p/w1280/gM1kQRPwOVW1Eos5tVWqcYmHR5S.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:830:    "backdrop": "https://image.tmdb.org/t/p/w1280/yJqMynHqnCqx5oi0IuTtQtTKC6m.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:846:    "backdrop": "https://image.tmdb.org/t/p/w1280/fzo85eKFEjfmJ781gubJQjpQAwF.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:862:    "backdrop": "https://image.tmdb.org/t/p/w1280/owQeDouUZ6wI6f1aTOYEFd511zn.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:878:    "backdrop": "https://image.tmdb.org/t/p/w1280/ApvEXB4XrrsgUHFlKDG1Z1V3MWC.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:894:    "backdrop": "https://image.tmdb.org/t/p/w1280/khdLhsQqnmrN6JUaEbhlZSMkKck.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:910:    "backdrop": "https://image.tmdb.org/t/p/w1280/gsLYR8uALrt2p33iOpqReNW6XyQ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:926:    "backdrop": "https://image.tmdb.org/t/p/w1280/wbhoYwvqgadchfMgUOfOp87QZDS.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:942:    "backdrop": "https://image.tmdb.org/t/p/w1280/pfcyWSaPKGagqdunfBXQYCqZHxx.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:958:    "backdrop": "https://image.tmdb.org/t/p/w1280/7AypNX6eZrqyUPZl77jvwTfHgeV.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:974:    "backdrop": "https://image.tmdb.org/t/p/w1280/qTwn0p318YB4oXvQSIhSrhuTcpj.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:990:    "backdrop": "https://image.tmdb.org/t/p/w1280/lalZuTh46pR318FTNpJB5MZFk1m.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1006:    "backdrop": "https://image.tmdb.org/t/p/w1280/zIOBTZAqGwdKnOb5c6SvzxP7x86.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1022:    "backdrop": "https://image.tmdb.org/t/p/w1280/js26IayVJ5It0Vxc6M6c12ShBcr.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1038:    "backdrop": "https://image.tmdb.org/t/p/w1280/9mgKDddLVQouKpXcb4ul1tUwUO9.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1054:    "backdrop": "https://image.tmdb.org/t/p/w1280/g3bx3kTMC0GjaWD5qfkoyYp22Hg.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1070:    "backdrop": "https://image.tmdb.org/t/p/w1280/6nlqYWDUpNem3v2bDCxQNSg41aY.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1086:    "backdrop": "https://image.tmdb.org/t/p/w1280/t0Vd1QDmDC1jBuL8GEukJsSY2O2.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1102:    "backdrop": "https://image.tmdb.org/t/p/w1280/55e59Ls6zc37c7orbaWDyriyGPi.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1118:    "backdrop": "https://image.tmdb.org/t/p/w1280/u53UYu5XG2hNgWGvs3xGhAVzypl.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1134:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1150:    "backdrop": "https://image.tmdb.org/t/p/w1280/q0YwDyjYc7ymp1xml95ZPxIHUej.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1166:    "backdrop": "https://image.tmdb.org/t/p/w1280/tq3h43fZy0H80vzf47MAY7R9Mxo.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1182:    "backdrop": "https://image.tmdb.org/t/p/w1280/yzIjyPtwvyjHelxqIRXGpiaucPG.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1198:    "backdrop": "https://image.tmdb.org/t/p/w1280/owQeDouUZ6wI6f1aTOYEFd511zn.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1214:    "backdrop": "https://image.tmdb.org/t/p/w1280/lK5MyvgkTVF3d2jDn0mlL7NY9Ud.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1230:    "backdrop": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1246:    "backdrop": "https://image.tmdb.org/t/p/w1280/drRxbu2OHG0DEENptZ8wI5f0uEU.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1262:    "backdrop": "https://image.tmdb.org/t/p/w1280/pzGbiuYkc8B2Nu4SGzGEGIuduw4.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1278:    "backdrop": "https://image.tmdb.org/t/p/w1280/1oKLEA9JOhvaBwLpqjROisvWMy7.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1294:    "backdrop": "https://image.tmdb.org/t/p/w1280/7mkUu1F2hVUNgz24xO8HPx0D6mK.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1310:    "backdrop": "https://image.tmdb.org/t/p/w1280/eVEbRtSOrczWlYnVmwM195AnX86.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1326:    "backdrop": "https://image.tmdb.org/t/p/w1280/w1DjULItqmTGKnavi5hAtOGMogA.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1342:    "backdrop": "https://image.tmdb.org/t/p/w1280/bd0usdz6dgmEE6HVhEhepR5r6MP.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1358:    "backdrop": "https://image.tmdb.org/t/p/w1280/e9HhOb3o22t89lnpN511GzZE0Fp.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1374:    "backdrop": "https://image.tmdb.org/t/p/w1280/n4hJLZmBG8kZccNn7bNgBDsVQ6a.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1390:    "backdrop": "https://image.tmdb.org/t/p/w1280/yGJGwt7DdIWTUXuahLfhcH1gi7G.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1406:    "backdrop": "https://image.tmdb.org/t/p/w1280/elVx0QX4pYgS6Sp3dX8sHZiX69N.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1422:    "backdrop": "https://image.tmdb.org/t/p/w1280/Ak7AdQpvmZpSe9WYBd5KrgjSsSX.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1438:    "backdrop": "https://image.tmdb.org/t/p/w1280/1jBYTcOuiPNJsTcfYk66bbVLSBz.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1454:    "backdrop": "https://image.tmdb.org/t/p/w1280/rXtSdCGmG07zjAg5h7GR1v52ogX.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1470:    "backdrop": "https://image.tmdb.org/t/p/w1280/5WOikKpCZ5H0zEzVDeE6eJwA8BH.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1486:    "backdrop": "https://image.tmdb.org/t/p/w1280/lhQQE9vlNCKOYWamaHW8CBiI09B.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1502:    "backdrop": "https://image.tmdb.org/t/p/w1280/lDmFwAaHL1kXnAfZeUTieAdUTko.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1518:    "backdrop": "https://image.tmdb.org/t/p/w1280/qDq3dG4ElRohih5fUGNQRLHuBaC.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1534:    "backdrop": "https://image.tmdb.org/t/p/w1280/los8S8iCRn5Q7irl0LNAp6C6Gmz.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1550:    "backdrop": "https://image.tmdb.org/t/p/w1280/8mmDLb108DoFZlE8sfc64TRqLvm.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1566:    "backdrop": "https://image.tmdb.org/t/p/w1280/rR3x79yEd0irce3PKT6wWgoaec5.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1582:    "backdrop": "https://image.tmdb.org/t/p/w1280/zbbD1f9qndLPUFb6rW4Hi5471ZE.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1583:    "overview": "13th tells the story of Ritesh, a successful venture capitalist who reunites with his maverick IIT-JEE mentor, Mohit Tyagi Sir, to help scale his visionary educational institute. The series unfolds against the backdrop of India's most gruelling academic competition and a startup culture fixated on valuations. At its heart, 13th is a deeply nostalgic, human story of a master and his pupil-bound by ambition, respect, and the lessons that shape a lifetime.",
+- tools/details-parity-v1/expanded-details-fixture.json:1598:    "backdrop": "https://image.tmdb.org/t/p/w1280/llZodlkVKRkTdUsiRxvn8h80hhx.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1614:    "backdrop": "https://image.tmdb.org/t/p/w1280/biIBy2LPOOtGCgUYOls3dUEWU3v.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1630:    "backdrop": "https://image.tmdb.org/t/p/w1280/1FxG2lmDYsCM1svJf7H79HNNwu2.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1646:    "backdrop": "https://image.tmdb.org/t/p/w1280/kukdq9ANNQUgtzM59B2hP9o059f.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1662:    "backdrop": "https://image.tmdb.org/t/p/w1280/c2r31iNC052gj1noKDntFEh1VHX.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1678:    "backdrop": "https://image.tmdb.org/t/p/w1280/9vvPICAl7LsEMpCtOzkKuE7f2ip.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1694:    "backdrop": "https://image.tmdb.org/t/p/w1280/n3TdpfHtP0yKhpQcl3bfNiGYkIG.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1710:    "backdrop": "https://image.tmdb.org/t/p/w1280/gavFqSLcxcGgqciAhFdnJDdnpLj.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1726:    "backdrop": "https://image.tmdb.org/t/p/w1280/9EAJbb6IYjQCUcxMxb3kty4Thnm.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1742:    "backdrop": "https://image.tmdb.org/t/p/w1280/cyqKNRLFKCN9Y28ln38hLMESGEj.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1758:    "backdrop": "https://image.tmdb.org/t/p/w1280/efbDkbMBPcHAfnsvJ9SXCdHgMBw.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1774:    "backdrop": "https://image.tmdb.org/t/p/w1280/8Q6RZ2fMRdHZm2zxLGR59KvM4xn.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1790:    "backdrop": "https://image.tmdb.org/t/p/w1280/48XNU2etOqdqFZ3qH7mCben1kPS.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1806:    "backdrop": "https://image.tmdb.org/t/p/w1280/kPOm8uBC7ajkjCWC0NM2lRbhRLs.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1822:    "backdrop": "https://image.tmdb.org/t/p/w1280/7vUmiPhYSgduTvGfRMZ4SdyTWKl.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1838:    "backdrop": "https://image.tmdb.org/t/p/w1280/4GAmr9BWRfVjZ3GAntm7yjVf82i.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1854:    "backdrop": "https://image.tmdb.org/t/p/w1280/2c3PCbxVgWen5HrYsaukUmfu4J9.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1870:    "backdrop": "https://image.tmdb.org/t/p/w1280/jKyYbESbbsDuEF0G2a9Kg5zuttG.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1886:    "backdrop": "https://image.tmdb.org/t/p/w1280/4pxGvtwxDlATy9nvJMvYL8u25LZ.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1902:    "backdrop": "https://image.tmdb.org/t/p/w1280/eULa8WHAWxwDzAJIsQqH07heBg6.jpg",
+- tools/details-parity-v1/expanded-details-fixture.json:1918:    "backdrop": "https://image.tmdb.org/t/p/w1280/fmb8QgBVSx1lgKHbas3FNtZ9f5S.jpg",
+- tools/details-parity-v1/report-details-gap-priority.js:37:  ["backdrop", Number(values.GAP_MISSING_BACKDROP || 0)],
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:7:const fields = ["poster","backdrop","overview","rating","genre","runtime","language","director","productionCompanies"];
+- tools/details-parity-v1/test-details-fixture-coverage-negative.js:21:  backdrop: "",
+- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/test-details-response-parity-basic.js:27:    backdrop: clean(r.backdrop),
+- tools/details-parity-v1/validate-details-fixture-schema.js:64:      if ("backdrop" in r && !isString(r.backdrop)) {
+- tools/details-parity-v1/validate-details-fixture-schema.js:66:        problems.push(prefix + ": backdrop must be string");
+
+## git grep: overview
+- app/CatalogApi.hs:253:    , "overview" .= textOr "" (infoField "overview")
+- app/CatalogApi.hs:359:          , "overview" .= textOr "" (infoField "overview")
+- app/CatalogApi.hs:791:        , fieldText "overview" item
+- app/CatalogApi.hs:925:          , "overview" .= textOr "" (field "overview" m)
+- app/CatalogApi.hs:970:    , fieldText "overview" item
+- server.js:526:      overview: item.overview || '',
+- server.js:554:  item.overview = item.overview || hit.overview || '';
+- server.js:628:    item.overview,
+- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- server.js:1441:      overview: info?.overview || '',
+- server.js:1483:      overview: info.overview,
+- server.js:1516:        overview: info.overview || item.overview,
+- server.js:1539:      overview: info.overview || show.overview,
+- server.js:1917:      overview: m.overview || '',
+- server.js:1944:      overview: s.overview || '',
+- server.js:1964:            overview: e.overview || '',
+- server.js:2062:    overview: item?.overview || '',
+- server.js:2114:      overview: raw.overview || '',
+- server.js:2146:    overview: raw.overview || '',
+- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- server.js:2370:      tmdbId:s.tmdbId || null, overview:s.overview || '', year:s.year || '', rating:s.rating || null,
+- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- server.js:2931:// TMDB ΓÇö episode data (titles, thumbnails, overviews)
+- server.js:3086:    overview: item.overview || '',
+- server.js:3388:    overview: searchResult?.overview || '',
+- server.js:3442:    overview: detail.overview || '',
+- server.js:3496:    overview: searchResult?.overview || '',
+- server.js:3549:    overview: detail.overview || '',
+- server.js:3627:      overview: e.overview    || '',
+- server.js:4850:      overview: r.overview||'', year: (r.release_date||'').slice(0,4),
+- server.js:4859:      overview: r.overview||'', year: (r.first_air_date||'').slice(0,4),
+- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:21:* overview-related lines: 3
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:65:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:207:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:357:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:386:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:455:- tools/details-parity-v1/expanded-details-fixture.json:623:    "overview": "Singh vs Kaur 2 is an upcoming Indian Punjabi-language romantic comedy film directed by Navaniat Singh and produced by Gippy Grewal's Humble Motion Pictures and SVF Entertainment. Serving as a standalone sequel to the 2013 film Singh vs Kaur, it stars Gippy Grewal and Shehnaaz Gill, scheduled for worldwide release on 24th April 2026.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:539:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:599:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:660:- server.js:2370:      tmdbId:s.tmdbId || null, overview:s.overview || '', year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:693:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:733:- tools/details-parity-v1/expanded-details-fixture.json:575:    "overview": "In a mind void of the line separating reality, broken pencils tells the truth.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:820:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:874:- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:909:- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:954:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:956:- tools/details-parity-v1/DETAILS_SHADOW_GATES.md:17:5. details:shadow:fixture:coverage - movie/tv/poster/overview coverage
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1082:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1087:- tools/details-parity-v1/test-details-response-parity-basic.js:32:  const required = ["ok","status","type","title","name","year","poster","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1093:## grep: overview
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1094:- app/CatalogApi.hs:253:    , "overview" .= textOr "" (infoField "overview")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1095:- app/CatalogApi.hs:359:          , "overview" .= textOr "" (infoField "overview")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1096:- app/CatalogApi.hs:791:        , fieldText "overview" item
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1097:- app/CatalogApi.hs:925:          , "overview" .= textOr "" (field "overview" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1098:- app/CatalogApi.hs:970:    , fieldText "overview" item
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1099:- server.js:526:      overview: item.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1100:- server.js:554:  item.overview = item.overview || hit.overview || '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1101:- server.js:628:    item.overview,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1102:- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1103:- server.js:1441:      overview: info?.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1104:- server.js:1483:      overview: info.overview,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1105:- server.js:1516:        overview: info.overview || item.overview,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1106:- server.js:1539:      overview: info.overview || show.overview,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1107:- server.js:1917:      overview: m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1108:- server.js:1944:      overview: s.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1109:- server.js:1964:            overview: e.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1110:- server.js:2062:    overview: item?.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1111:- server.js:2114:      overview: raw.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1112:- server.js:2146:    overview: raw.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1113:- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1114:- server.js:2370:      tmdbId:s.tmdbId || null, overview:s.overview || '', year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1115:- server.js:2391:  return [item.name, item.title, item.file, item.overview, item.genre, item.category, item.language, item.year, ...(item.productionCompanies || [])]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1116:- server.js:2931:// TMDB ╬ô├ç├╢ episode data (titles, thumbnails, overviews)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1117:- server.js:3086:    overview: item.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1118:- server.js:3388:    overview: searchResult?.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1119:- server.js:3442:    overview: detail.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1120:- server.js:3496:    overview: searchResult?.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1121:- server.js:3549:    overview: detail.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1122:- server.js:3627:      overview: e.overview    || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1123:- server.js:4850:      overview: r.overview||'', year: (r.release_date||'').slice(0,4),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1124:- server.js:4859:      overview: r.overview||'', year: (r.first_air_date||'').slice(0,4),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1125:- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:21:* overview-related lines: 3
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1126:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7E.md:21:- overviews: 115
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1127:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7F.md:25:- overviews: 115
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1128:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7H.md:29:- overviews: 115
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1129:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1130:- tools/details-parity-v1/DETAILS_SHADOW_GATES.md:17:5. details:shadow:fixture:coverage - movie/tv/poster/overview coverage
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1131:- tools/details-parity-v1/audit-details-fixture-gaps.js:20:  "overview",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1132:- tools/details-parity-v1/build-details-response-snapshot.js:20:    overview: clean(r.overview),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1133:- tools/details-parity-v1/build-expanded-details-fixture.js:31:    overview: clean(item.overview),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1134:- tools/details-parity-v1/expanded-details-fixture.json:15:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1135:- tools/details-parity-v1/expanded-details-fixture.json:31:    "overview": "A new film based on the novels. Plot TBA.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1136:- tools/details-parity-v1/expanded-details-fixture.json:47:    "overview": "Jailed for her husband's crime, a woman discovers that her only way out is to solve riddles from her mysterious past.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1137:- tools/details-parity-v1/expanded-details-fixture.json:63:    "overview": "Shakespeare╬ô├ç├ûs most enduring tragedy is reimagined in a bold, modern adaptation set within London╬ô├ç├ûs elite South Asian community. When Hamlet (Riz Ahmed) returns for his father╬ô├ç├ûs funeral, he is stunned to discover his uncle Claudius is marrying his newly widowed mother. Visited by his father╬ô├ç├ûs ghost, Hamlet learns his brutal murder was at the hands of Claudius - and spirals into a quest for vengeance that exposes the rot at the heart of the family╬ô├ç├ûs empire and threatens his own sanity.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1138:- tools/details-parity-v1/expanded-details-fixture.json:79:    "overview": "An unhappy woman goes back in time and poses as her cousin to prevent her younger self from making the same mistakes and ruining her future.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1139:- tools/details-parity-v1/expanded-details-fixture.json:95:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1140:- tools/details-parity-v1/expanded-details-fixture.json:111:    "overview": "High school student Polina is saved from bullying at her new school and makes a deal with the main bully Bars: he must pretend to be her boyfriend and protect her, and she must do everything he says. During this game, the couple develops real feelings, but her family and classmates have reasons to separate the lovers.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1141:- tools/details-parity-v1/expanded-details-fixture.json:127:    "overview": "A CIA-trained assassin recruits other graduates from her secret childhood program, The Internship, to violently destroy the organization. The CIA fights back with deadly force.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1142:- tools/details-parity-v1/expanded-details-fixture.json:143:    "overview": "Teen Spirit chronicles teenager's volatile emotions, complex relationships, and personal growth as they navigate the final days of high school through the eyes of Charu. The series delves into the complexities of teenage life, emphasizing personal growth, resilience, and the importance of friendship.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1143:- tools/details-parity-v1/expanded-details-fixture.json:159:    "overview": "Science teacher Ryland Grace wakes up on a spaceship light years from home with no recollection of who he is or how he got there. As his memory returns, he begins to uncover his mission: solve the riddle of the mysterious substance causing the sun to die out. He must call on his scientific knowledge and unorthodox ideas to save everything on Earth from extinction╬ô├ç┬¬ but an unexpected friendship means he may not have to do it alone.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1144:- tools/details-parity-v1/expanded-details-fixture.json:175:    "overview": "Young Macy is abducted by a deranged, monstrous figure who wants to raise her as its child.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1145:- tools/details-parity-v1/expanded-details-fixture.json:191:    "overview": "A 'Man from the Future' arrives at an LA diner where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1146:- tools/details-parity-v1/expanded-details-fixture.json:207:    "overview": "Lucy, a college student, along with her friends, spend their vacation at her family's home in Hawaii, which includes her pet chimpanzee, Ben. However, when Ben contracts rabies after being bitten by a rabid animal, the group must fight for their lives in order to avoid the now-violent chimp.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1147:- tools/details-parity-v1/expanded-details-fixture.json:223:    "overview": "In an attempt to avenge her daughter╬ô├ç├ûs death, Irene Kelly travels through parallel universes, killing her daughter╬ô├ç├ûs murderer again and again. As she becomes consumed by vengeance, her humanity begins to slip away╬ô├ç├╢until the cycle is disrupted when she rescues Mia, a sharp-witted teenager already marked by the killer.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1148:- tools/details-parity-v1/expanded-details-fixture.json:239:    "overview": "A successful black businessman, haunted by his crumbling marriage and identity crisis, is drawn into a psychological game of cat and mouse with a mysterious white woman he encounters on a New York subway.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1149:- tools/details-parity-v1/expanded-details-fixture.json:255:    "overview": "Dr. Kelson finds himself in a shocking new relationship - with consequences that could change the world as they know it - and Spike's encounter with Jimmy Crystal becomes a nightmare he can't escape.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1150:- tools/details-parity-v1/expanded-details-fixture.json:271:    "overview": "When a mutating, highly contagious fungus escapes a sealed facility, two employees ╬ô├ç├┤ joined by a grizzled bioterror operative ╬ô├ç├┤ must survive the wildest night shift ever to save humanity from extinction.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1151:- tools/details-parity-v1/expanded-details-fixture.json:287:    "overview": "When an elusive thief whose high-stakes heists unfold along the iconic 101 freeway in Los Angeles eyes the score of a lifetime, with hopes of this being his final job, his path collides with a disillusioned insurance broker who is facing her own crossroads. Determined to crack the case, a relentless detective closes in on the operation, raising the stakes even higher.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1152:- tools/details-parity-v1/expanded-details-fixture.json:303:    "overview": "Having found the safety of the Greenland bunker after the comet Clarke decimated the Earth, the Garrity family must now risk everything to embark on a perilous journey across the wasteland of Europe to find a new home.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1153:- tools/details-parity-v1/expanded-details-fixture.json:319:    "overview": "In the near future, a detective stands on trial accused of murdering his wife. He has ninety minutes to prove his innocence to the advanced AI Judge he once championed, before it determines his fate.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1154:- tools/details-parity-v1/expanded-details-fixture.json:335:    "overview": "After his estranged son gets embroiled in a Nazi plot, self-exiled gangster Tommy Shelby must return to Birmingham to save his family ╬ô├ç├╢ and his nation.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1155:- tools/details-parity-v1/expanded-details-fixture.json:351:    "overview": "Poppy's a free spirit. Alex loves a plan. After years of summer vacations, these polar-opposite pals wonder if they could be a perfect romantic match.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1156:- tools/details-parity-v1/expanded-details-fixture.json:367:    "overview": "When a new Ghostface killer emerges in the quiet town where Sidney Prescott has built a new life, her darkest fears are realized as her daughter becomes the next target. Determined to protect her family, Sidney must face the horrors of her past to put an end to the bloodshed once and for all.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1157:- tools/details-parity-v1/expanded-details-fixture.json:383:    "overview": "Two colleagues become stranded on a deserted island, the only survivors of a plane crash. On the island, they must overcome past grievances and work together to survive, but ultimately, it's a battle of wills and wits to make it out alive.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1158:- tools/details-parity-v1/expanded-details-fixture.json:399:    "overview": "A man living in self-imposed exile on a remote island rescues a young girl from a violent storm, setting off a chain of events that forces him out of seclusion to protect her from enemies tied to his past.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1159:- tools/details-parity-v1/expanded-details-fixture.json:415:    "overview": "When her tranquil life on a remote island is shattered by the return of her vengeful former captain, a skilled ex-pirate must confront her bloody past and unleash her deadly talents to save her family from a ruthless siege.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1160:- tools/details-parity-v1/expanded-details-fixture.json:431:    "overview": "Trust frays when a team of Miami cops discovers millions in cash inside a run-down stash house, calling everyone ╬ô├ç├╢ and everything ╬ô├ç├╢ into question.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1161:- tools/details-parity-v1/expanded-details-fixture.json:447:    "overview": "Tethered by a frightening conclusion, Maya and the Strangers are locked on an unavoidable, unforgiving collision course ╬ô├ç├╢ a showdown that proves they╬ô├ç├ûre far from strangers now.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1162:- tools/details-parity-v1/expanded-details-fixture.json:463:    "overview": "Estranged half-brothers Jonny and James reunite after their father's mysterious death. As they search for the truth, buried secrets reveal a conspiracy threatening to tear their family apart.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1163:- tools/details-parity-v1/expanded-details-fixture.json:479:    "overview": "On one last grueling mission during Army Ranger training, a combat engineer must lead his unit in a fight against a giant otherworldly killing machine.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1164:- tools/details-parity-v1/expanded-details-fixture.json:495:    "overview": "Tragedy strikes when Heathcliff falls in love with Catherine Earnshaw, a woman from a wealthy family in 18th-century England.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1165:- tools/details-parity-v1/expanded-details-fixture.json:511:    "overview": "A South Korean agent hunts a drug ring in Russia and goes head-to-head with a North Korean operative ╬ô├ç├╢ pulling both into peril and tangled secrets.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1166:- tools/details-parity-v1/expanded-details-fixture.json:527:    "overview": "When recent college grad Manny has trouble making ends meet, his father-in-law offers him a job evicting delinquent tenants. Manny soon finds himself unleashing a karma demon which stalks him at every turn.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1167:- tools/details-parity-v1/expanded-details-fixture.json:543:    "overview": "Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1168:- tools/details-parity-v1/expanded-details-fixture.json:559:    "overview": "A 'Man from the Future' arrives at an LA diner where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1169:- tools/details-parity-v1/expanded-details-fixture.json:575:    "overview": "In a mind void of the line separating reality, broken pencils tells the truth.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1170:- tools/details-parity-v1/expanded-details-fixture.json:591:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1171:- tools/details-parity-v1/expanded-details-fixture.json:607:    "overview": "Rohan is in love with his colleague Meera but does not have the courage to express his feelings towards her. He finally gets his chance during the company trip. He makes a wish to be with Meera for just one day, and his wish comes true.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1172:- tools/details-parity-v1/expanded-details-fixture.json:623:    "overview": "Singh vs Kaur 2 is an upcoming Indian Punjabi-language romantic comedy film directed by Navaniat Singh and produced by Gippy Grewal's Humble Motion Pictures and SVF Entertainment. Serving as a standalone sequel to the 2013 film Singh vs Kaur, it stars Gippy Grewal and Shehnaaz Gill, scheduled for worldwide release on 24th April 2026.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1173:- tools/details-parity-v1/expanded-details-fixture.json:639:    "overview": "Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1174:- tools/details-parity-v1/expanded-details-fixture.json:655:    "overview": "After getting married and having a daughter, a retired legendary hitman must protect his family when his past catches up to him.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1175:- tools/details-parity-v1/expanded-details-fixture.json:671:    "overview": "Based on the events that took place between the Indian and Chinese troops at the Galwan region on June 15, 2020 when 200 Indian soldiers bravely defended their territory against a force of 1200 Chinese Liberation Army soldiers",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1176:- tools/details-parity-v1/expanded-details-fixture.json:687:    "overview": "A village's unity is tested by a new highway project that sparks greed and conflict.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1177:- tools/details-parity-v1/expanded-details-fixture.json:703:    "overview": "The family's journey to Sreekandapuram to settle the late Bharathan Nair's second wife and son takes a dark turn when an issue from his past resurfaces, leading to an unexpected crime. Forced into a desperate cover-up to protect their future, the family must navigate a treacherous path of secrecy and mounting pressure, determined to overcome any obstacle by any means necessary.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1178:- tools/details-parity-v1/expanded-details-fixture.json:719:    "overview": "Studious teen Emma is left home alone for the first time in a while, when she unexpectedly gets an invite to her first party, she embarks on a whirlwind of adventures meeting new people.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1179:- tools/details-parity-v1/expanded-details-fixture.json:735:    "overview": "Sequel to Lakadbaggha (2023). Plot TBA.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1180:- tools/details-parity-v1/expanded-details-fixture.json:751:    "overview": "As rival gangs, corrupt officials and a ruthless Major Iqbal close in, Hamza's mission for his country spirals into a bloody personal war where the line between patriot and monster disappears in the streets of Lyari.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1181:- tools/details-parity-v1/expanded-details-fixture.json:767:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1182:- tools/details-parity-v1/expanded-details-fixture.json:783:    "overview": "In a Mumbai theater, a producer, his son, and two intruders clash during one night over hidden treasure. As they search for gold, deception grows, secrets emerge, and past wounds resurface.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1183:- tools/details-parity-v1/expanded-details-fixture.json:799:    "overview": "A police officer's pursuit of truth in a shocking prison crime intertwines with the lives of a widowed prison guard and a soon to be released inmate, unravelling a web of morality and redemption.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1184:- tools/details-parity-v1/expanded-details-fixture.json:815:    "overview": "Rebecca Owens, a recent mortuary science graduate takes a night shift job at River Fields Mortuary. Initially, the job seems straightforward ╬ô├ç├╢ embalming bodies, completing paperwork, and keeping things tidy. But once Rebecca starts working the night shift, things take a dark turn.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1185:- tools/details-parity-v1/expanded-details-fixture.json:831:    "overview": "Two rival neighbors and their wives embark on a chaotic road trip, encountering two eccentric brothers who transform their journey into a hilarious adventure full of mishaps and unexpected twists.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1186:- tools/details-parity-v1/expanded-details-fixture.json:847:    "overview": "Three idealistic soldiers in the Indian army, navy and air force face grueling combat conditions in this film set during the 1971 Indo-Pak war.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1187:- tools/details-parity-v1/expanded-details-fixture.json:863:    "overview": "As rival gangs, corrupt officials and a ruthless Major Iqbal close in, Hamza's mission for his country spirals into a bloody personal war where the line between patriot and monster disappears in the streets of Lyari.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1188:- tools/details-parity-v1/expanded-details-fixture.json:879:    "overview": "Two socially awkward millennials in Mumbai find love while struggling with self-acceptance. As they battle insecurities and societal pressure, their journey takes them from city chaos to mountain serenity.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1189:- tools/details-parity-v1/expanded-details-fixture.json:895:    "overview": "At an anniversary party, Sohrab Handa is found dead, with his throat slit in the hall. As the investigation unravels, friendships are tested, and secrets are revealed.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1190:- tools/details-parity-v1/expanded-details-fixture.json:911:    "overview": "Chronically unsuccessful MI7 operative Happy Patel is finally assigned a mission in Goa, where he uncovers his Indian roots and must rescue a high-profile scientist from crime lord Mama. Unaware of his Indian heritage and armed with a comically British accent, Happy╬ô├ç├ûs blunders trigger a string of chaotic mishaps that could lead him to expose a criminal network.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1191:- tools/details-parity-v1/expanded-details-fixture.json:927:    "overview": "Second Lieutenant and India's youngest Param Vir Chakra recipient, Arun Khetarpal, gave his life fighting for his battalion and the country during the 1971 Battle of Basantar. Ikkis also takes a reflective look at the futility of war through the eyes of Khetarpal's father, who visits his ancestral home in Sargodha and Alma Mater for reunion, which now happens to be in post-partition Pakistan, 30 years later.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1192:- tools/details-parity-v1/expanded-details-fixture.json:943:    "overview": "Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1193:- tools/details-parity-v1/expanded-details-fixture.json:959:    "overview": "What fate awaits a stonehearted gangster and bloodthirsty womaniser when true love claims him, helpless and unguarded? A gang war that shakes the entire underworld and crime syndicate to their very roots. A forbidden love; the tale of an unrequited passion.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1194:- tools/details-parity-v1/expanded-details-fixture.json:975:    "overview": "In the magical world of writer Churu Lal Sharma, his unlucky creations Rahu and Ketu spring to life, causing hilarious chaos instead of fighting corruption. When the mischievous Meenu Taxi steals Churu's mystical notebook, the bumbling duo are dragged into absurd adventures that land them in the middle of a drug mafia.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1195:- tools/details-parity-v1/expanded-details-fixture.json:991:    "overview": "Three young Indian women across different states choose love over tradition, only to become trapped. Their parallel lives show how romance and rebellion transform into control and silence, turning love into a weapon that destroys freedom.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1196:- tools/details-parity-v1/expanded-details-fixture.json:1007:    "overview": "A wannabe rapper from the outskirts of Mumbai and an affluent influencer elope to a coastal town, only to find themselves trapped in the pool of a derelict resort fighting for survival against the wrath of a ferocious crocodile.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1197:- tools/details-parity-v1/expanded-details-fixture.json:1023:    "overview": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1198:- tools/details-parity-v1/expanded-details-fixture.json:1039:    "overview": "Brandon Beckett and Agent Zero lead a rescue mission in Venezuela when their friends are taken hostage.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1199:- tools/details-parity-v1/expanded-details-fixture.json:1055:    "overview": "A feature-length drama film that explores family issues in contemporary society.  COMING IN 2026.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1200:- tools/details-parity-v1/expanded-details-fixture.json:1071:    "overview": "When an unexpected and ruthless adversary strikes too close to home, Kara Zor-El, aka Supergirl, reluctantly joins forces with an unlikely companion on an epic, interstellar journey of vengeance and justice.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1201:- tools/details-parity-v1/expanded-details-fixture.json:1087:    "overview": "Stuttgart, 1942: Nazis have cleared Jewish communities from towns and Villages. Two German-born Jewish children flee Nazis who have killed their family, escorted by Gisella, part of the Lebensborn, an SS Master Race program.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1202:- tools/details-parity-v1/expanded-details-fixture.json:1103:    "overview": "Two millennials make quick money by leasing incredible New York City apartments they don╬ô├ç├ût own to people who don╬ô├ç├ût know they are being scammed. The con works brilliantly until they run into an apartment owner with a dark secret who flips the game on them.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1203:- tools/details-parity-v1/expanded-details-fixture.json:1119:    "overview": "Scientists have discovered how to 'hop' human consciousness into lifelike robotic animals, allowing people to communicate with animals as animals. Animal lover Mabel seizes an opportunity to use the technology, uncovering mysteries within the animal world beyond anything she could have imagined.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1204:- tools/details-parity-v1/expanded-details-fixture.json:1135:    "overview": "Hasley, a girl with a list of unfulfilled dreams, and Luke, a complex and vulnerable boy marked by a tragic past, find refuge on the boulevard, where they discover whether love can conquer all.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1205:- tools/details-parity-v1/expanded-details-fixture.json:1151:    "overview": "An adopted 16-year-old with a mysterious illness learns her bio-tech billionaire parents are harvesting her blood for nefarious purposes.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1206:- tools/details-parity-v1/expanded-details-fixture.json:1167:    "overview": "A small goat with big dreams gets a once-in-a-lifetime shot to join the pros and play roarball, a high-intensity, co-ed, full-contact sport dominated by the fastest, fiercest animals in the world.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1207:- tools/details-parity-v1/expanded-details-fixture.json:1183:    "overview": "Some secrets are better left at the bottom of the ocean. Once she's in your house, there is no escape. When a struggling artist pulls a beautiful, unconscious woman from the freezing coastal waters, he thinks he╬ô├ç├ûs performed a miracle. But as she recovers within the walls of his secluded home, a series of unsettling events leads him to a terrifying realization: her presence is no coincidence. She is inextricably linked to the same watery grave that claimed his family years ago.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1208:- tools/details-parity-v1/expanded-details-fixture.json:1199:    "overview": "As rival gangs, corrupt officials and a ruthless Major Iqbal close in, Hamza's mission for his country spirals into a bloody personal war where the line between patriot and monster disappears in the streets of Lyari.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1209:- tools/details-parity-v1/expanded-details-fixture.json:1215:    "overview": "Adrian's career as a businessman who tries his hand at politics is going well, but the situation at home is inversely proportional. His wife was locked up in the basement because of a mental disorder. His son is in a coma after being involved in a mysterious tragedy which resulted in the loss of other people's lives. As if that wasn't terrible enough, his family begins to be terrorized by a female ghost. The tragedy brings Adrian to flashbacks of the past. Long before achieving success, his life had suffered greatly. When almost giving up, a help appears. Connecting it to a sacred hibiscus tree which apparently did not give all success to Adrian for nothing. Is the destruction of his family a fair price for what Adrian has achieved? Or is there another secret that hasn't been uncovered from his past?",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1210:- tools/details-parity-v1/expanded-details-fixture.json:1231:    "overview": "A State C.I.D. Detective is wrapped into a web of deceit and malignancy after a tragic murder takes place. With the help from a Private Investigator he attempts to uncover the truth before the death toll rises.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1211:- tools/details-parity-v1/expanded-details-fixture.json:1247:    "overview": "A 'Man from the Future' arrives at an LA diner where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1212:- tools/details-parity-v1/expanded-details-fixture.json:1263:    "overview": "An old woman's voice recalls a terrible event from her distant past: on a summer night in 1996, five teenage girls meet in a suburban house, absent of parental supervision. To pass the time, they begin to tell morbid stories of the world outside, trying to best one another in a grim competition.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1213:- tools/details-parity-v1/expanded-details-fixture.json:1279:    "overview": "A happily engaged couple is put to the test when an unexpected turn sends their wedding week off the rails.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1214:- tools/details-parity-v1/expanded-details-fixture.json:1295:    "overview": "A century before the events of Game of Thrones, two unlikely heroes wandered Westeros: a young, naive but courageous knight, Ser Duncan the Tall, and his diminutive squire, Egg. Set in an age when the Targaryen line still holds the Iron Throne and the last dragon has not yet passed from living memory, great destinies, powerful foes, and dangerous exploits await these improbable and incomparable friends.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1215:- tools/details-parity-v1/expanded-details-fixture.json:1311:    "overview": "England, 1925. At a lavish country house party, a practical joke appears to have gone horribly, murderously wrong. It will be up to the unlikeliest of sleuths╬ô├ç├╢the fizzingly inquisitive Lady Eileen \"Bundle\" Brent╬ô├ç├╢to unravel a chilling plot that will change her life, cracking wide open the country house mystery.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1216:- tools/details-parity-v1/expanded-details-fixture.json:1327:    "overview": "Bound by a deity's pact, Han Chieh fights demons on Earth. When he uncovers an old enemy's plan for a second invasion, he must fight to save humanity.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1217:- tools/details-parity-v1/expanded-details-fixture.json:1343:    "overview": "Haunted by the guilt of her past and dealing with the demons of her present, a newly-appointed DCP, Rita Ferreira, must embark on an investigation of a series of murders that puts her on a collision course with a cold-blooded serial killer.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1218:- tools/details-parity-v1/expanded-details-fixture.json:1359:    "overview": "When a series of ritualistic murders hits Oslo, a gifted detective must navigate a puzzle of patterns, corruption and his own demons to catch the killer.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1219:- tools/details-parity-v1/expanded-details-fixture.json:1375:    "overview": "Two estranged spouses ╬ô├ç├╢ one a detective, the other a news reporter ╬ô├ç├╢ vie to solve a murder in which each believes the other is a prime suspect.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1220:- tools/details-parity-v1/expanded-details-fixture.json:1391:    "overview": "With the Yellowstone Ranch behind him, Kayce Dutton joins an elite unit of U.S. Marshals, combining his skills as a cowboy and Navy SEAL to bring range justice to Montana, where he and his teammates must balance family, duty and the high psychological cost that comes with serving as the last line of defense in the region's war on violence.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1221:- tools/details-parity-v1/expanded-details-fixture.json:1407:    "overview": "In the year 199X, the world was engulfed in nuclear fire!! Yet...humanity somehow survived!! A lone man with seven scars on his chest emerges. His name is Kenshiro, heir to Hokuto Shinken. In a world where only the strong survive, Kenshiro forges a path with his iron fists!",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1222:- tools/details-parity-v1/expanded-details-fixture.json:1423:    "overview": "In 1977 Moscow, two \"PONIES\" (\"persons of no interest\") become CIA operatives and uncover a Cold War conspiracy their husbands were killed for.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1223:- tools/details-parity-v1/expanded-details-fixture.json:1439:    "overview": "A desperate father searching for his runaway daughter gets caught up in a murder case ╬ô├ç├╢ and stumbles upon secrets which could destroy his family for good.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1224:- tools/details-parity-v1/expanded-details-fixture.json:1455:    "overview": "A young group of cadets come together to pursue a common dream of hope and optimism. Under the watchful and demanding eyes of their instructors, they will discover what it takes to become Starfleet officers as they navigate blossoming friendships, explosive rivalries, first loves and a new enemy that threatens both the Academy and the Federation itself.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1225:- tools/details-parity-v1/expanded-details-fixture.json:1471:    "overview": "A dedicated customs officer and his team take on a notorious smuggler leading a powerful syndicate, but unexpected obstacles threaten their mission.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1226:- tools/details-parity-v1/expanded-details-fixture.json:1487:    "overview": "The Clyburns uproot their comfortable New York City lives to the wild, untamed beauty of Montana's Madison River Valley on a search for connection.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1227:- tools/details-parity-v1/expanded-details-fixture.json:1503:    "overview": "Merlin, the immortal son of the bard Taliesin and Atlantean Princess Charis, is followed through his tragic upbringing, descent into madness, and shocking disappearance, leading to the legend that surrounds him. Set before King Arthur's birth, Merlin, assumed dead or a myth, reemerges in sub-Roman Britain to unite the fractured kingdoms under threat from Saxon invaders.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1228:- tools/details-parity-v1/expanded-details-fixture.json:1519:    "overview": "When the past catches up with two former spies, their biggest challenge isn't car chases, shootouts or fistfights ╬ô├ç├╢ it's telling each other the truth.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1229:- tools/details-parity-v1/expanded-details-fixture.json:1535:    "overview": "Simon and Trevor, two actors at opposite ends of their careers, chase life-changing roles.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1230:- tools/details-parity-v1/expanded-details-fixture.json:1551:    "overview": "Sherlock Holmes is a disgraced young man, raw and unfiltered, when he finds himself wrapped up in a murder case that threatens his liberty. His first ever case unravels a globe-trotting conspiracy that changes his life forever.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1231:- tools/details-parity-v1/expanded-details-fixture.json:1567:    "overview": "Bachelor Point season 5 will follow the ongoing story of the bachelors, potentially exploring new challenges and relationships.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1232:- tools/details-parity-v1/expanded-details-fixture.json:1583:    "overview": "13th tells the story of Ritesh, a successful venture capitalist who reunites with his maverick IIT-JEE mentor, Mohit Tyagi Sir, to help scale his visionary educational institute. The series unfolds against the backdrop of India's most gruelling academic competition and a startup culture fixated on valuations. At its heart, 13th is a deeply nostalgic, human story of a master and his pupil-bound by ambition, respect, and the lessons that shape a lifetime.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1233:- tools/details-parity-v1/expanded-details-fixture.json:1599:    "overview": "When a 13-year-old is accused of the murder of a classmate, his family, therapist and the detective in charge are all left asking: what really happened?",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1234:- tools/details-parity-v1/expanded-details-fixture.json:1615:    "overview": "When the mysterious deep space research vessel USCSS Maginot crash-lands on Earth, Wendy and a ragtag group of tactical soldiers make a fateful discovery that puts them face-to-face with the planet's greatest threat.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1235:- tools/details-parity-v1/expanded-details-fixture.json:1631:    "overview": "A mother and son fleeing from their past form a found family while confronting a harsh landscape of freedom and cruelty in the American West.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1236:- tools/details-parity-v1/expanded-details-fixture.json:1647:    "overview": "In this visceral tale of urban horror, a fearless cop and a haunted medical student must take on this living darkness to avert impending doom.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1237:- tools/details-parity-v1/expanded-details-fixture.json:1663:    "overview": "Two young women advocate for wellness remedies to cure deadly illnesses, unraveling their lives as they unknowingly ╬ô├ç├╢ and knowingly ╬ô├ç├╢ mislead the world.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1238:- tools/details-parity-v1/expanded-details-fixture.json:1679:    "overview": "Rishabh and Surbhi, two young individuals, find themselves at the crossroads of an arranged marriage. The story unfolds in two timelines: one in Mumbai, in the past, and another in Madhya Pradesh, where their families meet. In Mumbai, they find themselves alone in his room due to the lockdown, creating a pivotal moment in their relationship. In the present, Rishabh is hesitant to reveal his past with Surbhi to their families, his being a much more traditional one, fearing disapproval.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1239:- tools/details-parity-v1/expanded-details-fixture.json:1695:    "overview": "Set in old Ghaziabad, this heartwarming series follows the Kataria family grappling with a financial crunch. When Naina is forced to share her room with her younger brother Bharat, sibling tensions rise.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1240:- tools/details-parity-v1/expanded-details-fixture.json:1711:    "overview": "Detective RenΓö£ΓîÉe Ballard plunges into a web of murder and corruption as she hunts a ruthless serial killer and uncovers a sinister police conspiracy that threatens everything she stands for. With her own demons nipping at her heels, Ballard must outwit both criminals and colleagues to bring long-overdue justice to the victims and their families.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1241:- tools/details-parity-v1/expanded-details-fixture.json:1727:    "overview": "Gaurav Tiwari, a paranormal investigator, faces his greatest challenge when his pursuit of the truth behind unexplained phenomena leads him into a deadly spiral. As his mysterious death leaves questions unanswered, a journalist delves into his eerie and celebrated legacy, unearthing secrets that blur the line between reality and the supernatural.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1242:- tools/details-parity-v1/expanded-details-fixture.json:1743:    "overview": "When a group of billionaires takes shelter in a luxury bunker, an old feud between two families resurfaces amid an unprecedented global conflict.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1243:- tools/details-parity-v1/expanded-details-fixture.json:1759:    "overview": "A rising-star restaurateur is forced into New York's criminal underworld when his chaotic brother returns to town with loan sharks on his trail.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1244:- tools/details-parity-v1/expanded-details-fixture.json:1775:    "overview": "When an upright officer accepts a job at Tihar Jail, he vows to make amends after witnessing cold-blooded corruption within its walls.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1245:- tools/details-parity-v1/expanded-details-fixture.json:1791:    "overview": "Truth is never black or white. A high-profile case of serial killings takes an unexpected turn when forbidden love and deception come into play. In a world where love can kill, uncovering the truth is more dangerous than ever.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1246:- tools/details-parity-v1/expanded-details-fixture.json:1807:    "overview": "David Jung, a mysterious former US intelligence operative living in hiding in South Korea, has his life blown to pieces when the consequences of an impossible decision from his past come back to haunt him, and he finds himself hunted by Rebecca, a deadly young assassin, and Caddis, the sinister spy organization she works for.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1247:- tools/details-parity-v1/expanded-details-fixture.json:1823:    "overview": "Witness the rise of the world's first celebrity chef, Antonin CarΓö£┬¼me, and his descent into espionage in Napoleon-era France╬ô├ç├╢where manipulation is king. With his gifts for gastronomy and seduction, he becomes the perfect weapon in a fight for power.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1248:- tools/details-parity-v1/expanded-details-fixture.json:1839:    "overview": "A family moves into a vintage smart home and discovers that it's under the control of a virtual assistant ╬ô├ç├╢ who will stop at nothing to keep them there.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1249:- tools/details-parity-v1/expanded-details-fixture.json:1855:    "overview": "With Hawaii's four kingdoms divided by war, the ferocious warrior KaΓò⌐Γòùiana embarks on an epic mission to unite his people╬ô├ç├╢as an existential threat approaches their shores.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1250:- tools/details-parity-v1/expanded-details-fixture.json:1871:    "overview": "A gruesome crime has taken place in La Pedrera ╬ô├ç├┤ Casa MilΓö£├í: a burned body is found on the facade of GaudΓö£┬í's iconic building. Inspector Milo Malart, previously suspended for misconduct by the Mossos d'Esquadra (Mossos of the Squadron), returns to Barcelona to find the perpetrator along with Sub-Inspector Rebeca Garrido.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1251:- tools/details-parity-v1/expanded-details-fixture.json:1887:    "overview": "When an officer with the Department of Homeland Security is murdered in broad daylight, LAPD detective Mark Meachum is recruited to a secret task force, alongside undercover agents from all branches of law enforcement, to investigate. But the hunt for the killer soon uncovers a plot far more sinister than anyone could have imagined, kicking off a race against time to save a city of millions.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1252:- tools/details-parity-v1/expanded-details-fixture.json:1903:    "overview": "Attorney Madhav Mishra represents Raj Nagpal, discovered with murdered nurse Roshni Saluja after his child's party. As the trial unfolds, hidden facts emerge, questioning identities.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1253:- tools/details-parity-v1/expanded-details-fixture.json:1919:    "overview": "When an investigation into a pharma company hits close to home, five women launch a tiffin service with a secret ingredient.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1254:- tools/details-parity-v1/report-details-gap-priority.js:36:  ["overview", Number(values.GAP_MISSING_OVERVIEW || 0)],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1255:- tools/details-parity-v1/test-details-fixture-coverage-negative.js:22:  overview: "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1256:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1257:- tools/details-parity-v1/test-details-fixture-coverage.js:22:const overviewCount = rows.filter(r => String(r.overview || "").trim()).length;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1258:- tools/details-parity-v1/test-details-fixture-coverage.js:28:console.log("COVERAGE_OVERVIEWS=" + overviewCount);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1259:- tools/details-parity-v1/test-details-fixture-coverage.js:34:if (overviewCount < 20) bad++;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1260:- tools/details-parity-v1/test-details-response-parity-basic.js:28:    overview: clean(r.overview),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1261:- tools/details-parity-v1/test-details-response-parity-basic.js:32:  const required = ["ok","status","type","title","name","year","poster","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1262:- tools/details-parity-v1/test-details-response-parity-negative.js:18:    overview: "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1263:- tools/details-parity-v1/test-details-response-snapshot-negative.js:14:      overview: "Bad",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1264:- tools/details-parity-v1/validate-details-fixture-schema.js:68:      if ("overview" in r && !isString(r.overview)) {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1265:- tools/details-parity-v1/validate-details-fixture-schema.js:70:        problems.push(prefix + ": overview must be string");
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1285:- server.js:1376:      poster, backdrop, overview: result.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1291:- server.js:2351:      backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, overview:m.overview || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1313:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1416:- tools/details-parity-v1/expanded-details-fixture.json:1583:    "overview": "13th tells the story of Ritesh, a successful venture capitalist who reunites with his maverick IIT-JEE mentor, Mohit Tyagi Sir, to help scale his visionary educational institute. The series unfolds against the backdrop of India's most gruelling academic competition and a startup culture fixated on valuations. At its heart, 13th is a deeply nostalgic, human story of a master and his pupil-bound by ambition, respect, and the lessons that shape a lifetime.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1440:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md:17:RAW_overview=115
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7E.md:21:- overviews: 115
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7F.md:25:- overviews: 115
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7H.md:29:- overviews: 115
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_SHADOW_GATES.md:17:5. details:shadow:fixture:coverage - movie/tv/poster/overview coverage
+- tools/details-parity-v1/audit-details-fixture-gaps.js:20:  "overview",
+- tools/details-parity-v1/build-details-response-snapshot.js:20:    overview: clean(r.overview),
+- tools/details-parity-v1/build-expanded-details-fixture.js:31:    overview: clean(item.overview),
+- tools/details-parity-v1/expanded-details-fixture.json:15:    "overview": "",
+- tools/details-parity-v1/expanded-details-fixture.json:31:    "overview": "A new film based on the novels. Plot TBA.",
+- tools/details-parity-v1/expanded-details-fixture.json:47:    "overview": "Jailed for her husband's crime, a woman discovers that her only way out is to solve riddles from her mysterious past.",
+- tools/details-parity-v1/expanded-details-fixture.json:63:    "overview": "ShakespeareΓÇÖs most enduring tragedy is reimagined in a bold, modern adaptation set within LondonΓÇÖs elite South Asian community. When Hamlet (Riz Ahmed) returns for his fatherΓÇÖs funeral, he is stunned to discover his uncle Claudius is marrying his newly widowed mother. Visited by his fatherΓÇÖs ghost, Hamlet learns his brutal murder was at the hands of Claudius - and spirals into a quest for vengeance that exposes the rot at the heart of the familyΓÇÖs empire and threatens his own sanity.",
+- tools/details-parity-v1/expanded-details-fixture.json:79:    "overview": "An unhappy woman goes back in time and poses as her cousin to prevent her younger self from making the same mistakes and ruining her future.",
+- tools/details-parity-v1/expanded-details-fixture.json:95:    "overview": "",
+- tools/details-parity-v1/expanded-details-fixture.json:111:    "overview": "High school student Polina is saved from bullying at her new school and makes a deal with the main bully Bars: he must pretend to be her boyfriend and protect her, and she must do everything he says. During this game, the couple develops real feelings, but her family and classmates have reasons to separate the lovers.",
+- tools/details-parity-v1/expanded-details-fixture.json:127:    "overview": "A CIA-trained assassin recruits other graduates from her secret childhood program, The Internship, to violently destroy the organization. The CIA fights back with deadly force.",
+- tools/details-parity-v1/expanded-details-fixture.json:143:    "overview": "Teen Spirit chronicles teenager's volatile emotions, complex relationships, and personal growth as they navigate the final days of high school through the eyes of Charu. The series delves into the complexities of teenage life, emphasizing personal growth, resilience, and the importance of friendship.",
+- tools/details-parity-v1/expanded-details-fixture.json:159:    "overview": "Science teacher Ryland Grace wakes up on a spaceship light years from home with no recollection of who he is or how he got there. As his memory returns, he begins to uncover his mission: solve the riddle of the mysterious substance causing the sun to die out. He must call on his scientific knowledge and unorthodox ideas to save everything on Earth from extinctionΓÇª but an unexpected friendship means he may not have to do it alone.",
+- tools/details-parity-v1/expanded-details-fixture.json:175:    "overview": "Young Macy is abducted by a deranged, monstrous figure who wants to raise her as its child.",
+- tools/details-parity-v1/expanded-details-fixture.json:191:    "overview": "A 'Man from the Future' arrives at an LA diner where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence.",
+- tools/details-parity-v1/expanded-details-fixture.json:207:    "overview": "Lucy, a college student, along with her friends, spend their vacation at her family's home in Hawaii, which includes her pet chimpanzee, Ben. However, when Ben contracts rabies after being bitten by a rabid animal, the group must fight for their lives in order to avoid the now-violent chimp.",
+- tools/details-parity-v1/expanded-details-fixture.json:223:    "overview": "In an attempt to avenge her daughterΓÇÖs death, Irene Kelly travels through parallel universes, killing her daughterΓÇÖs murderer again and again. As she becomes consumed by vengeance, her humanity begins to slip awayΓÇöuntil the cycle is disrupted when she rescues Mia, a sharp-witted teenager already marked by the killer.",
+- tools/details-parity-v1/expanded-details-fixture.json:239:    "overview": "A successful black businessman, haunted by his crumbling marriage and identity crisis, is drawn into a psychological game of cat and mouse with a mysterious white woman he encounters on a New York subway.",
+- tools/details-parity-v1/expanded-details-fixture.json:255:    "overview": "Dr. Kelson finds himself in a shocking new relationship - with consequences that could change the world as they know it - and Spike's encounter with Jimmy Crystal becomes a nightmare he can't escape.",
+- tools/details-parity-v1/expanded-details-fixture.json:271:    "overview": "When a mutating, highly contagious fungus escapes a sealed facility, two employees ΓÇô joined by a grizzled bioterror operative ΓÇô must survive the wildest night shift ever to save humanity from extinction.",
+- tools/details-parity-v1/expanded-details-fixture.json:287:    "overview": "When an elusive thief whose high-stakes heists unfold along the iconic 101 freeway in Los Angeles eyes the score of a lifetime, with hopes of this being his final job, his path collides with a disillusioned insurance broker who is facing her own crossroads. Determined to crack the case, a relentless detective closes in on the operation, raising the stakes even higher.",
+- tools/details-parity-v1/expanded-details-fixture.json:303:    "overview": "Having found the safety of the Greenland bunker after the comet Clarke decimated the Earth, the Garrity family must now risk everything to embark on a perilous journey across the wasteland of Europe to find a new home.",
+- tools/details-parity-v1/expanded-details-fixture.json:319:    "overview": "In the near future, a detective stands on trial accused of murdering his wife. He has ninety minutes to prove his innocence to the advanced AI Judge he once championed, before it determines his fate.",
+- tools/details-parity-v1/expanded-details-fixture.json:335:    "overview": "After his estranged son gets embroiled in a Nazi plot, self-exiled gangster Tommy Shelby must return to Birmingham to save his family ΓÇö and his nation.",
+- tools/details-parity-v1/expanded-details-fixture.json:351:    "overview": "Poppy's a free spirit. Alex loves a plan. After years of summer vacations, these polar-opposite pals wonder if they could be a perfect romantic match.",
+- tools/details-parity-v1/expanded-details-fixture.json:367:    "overview": "When a new Ghostface killer emerges in the quiet town where Sidney Prescott has built a new life, her darkest fears are realized as her daughter becomes the next target. Determined to protect her family, Sidney must face the horrors of her past to put an end to the bloodshed once and for all.",
+- tools/details-parity-v1/expanded-details-fixture.json:383:    "overview": "Two colleagues become stranded on a deserted island, the only survivors of a plane crash. On the island, they must overcome past grievances and work together to survive, but ultimately, it's a battle of wills and wits to make it out alive.",
+- tools/details-parity-v1/expanded-details-fixture.json:399:    "overview": "A man living in self-imposed exile on a remote island rescues a young girl from a violent storm, setting off a chain of events that forces him out of seclusion to protect her from enemies tied to his past.",
+- tools/details-parity-v1/expanded-details-fixture.json:415:    "overview": "When her tranquil life on a remote island is shattered by the return of her vengeful former captain, a skilled ex-pirate must confront her bloody past and unleash her deadly talents to save her family from a ruthless siege.",
+- tools/details-parity-v1/expanded-details-fixture.json:431:    "overview": "Trust frays when a team of Miami cops discovers millions in cash inside a run-down stash house, calling everyone ΓÇö and everything ΓÇö into question.",
+- tools/details-parity-v1/expanded-details-fixture.json:447:    "overview": "Tethered by a frightening conclusion, Maya and the Strangers are locked on an unavoidable, unforgiving collision course ΓÇö a showdown that proves theyΓÇÖre far from strangers now.",
+- tools/details-parity-v1/expanded-details-fixture.json:463:    "overview": "Estranged half-brothers Jonny and James reunite after their father's mysterious death. As they search for the truth, buried secrets reveal a conspiracy threatening to tear their family apart.",
+- tools/details-parity-v1/expanded-details-fixture.json:479:    "overview": "On one last grueling mission during Army Ranger training, a combat engineer must lead his unit in a fight against a giant otherworldly killing machine.",
+- tools/details-parity-v1/expanded-details-fixture.json:495:    "overview": "Tragedy strikes when Heathcliff falls in love with Catherine Earnshaw, a woman from a wealthy family in 18th-century England.",
+- tools/details-parity-v1/expanded-details-fixture.json:511:    "overview": "A South Korean agent hunts a drug ring in Russia and goes head-to-head with a North Korean operative ΓÇö pulling both into peril and tangled secrets.",
+- tools/details-parity-v1/expanded-details-fixture.json:527:    "overview": "When recent college grad Manny has trouble making ends meet, his father-in-law offers him a job evicting delinquent tenants. Manny soon finds himself unleashing a karma demon which stalks him at every turn.",
+- tools/details-parity-v1/expanded-details-fixture.json:543:    "overview": "Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive.",
+- tools/details-parity-v1/expanded-details-fixture.json:559:    "overview": "A 'Man from the Future' arrives at an LA diner where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence.",
+- tools/details-parity-v1/expanded-details-fixture.json:575:    "overview": "In a mind void of the line separating reality, broken pencils tells the truth.",
+- tools/details-parity-v1/expanded-details-fixture.json:591:    "overview": "",
+- tools/details-parity-v1/expanded-details-fixture.json:607:    "overview": "Rohan is in love with his colleague Meera but does not have the courage to express his feelings towards her. He finally gets his chance during the company trip. He makes a wish to be with Meera for just one day, and his wish comes true.",
+- tools/details-parity-v1/expanded-details-fixture.json:623:    "overview": "Singh vs Kaur 2 is an upcoming Indian Punjabi-language romantic comedy film directed by Navaniat Singh and produced by Gippy Grewal's Humble Motion Pictures and SVF Entertainment. Serving as a standalone sequel to the 2013 film Singh vs Kaur, it stars Gippy Grewal and Shehnaaz Gill, scheduled for worldwide release on 24th April 2026.",
+- tools/details-parity-v1/expanded-details-fixture.json:639:    "overview": "Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive.",
+- tools/details-parity-v1/expanded-details-fixture.json:655:    "overview": "After getting married and having a daughter, a retired legendary hitman must protect his family when his past catches up to him.",
+- tools/details-parity-v1/expanded-details-fixture.json:671:    "overview": "Based on the events that took place between the Indian and Chinese troops at the Galwan region on June 15, 2020 when 200 Indian soldiers bravely defended their territory against a force of 1200 Chinese Liberation Army soldiers",
+- tools/details-parity-v1/expanded-details-fixture.json:687:    "overview": "A village's unity is tested by a new highway project that sparks greed and conflict.",
+- tools/details-parity-v1/expanded-details-fixture.json:703:    "overview": "The family's journey to Sreekandapuram to settle the late Bharathan Nair's second wife and son takes a dark turn when an issue from his past resurfaces, leading to an unexpected crime. Forced into a desperate cover-up to protect their future, the family must navigate a treacherous path of secrecy and mounting pressure, determined to overcome any obstacle by any means necessary.",
+- tools/details-parity-v1/expanded-details-fixture.json:719:    "overview": "Studious teen Emma is left home alone for the first time in a while, when she unexpectedly gets an invite to her first party, she embarks on a whirlwind of adventures meeting new people.",
+- tools/details-parity-v1/expanded-details-fixture.json:735:    "overview": "Sequel to Lakadbaggha (2023). Plot TBA.",
+- tools/details-parity-v1/expanded-details-fixture.json:751:    "overview": "As rival gangs, corrupt officials and a ruthless Major Iqbal close in, Hamza's mission for his country spirals into a bloody personal war where the line between patriot and monster disappears in the streets of Lyari.",
+- tools/details-parity-v1/expanded-details-fixture.json:767:    "overview": "",
+- tools/details-parity-v1/expanded-details-fixture.json:783:    "overview": "In a Mumbai theater, a producer, his son, and two intruders clash during one night over hidden treasure. As they search for gold, deception grows, secrets emerge, and past wounds resurface.",
+- tools/details-parity-v1/expanded-details-fixture.json:799:    "overview": "A police officer's pursuit of truth in a shocking prison crime intertwines with the lives of a widowed prison guard and a soon to be released inmate, unravelling a web of morality and redemption.",
+- tools/details-parity-v1/expanded-details-fixture.json:815:    "overview": "Rebecca Owens, a recent mortuary science graduate takes a night shift job at River Fields Mortuary. Initially, the job seems straightforward ΓÇö embalming bodies, completing paperwork, and keeping things tidy. But once Rebecca starts working the night shift, things take a dark turn.",
+- tools/details-parity-v1/expanded-details-fixture.json:831:    "overview": "Two rival neighbors and their wives embark on a chaotic road trip, encountering two eccentric brothers who transform their journey into a hilarious adventure full of mishaps and unexpected twists.",
+- tools/details-parity-v1/expanded-details-fixture.json:847:    "overview": "Three idealistic soldiers in the Indian army, navy and air force face grueling combat conditions in this film set during the 1971 Indo-Pak war.",
+- tools/details-parity-v1/expanded-details-fixture.json:863:    "overview": "As rival gangs, corrupt officials and a ruthless Major Iqbal close in, Hamza's mission for his country spirals into a bloody personal war where the line between patriot and monster disappears in the streets of Lyari.",
+- tools/details-parity-v1/expanded-details-fixture.json:879:    "overview": "Two socially awkward millennials in Mumbai find love while struggling with self-acceptance. As they battle insecurities and societal pressure, their journey takes them from city chaos to mountain serenity.",
+- tools/details-parity-v1/expanded-details-fixture.json:895:    "overview": "At an anniversary party, Sohrab Handa is found dead, with his throat slit in the hall. As the investigation unravels, friendships are tested, and secrets are revealed.",
+- tools/details-parity-v1/expanded-details-fixture.json:911:    "overview": "Chronically unsuccessful MI7 operative Happy Patel is finally assigned a mission in Goa, where he uncovers his Indian roots and must rescue a high-profile scientist from crime lord Mama. Unaware of his Indian heritage and armed with a comically British accent, HappyΓÇÖs blunders trigger a string of chaotic mishaps that could lead him to expose a criminal network.",
+- tools/details-parity-v1/expanded-details-fixture.json:927:    "overview": "Second Lieutenant and India's youngest Param Vir Chakra recipient, Arun Khetarpal, gave his life fighting for his battalion and the country during the 1971 Battle of Basantar. Ikkis also takes a reflective look at the futility of war through the eyes of Khetarpal's father, who visits his ancestral home in Sargodha and Alma Mater for reunion, which now happens to be in post-partition Pakistan, 30 years later.",
+- tools/details-parity-v1/expanded-details-fixture.json:943:    "overview": "Officer Shivani Shivaji Roy returns to hunt down those behind the disappearance of young girls, risking everything to bring them back alive.",
+- tools/details-parity-v1/expanded-details-fixture.json:959:    "overview": "What fate awaits a stonehearted gangster and bloodthirsty womaniser when true love claims him, helpless and unguarded? A gang war that shakes the entire underworld and crime syndicate to their very roots. A forbidden love; the tale of an unrequited passion.",
+- tools/details-parity-v1/expanded-details-fixture.json:975:    "overview": "In the magical world of writer Churu Lal Sharma, his unlucky creations Rahu and Ketu spring to life, causing hilarious chaos instead of fighting corruption. When the mischievous Meenu Taxi steals Churu's mystical notebook, the bumbling duo are dragged into absurd adventures that land them in the middle of a drug mafia.",
+- tools/details-parity-v1/expanded-details-fixture.json:991:    "overview": "Three young Indian women across different states choose love over tradition, only to become trapped. Their parallel lives show how romance and rebellion transform into control and silence, turning love into a weapon that destroys freedom.",
+- tools/details-parity-v1/expanded-details-fixture.json:1007:    "overview": "A wannabe rapper from the outskirts of Mumbai and an affluent influencer elope to a coastal town, only to find themselves trapped in the pool of a derelict resort fighting for survival against the wrath of a ferocious crocodile.",
+- tools/details-parity-v1/expanded-details-fixture.json:1023:    "overview": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1039:    "overview": "Brandon Beckett and Agent Zero lead a rescue mission in Venezuela when their friends are taken hostage.",
+- tools/details-parity-v1/expanded-details-fixture.json:1055:    "overview": "A feature-length drama film that explores family issues in contemporary society.  COMING IN 2026.",
+- tools/details-parity-v1/expanded-details-fixture.json:1071:    "overview": "When an unexpected and ruthless adversary strikes too close to home, Kara Zor-El, aka Supergirl, reluctantly joins forces with an unlikely companion on an epic, interstellar journey of vengeance and justice.",
+- tools/details-parity-v1/expanded-details-fixture.json:1087:    "overview": "Stuttgart, 1942: Nazis have cleared Jewish communities from towns and Villages. Two German-born Jewish children flee Nazis who have killed their family, escorted by Gisella, part of the Lebensborn, an SS Master Race program.",
+- tools/details-parity-v1/expanded-details-fixture.json:1103:    "overview": "Two millennials make quick money by leasing incredible New York City apartments they donΓÇÖt own to people who donΓÇÖt know they are being scammed. The con works brilliantly until they run into an apartment owner with a dark secret who flips the game on them.",
+- tools/details-parity-v1/expanded-details-fixture.json:1119:    "overview": "Scientists have discovered how to 'hop' human consciousness into lifelike robotic animals, allowing people to communicate with animals as animals. Animal lover Mabel seizes an opportunity to use the technology, uncovering mysteries within the animal world beyond anything she could have imagined.",
+- tools/details-parity-v1/expanded-details-fixture.json:1135:    "overview": "Hasley, a girl with a list of unfulfilled dreams, and Luke, a complex and vulnerable boy marked by a tragic past, find refuge on the boulevard, where they discover whether love can conquer all.",
+- tools/details-parity-v1/expanded-details-fixture.json:1151:    "overview": "An adopted 16-year-old with a mysterious illness learns her bio-tech billionaire parents are harvesting her blood for nefarious purposes.",
+- tools/details-parity-v1/expanded-details-fixture.json:1167:    "overview": "A small goat with big dreams gets a once-in-a-lifetime shot to join the pros and play roarball, a high-intensity, co-ed, full-contact sport dominated by the fastest, fiercest animals in the world.",
+- tools/details-parity-v1/expanded-details-fixture.json:1183:    "overview": "Some secrets are better left at the bottom of the ocean. Once she's in your house, there is no escape. When a struggling artist pulls a beautiful, unconscious woman from the freezing coastal waters, he thinks heΓÇÖs performed a miracle. But as she recovers within the walls of his secluded home, a series of unsettling events leads him to a terrifying realization: her presence is no coincidence. She is inextricably linked to the same watery grave that claimed his family years ago.",
+- tools/details-parity-v1/expanded-details-fixture.json:1199:    "overview": "As rival gangs, corrupt officials and a ruthless Major Iqbal close in, Hamza's mission for his country spirals into a bloody personal war where the line between patriot and monster disappears in the streets of Lyari.",
+- tools/details-parity-v1/expanded-details-fixture.json:1215:    "overview": "Adrian's career as a businessman who tries his hand at politics is going well, but the situation at home is inversely proportional. His wife was locked up in the basement because of a mental disorder. His son is in a coma after being involved in a mysterious tragedy which resulted in the loss of other people's lives. As if that wasn't terrible enough, his family begins to be terrorized by a female ghost. The tragedy brings Adrian to flashbacks of the past. Long before achieving success, his life had suffered greatly. When almost giving up, a help appears. Connecting it to a sacred hibiscus tree which apparently did not give all success to Adrian for nothing. Is the destruction of his family a fair price for what Adrian has achieved? Or is there another secret that hasn't been uncovered from his past?",
+- tools/details-parity-v1/expanded-details-fixture.json:1231:    "overview": "A State C.I.D. Detective is wrapped into a web of deceit and malignancy after a tragic murder takes place. With the help from a Private Investigator he attempts to uncover the truth before the death toll rises.",
+- tools/details-parity-v1/expanded-details-fixture.json:1247:    "overview": "A 'Man from the Future' arrives at an LA diner where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intelligence.",
+- tools/details-parity-v1/expanded-details-fixture.json:1263:    "overview": "An old woman's voice recalls a terrible event from her distant past: on a summer night in 1996, five teenage girls meet in a suburban house, absent of parental supervision. To pass the time, they begin to tell morbid stories of the world outside, trying to best one another in a grim competition.",
+- tools/details-parity-v1/expanded-details-fixture.json:1279:    "overview": "A happily engaged couple is put to the test when an unexpected turn sends their wedding week off the rails.",
+- tools/details-parity-v1/expanded-details-fixture.json:1295:    "overview": "A century before the events of Game of Thrones, two unlikely heroes wandered Westeros: a young, naive but courageous knight, Ser Duncan the Tall, and his diminutive squire, Egg. Set in an age when the Targaryen line still holds the Iron Throne and the last dragon has not yet passed from living memory, great destinies, powerful foes, and dangerous exploits await these improbable and incomparable friends.",
+- tools/details-parity-v1/expanded-details-fixture.json:1311:    "overview": "England, 1925. At a lavish country house party, a practical joke appears to have gone horribly, murderously wrong. It will be up to the unlikeliest of sleuthsΓÇöthe fizzingly inquisitive Lady Eileen \"Bundle\" BrentΓÇöto unravel a chilling plot that will change her life, cracking wide open the country house mystery.",
+- tools/details-parity-v1/expanded-details-fixture.json:1327:    "overview": "Bound by a deity's pact, Han Chieh fights demons on Earth. When he uncovers an old enemy's plan for a second invasion, he must fight to save humanity.",
+- tools/details-parity-v1/expanded-details-fixture.json:1343:    "overview": "Haunted by the guilt of her past and dealing with the demons of her present, a newly-appointed DCP, Rita Ferreira, must embark on an investigation of a series of murders that puts her on a collision course with a cold-blooded serial killer.",
+- tools/details-parity-v1/expanded-details-fixture.json:1359:    "overview": "When a series of ritualistic murders hits Oslo, a gifted detective must navigate a puzzle of patterns, corruption and his own demons to catch the killer.",
+- tools/details-parity-v1/expanded-details-fixture.json:1375:    "overview": "Two estranged spouses ΓÇö one a detective, the other a news reporter ΓÇö vie to solve a murder in which each believes the other is a prime suspect.",
+- tools/details-parity-v1/expanded-details-fixture.json:1391:    "overview": "With the Yellowstone Ranch behind him, Kayce Dutton joins an elite unit of U.S. Marshals, combining his skills as a cowboy and Navy SEAL to bring range justice to Montana, where he and his teammates must balance family, duty and the high psychological cost that comes with serving as the last line of defense in the region's war on violence.",
+- tools/details-parity-v1/expanded-details-fixture.json:1407:    "overview": "In the year 199X, the world was engulfed in nuclear fire!! Yet...humanity somehow survived!! A lone man with seven scars on his chest emerges. His name is Kenshiro, heir to Hokuto Shinken. In a world where only the strong survive, Kenshiro forges a path with his iron fists!",
+- tools/details-parity-v1/expanded-details-fixture.json:1423:    "overview": "In 1977 Moscow, two \"PONIES\" (\"persons of no interest\") become CIA operatives and uncover a Cold War conspiracy their husbands were killed for.",
+- tools/details-parity-v1/expanded-details-fixture.json:1439:    "overview": "A desperate father searching for his runaway daughter gets caught up in a murder case ΓÇö and stumbles upon secrets which could destroy his family for good.",
+- tools/details-parity-v1/expanded-details-fixture.json:1455:    "overview": "A young group of cadets come together to pursue a common dream of hope and optimism. Under the watchful and demanding eyes of their instructors, they will discover what it takes to become Starfleet officers as they navigate blossoming friendships, explosive rivalries, first loves and a new enemy that threatens both the Academy and the Federation itself.",
+- tools/details-parity-v1/expanded-details-fixture.json:1471:    "overview": "A dedicated customs officer and his team take on a notorious smuggler leading a powerful syndicate, but unexpected obstacles threaten their mission.",
+- tools/details-parity-v1/expanded-details-fixture.json:1487:    "overview": "The Clyburns uproot their comfortable New York City lives to the wild, untamed beauty of Montana's Madison River Valley on a search for connection.",
+- tools/details-parity-v1/expanded-details-fixture.json:1503:    "overview": "Merlin, the immortal son of the bard Taliesin and Atlantean Princess Charis, is followed through his tragic upbringing, descent into madness, and shocking disappearance, leading to the legend that surrounds him. Set before King Arthur's birth, Merlin, assumed dead or a myth, reemerges in sub-Roman Britain to unite the fractured kingdoms under threat from Saxon invaders.",
+- tools/details-parity-v1/expanded-details-fixture.json:1519:    "overview": "When the past catches up with two former spies, their biggest challenge isn't car chases, shootouts or fistfights ΓÇö it's telling each other the truth.",
+- tools/details-parity-v1/expanded-details-fixture.json:1535:    "overview": "Simon and Trevor, two actors at opposite ends of their careers, chase life-changing roles.",
+- tools/details-parity-v1/expanded-details-fixture.json:1551:    "overview": "Sherlock Holmes is a disgraced young man, raw and unfiltered, when he finds himself wrapped up in a murder case that threatens his liberty. His first ever case unravels a globe-trotting conspiracy that changes his life forever.",
+- tools/details-parity-v1/expanded-details-fixture.json:1567:    "overview": "Bachelor Point season 5 will follow the ongoing story of the bachelors, potentially exploring new challenges and relationships.",
+- tools/details-parity-v1/expanded-details-fixture.json:1583:    "overview": "13th tells the story of Ritesh, a successful venture capitalist who reunites with his maverick IIT-JEE mentor, Mohit Tyagi Sir, to help scale his visionary educational institute. The series unfolds against the backdrop of India's most gruelling academic competition and a startup culture fixated on valuations. At its heart, 13th is a deeply nostalgic, human story of a master and his pupil-bound by ambition, respect, and the lessons that shape a lifetime.",
+- tools/details-parity-v1/expanded-details-fixture.json:1599:    "overview": "When a 13-year-old is accused of the murder of a classmate, his family, therapist and the detective in charge are all left asking: what really happened?",
+- tools/details-parity-v1/expanded-details-fixture.json:1615:    "overview": "When the mysterious deep space research vessel USCSS Maginot crash-lands on Earth, Wendy and a ragtag group of tactical soldiers make a fateful discovery that puts them face-to-face with the planet's greatest threat.",
+- tools/details-parity-v1/expanded-details-fixture.json:1631:    "overview": "A mother and son fleeing from their past form a found family while confronting a harsh landscape of freedom and cruelty in the American West.",
+- tools/details-parity-v1/expanded-details-fixture.json:1647:    "overview": "In this visceral tale of urban horror, a fearless cop and a haunted medical student must take on this living darkness to avert impending doom.",
+- tools/details-parity-v1/expanded-details-fixture.json:1663:    "overview": "Two young women advocate for wellness remedies to cure deadly illnesses, unraveling their lives as they unknowingly ΓÇö and knowingly ΓÇö mislead the world.",
+- tools/details-parity-v1/expanded-details-fixture.json:1679:    "overview": "Rishabh and Surbhi, two young individuals, find themselves at the crossroads of an arranged marriage. The story unfolds in two timelines: one in Mumbai, in the past, and another in Madhya Pradesh, where their families meet. In Mumbai, they find themselves alone in his room due to the lockdown, creating a pivotal moment in their relationship. In the present, Rishabh is hesitant to reveal his past with Surbhi to their families, his being a much more traditional one, fearing disapproval.",
+- tools/details-parity-v1/expanded-details-fixture.json:1695:    "overview": "Set in old Ghaziabad, this heartwarming series follows the Kataria family grappling with a financial crunch. When Naina is forced to share her room with her younger brother Bharat, sibling tensions rise.",
+- tools/details-parity-v1/expanded-details-fixture.json:1711:    "overview": "Detective Ren├⌐e Ballard plunges into a web of murder and corruption as she hunts a ruthless serial killer and uncovers a sinister police conspiracy that threatens everything she stands for. With her own demons nipping at her heels, Ballard must outwit both criminals and colleagues to bring long-overdue justice to the victims and their families.",
+- tools/details-parity-v1/expanded-details-fixture.json:1727:    "overview": "Gaurav Tiwari, a paranormal investigator, faces his greatest challenge when his pursuit of the truth behind unexplained phenomena leads him into a deadly spiral. As his mysterious death leaves questions unanswered, a journalist delves into his eerie and celebrated legacy, unearthing secrets that blur the line between reality and the supernatural.",
+- tools/details-parity-v1/expanded-details-fixture.json:1743:    "overview": "When a group of billionaires takes shelter in a luxury bunker, an old feud between two families resurfaces amid an unprecedented global conflict.",
+- tools/details-parity-v1/expanded-details-fixture.json:1759:    "overview": "A rising-star restaurateur is forced into New York's criminal underworld when his chaotic brother returns to town with loan sharks on his trail.",
+- tools/details-parity-v1/expanded-details-fixture.json:1775:    "overview": "When an upright officer accepts a job at Tihar Jail, he vows to make amends after witnessing cold-blooded corruption within its walls.",
+- tools/details-parity-v1/expanded-details-fixture.json:1791:    "overview": "Truth is never black or white. A high-profile case of serial killings takes an unexpected turn when forbidden love and deception come into play. In a world where love can kill, uncovering the truth is more dangerous than ever.",
+- tools/details-parity-v1/expanded-details-fixture.json:1807:    "overview": "David Jung, a mysterious former US intelligence operative living in hiding in South Korea, has his life blown to pieces when the consequences of an impossible decision from his past come back to haunt him, and he finds himself hunted by Rebecca, a deadly young assassin, and Caddis, the sinister spy organization she works for.",
+- tools/details-parity-v1/expanded-details-fixture.json:1823:    "overview": "Witness the rise of the world's first celebrity chef, Antonin Car├¬me, and his descent into espionage in Napoleon-era FranceΓÇöwhere manipulation is king. With his gifts for gastronomy and seduction, he becomes the perfect weapon in a fight for power.",
+- tools/details-parity-v1/expanded-details-fixture.json:1839:    "overview": "A family moves into a vintage smart home and discovers that it's under the control of a virtual assistant ΓÇö who will stop at nothing to keep them there.",
+- tools/details-parity-v1/expanded-details-fixture.json:1855:    "overview": "With Hawaii's four kingdoms divided by war, the ferocious warrior Ka╩╗iana embarks on an epic mission to unite his peopleΓÇöas an existential threat approaches their shores.",
+- tools/details-parity-v1/expanded-details-fixture.json:1871:    "overview": "A gruesome crime has taken place in La Pedrera ΓÇô Casa Mil├á: a burned body is found on the facade of Gaud├¡'s iconic building. Inspector Milo Malart, previously suspended for misconduct by the Mossos d'Esquadra (Mossos of the Squadron), returns to Barcelona to find the perpetrator along with Sub-Inspector Rebeca Garrido.",
+- tools/details-parity-v1/expanded-details-fixture.json:1887:    "overview": "When an officer with the Department of Homeland Security is murdered in broad daylight, LAPD detective Mark Meachum is recruited to a secret task force, alongside undercover agents from all branches of law enforcement, to investigate. But the hunt for the killer soon uncovers a plot far more sinister than anyone could have imagined, kicking off a race against time to save a city of millions.",
+- tools/details-parity-v1/expanded-details-fixture.json:1903:    "overview": "Attorney Madhav Mishra represents Raj Nagpal, discovered with murdered nurse Roshni Saluja after his child's party. As the trial unfolds, hidden facts emerge, questioning identities.",
+- tools/details-parity-v1/expanded-details-fixture.json:1919:    "overview": "When an investigation into a pharma company hits close to home, five women launch a tiffin service with a secret ingredient.",
+- tools/details-parity-v1/report-details-gap-priority.js:36:  ["overview", Number(values.GAP_MISSING_OVERVIEW || 0)],
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:7:const fields = ["poster","backdrop","overview","rating","genre","runtime","language","director","productionCompanies"];
+- tools/details-parity-v1/test-details-fixture-coverage-negative.js:22:  overview: "",
+- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/test-details-fixture-coverage.js:22:const overviewCount = rows.filter(r => String(r.overview || "").trim()).length;
+- tools/details-parity-v1/test-details-fixture-coverage.js:28:console.log("COVERAGE_OVERVIEWS=" + overviewCount);
+- tools/details-parity-v1/test-details-fixture-coverage.js:34:if (overviewCount < 20) bad++;
+- tools/details-parity-v1/test-details-response-parity-basic.js:28:    overview: clean(r.overview),
+- tools/details-parity-v1/test-details-response-parity-basic.js:32:  const required = ["ok","status","type","title","name","year","poster","overview","streamUrl"];
+- tools/details-parity-v1/test-details-response-parity-negative.js:18:    overview: "",
+- tools/details-parity-v1/test-details-response-snapshot-negative.js:14:      overview: "Bad",
+- tools/details-parity-v1/validate-details-fixture-schema.js:68:      if ("overview" in r && !isString(r.overview)) {
+- tools/details-parity-v1/validate-details-fixture-schema.js:70:        problems.push(prefix + ": overview must be string");
+
+## git grep: rating
+- app/CatalogApi.hs:255:    , "rating" .= nullish (infoField "rating")
+- app/CatalogApi.hs:361:          , "rating" .= nullish (infoField "rating")
+- app/CatalogApi.hs:552:     else if ext `elem` ["iso", "img"] || "operating system" `T.isInfixOf` text || "/os/" `T.isInfixOf` text then "OS"
+- app/CatalogApi.hs:639:    , "rating" .= nullish (field "rating" m)
+- app/CatalogApi.hs:690:    , "rating" .= nullish (field "rating" s)
+- app/CatalogApi.hs:805:      rating = round (min 75 (ratingNum item * 7))
+- app/CatalogApi.hs:807:  in if not allHit then 0 else maximum [exactName, startName, inName, inFile, 1] + art + source + rating + yearBonus
+- app/CatalogApi.hs:868:        "topRated" -> homeSort [i | i <- allItems, ratingNum i >= 8]
+- app/CatalogApi.hs:902:        "hiddenMasterpieces" -> take 500 (homeSort [i | i <- allItems, ratingNum i >= 7, hasArt i])
+- app/CatalogApi.hs:927:          , "rating" .= nullish (field "rating" m)
+- app/CatalogApi.hs:983:ratingNum :: Value -> Double
+- app/CatalogApi.hs:984:ratingNum item =
+- app/CatalogApi.hs:985:  case reads (T.unpack (fieldText "rating" item)) of
+- app/CatalogApi.hs:999:      compare (artScore b, ratingNum b, yearNum b) (artScore a, ratingNum a, yearNum a)
+- app/CatalogApi.hs:1049:  in phraseScore + art + round (ratingNum item * 10) + max 0 (min 40 (yearNum item - 1985))
+- server.js:446:            rating: null,
+- server.js:482:        rating: null,
+- server.js:524:      rating: item.rating || null,
+- server.js:552:  item.rating = item.rating || hit.rating || null;
+- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- server.js:906:  const rating = parseFloat(item.rating || 0);
+- server.js:907:  if (Number.isFinite(rating) && rating > 0) score += Math.min(75, rating * 7);
+- server.js:1349:    const rating  = result.vote_average ? result.vote_average.toFixed(1) : null;
+- server.js:1377:      year, rating, type: isSeries ? 'tv' : 'movie',
+- server.js:1443:      rating:   info?.rating   || null,
+- server.js:1485:      rating:   info.rating,
+- server.js:1518:        rating:   info.rating   || item.rating,
+- server.js:1541:      rating:   info.rating   || show.rating,
+- server.js:1919:      rating: m.rating || null,
+- server.js:1946:      rating: s.rating || null,
+- server.js:2033:      score += Math.min(Number(other.rating || 0) || 0, 10) / 10;
+- server.js:2037:    .sort((a, b) => b.score - a.score || Number(b.other.rating || 0) - Number(a.other.rating || 0))
+- server.js:2066:    rating: item?.rating || null,
+- server.js:2070:    ratings: item?.rating ? [{ source: 'Catalog', value: `${item.rating}/10`, subvalue: 'Local cache', available: true }] : [],
+- server.js:2116:      rating: raw.rating || null,
+- server.js:2148:    rating: raw.rating || null,
+- server.js:2352:      year:m.year || '', rating:m.rating || null, type:'movie', genre:m.genre || '', category:m.category || '',
+- server.js:2370:      tmdbId:s.tmdbId || null, overview:s.overview || '', year:s.year || '', rating:s.rating || null,
+- server.js:2396:function svRatingNum(item) { return parseFloat(item.rating || 0) || 0; }
+- server.js:2553:  const rating = Math.round(Math.max(0, Math.min(10, svRatingNum(item))) * 500);
+- server.js:2556:  return { score: score + art + rating + year + playable, phrase: hit.phrase };
+- server.js:2619:  const rating = Math.min(100, Math.round(svRatingNum(item) * 10));
+- server.js:2621:  return companies + keywordScore + art + rating + year;
+- server.js:2746:        rating:    m.rating    || null,
+- server.js:2837:    let rating = m.rating || null;
+- server.js:2847:        rating = rating || cacheHit.rating || null;
+- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- server.js:2878:        rating: s.rating  || null,
+- server.js:3088:    rating: item.vote_average ? Number(item.vote_average).toFixed(1) : null,
+- server.js:3206:  return country?.rating || '';
+- server.js:3259:  const certification = isTv ? tvCertification(detail.content_ratings) : movieCertification(detail.release_dates);
+- server.js:3290:function ratingItems(detail, externalIds = {}, omdb = null) {
+- server.js:3322:    ratings: [],
+- server.js:3373:    ratingsMetaRaw,
+- server.js:3381:    tmdbGet(mediaType === 'tv' ? `/tv/${resolvedId}/content_ratings` : `/movie/${resolvedId}/release_dates`),
+- server.js:3425:  if (mediaType === 'tv') detail.content_ratings = ratingsMetaRaw || null;
+- server.js:3426:  else detail.release_dates = ratingsMetaRaw || null;
+- server.js:3446:    rating: detail.vote_average ? Number(detail.vote_average).toFixed(1) : null,
+- server.js:3451:    ratings: tmdbRatingItemsOnly(detail),
+- server.js:3481:    ratingsMetaRaw,
+- server.js:3489:    tmdbGet(mediaType === 'tv' ? `/tv/${resolvedId}/content_ratings` : `/movie/${resolvedId}/release_dates`),
+- server.js:3533:  if (mediaType === 'tv') detail.content_ratings = ratingsMetaRaw || null;
+- server.js:3534:  else detail.release_dates = ratingsMetaRaw || null;
+- server.js:3553:    rating: detail.vote_average ? Number(detail.vote_average).toFixed(1) : null,
+- server.js:3557:    ratings: ratingItems(detail, externalIds, omdb),
+- server.js:3629:      rating:   e.vote_average ? e.vote_average.toFixed(1) : null,
+- server.js:4721:  if (['iso','img'].includes(ext) || text.includes('operating system') || text.includes('/os/')) return 'OS';
+- server.js:4851:      rating:   r.vote_average  ? r.vote_average.toFixed(1) : null,
+- server.js:4860:      rating:   r.vote_average  ? r.vote_average.toFixed(1) : null,
+- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:22:* rating-related lines: 1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:63:- server.js:2352:      year:m.year || '', rating:m.rating || null, type:'movie', genre:m.genre || '', category:m.category || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:69:- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:207:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:357:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:539:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:621:## grep: rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:622:- app/CatalogApi.hs:255:    , "rating" .= nullish (infoField "rating")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:623:- app/CatalogApi.hs:361:          , "rating" .= nullish (infoField "rating")
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:624:- app/CatalogApi.hs:552:     else if ext `elem` ["iso", "img"] || "operating system" `T.isInfixOf` text || "/os/" `T.isInfixOf` text then "OS"
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:625:- app/CatalogApi.hs:639:    , "rating" .= nullish (field "rating" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:626:- app/CatalogApi.hs:690:    , "rating" .= nullish (field "rating" s)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:627:- app/CatalogApi.hs:805:      rating = round (min 75 (ratingNum item * 7))
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:628:- app/CatalogApi.hs:807:  in if not allHit then 0 else maximum [exactName, startName, inName, inFile, 1] + art + source + rating + yearBonus
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:629:- app/CatalogApi.hs:868:        "topRated" -> homeSort [i | i <- allItems, ratingNum i >= 8]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:630:- app/CatalogApi.hs:902:        "hiddenMasterpieces" -> take 500 (homeSort [i | i <- allItems, ratingNum i >= 7, hasArt i])
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:631:- app/CatalogApi.hs:927:          , "rating" .= nullish (field "rating" m)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:632:- app/CatalogApi.hs:983:ratingNum :: Value -> Double
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:633:- app/CatalogApi.hs:984:ratingNum item =
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:634:- app/CatalogApi.hs:985:  case reads (T.unpack (fieldText "rating" item)) of
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:635:- app/CatalogApi.hs:999:      compare (artScore b, ratingNum b, yearNum b) (artScore a, ratingNum a, yearNum a)
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:636:- app/CatalogApi.hs:1049:  in phraseScore + art + round (ratingNum item * 10) + max 0 (min 40 (yearNum item - 1985))
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:637:- server.js:446:            rating: null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:638:- server.js:482:        rating: null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:639:- server.js:524:      rating: item.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:640:- server.js:552:  item.rating = item.rating || hit.rating || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:641:- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:642:- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:643:- server.js:906:  const rating = parseFloat(item.rating || 0);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:644:- server.js:907:  if (Number.isFinite(rating) && rating > 0) score += Math.min(75, rating * 7);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:645:- server.js:1349:    const rating  = result.vote_average ? result.vote_average.toFixed(1) : null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:646:- server.js:1377:      year, rating, type: isSeries ? 'tv' : 'movie',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:647:- server.js:1443:      rating:   info?.rating   || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:648:- server.js:1485:      rating:   info.rating,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:649:- server.js:1518:        rating:   info.rating   || item.rating,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:650:- server.js:1541:      rating:   info.rating   || show.rating,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:651:- server.js:1919:      rating: m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:652:- server.js:1946:      rating: s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:653:- server.js:2033:      score += Math.min(Number(other.rating || 0) || 0, 10) / 10;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:654:- server.js:2037:    .sort((a, b) => b.score - a.score || Number(b.other.rating || 0) - Number(a.other.rating || 0))
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:655:- server.js:2066:    rating: item?.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:656:- server.js:2070:    ratings: item?.rating ? [{ source: 'Catalog', value: `${item.rating}/10`, subvalue: 'Local cache', available: true }] : [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:657:- server.js:2116:      rating: raw.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:658:- server.js:2148:    rating: raw.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:659:- server.js:2352:      year:m.year || '', rating:m.rating || null, type:'movie', genre:m.genre || '', category:m.category || '',
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:660:- server.js:2370:      tmdbId:s.tmdbId || null, overview:s.overview || '', year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:661:- server.js:2396:function svRatingNum(item) { return parseFloat(item.rating || 0) || 0; }
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:662:- server.js:2553:  const rating = Math.round(Math.max(0, Math.min(10, svRatingNum(item))) * 500);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:663:- server.js:2556:  return { score: score + art + rating + year + playable, phrase: hit.phrase };
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:664:- server.js:2619:  const rating = Math.min(100, Math.round(svRatingNum(item) * 10));
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:665:- server.js:2621:  return companies + keywordScore + art + rating + year;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:666:- server.js:2746:        rating:    m.rating    || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:667:- server.js:2837:    let rating = m.rating || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:668:- server.js:2847:        rating = rating || cacheHit.rating || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:669:- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:670:- server.js:2878:        rating: s.rating  || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:671:- server.js:3088:    rating: item.vote_average ? Number(item.vote_average).toFixed(1) : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:672:- server.js:3206:  return country?.rating || '';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:673:- server.js:3259:  const certification = isTv ? tvCertification(detail.content_ratings) : movieCertification(detail.release_dates);
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:674:- server.js:3290:function ratingItems(detail, externalIds = {}, omdb = null) {
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:675:- server.js:3322:    ratings: [],
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:676:- server.js:3373:    ratingsMetaRaw,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:677:- server.js:3381:    tmdbGet(mediaType === 'tv' ? `/tv/${resolvedId}/content_ratings` : `/movie/${resolvedId}/release_dates`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:678:- server.js:3425:  if (mediaType === 'tv') detail.content_ratings = ratingsMetaRaw || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:679:- server.js:3426:  else detail.release_dates = ratingsMetaRaw || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:680:- server.js:3446:    rating: detail.vote_average ? Number(detail.vote_average).toFixed(1) : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:681:- server.js:3451:    ratings: tmdbRatingItemsOnly(detail),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:682:- server.js:3481:    ratingsMetaRaw,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:683:- server.js:3489:    tmdbGet(mediaType === 'tv' ? `/tv/${resolvedId}/content_ratings` : `/movie/${resolvedId}/release_dates`),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:684:- server.js:3533:  if (mediaType === 'tv') detail.content_ratings = ratingsMetaRaw || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:685:- server.js:3534:  else detail.release_dates = ratingsMetaRaw || null;
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:686:- server.js:3553:    rating: detail.vote_average ? Number(detail.vote_average).toFixed(1) : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:687:- server.js:3557:    ratings: ratingItems(detail, externalIds, omdb),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:688:- server.js:3629:      rating:   e.vote_average ? e.vote_average.toFixed(1) : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:689:- server.js:4721:  if (['iso','img'].includes(ext) || text.includes('operating system') || text.includes('/os/')) return 'OS';
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:690:- server.js:4851:      rating:   r.vote_average  ? r.vote_average.toFixed(1) : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:691:- server.js:4860:      rating:   r.vote_average  ? r.vote_average.toFixed(1) : null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:692:- tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md:22:* rating-related lines: 1
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:693:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:694:- tools/details-parity-v1/audit-details-fixture-gaps.js:21:  "rating",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:695:- tools/details-parity-v1/build-details-response-snapshot.js:14:    rating: clean(r.rating),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:696:- tools/details-parity-v1/build-expanded-details-fixture.js:25:    rating: clean(item.rating),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:697:- tools/details-parity-v1/expanded-details-fixture.json:9:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:698:- tools/details-parity-v1/expanded-details-fixture.json:25:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:699:- tools/details-parity-v1/expanded-details-fixture.json:41:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:700:- tools/details-parity-v1/expanded-details-fixture.json:57:    "rating": "5.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:701:- tools/details-parity-v1/expanded-details-fixture.json:73:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:702:- tools/details-parity-v1/expanded-details-fixture.json:89:    "rating": "6.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:703:- tools/details-parity-v1/expanded-details-fixture.json:105:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:704:- tools/details-parity-v1/expanded-details-fixture.json:121:    "rating": "6.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:705:- tools/details-parity-v1/expanded-details-fixture.json:137:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:706:- tools/details-parity-v1/expanded-details-fixture.json:153:    "rating": "8.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:707:- tools/details-parity-v1/expanded-details-fixture.json:169:    "rating": "6.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:708:- tools/details-parity-v1/expanded-details-fixture.json:185:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:709:- tools/details-parity-v1/expanded-details-fixture.json:201:    "rating": "6.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:710:- tools/details-parity-v1/expanded-details-fixture.json:217:    "rating": "6.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:711:- tools/details-parity-v1/expanded-details-fixture.json:233:    "rating": "4.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:712:- tools/details-parity-v1/expanded-details-fixture.json:249:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:713:- tools/details-parity-v1/expanded-details-fixture.json:265:    "rating": "6.7",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:714:- tools/details-parity-v1/expanded-details-fixture.json:281:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:715:- tools/details-parity-v1/expanded-details-fixture.json:297:    "rating": "6.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:716:- tools/details-parity-v1/expanded-details-fixture.json:313:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:717:- tools/details-parity-v1/expanded-details-fixture.json:329:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:718:- tools/details-parity-v1/expanded-details-fixture.json:345:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:719:- tools/details-parity-v1/expanded-details-fixture.json:361:    "rating": "6.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:720:- tools/details-parity-v1/expanded-details-fixture.json:377:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:721:- tools/details-parity-v1/expanded-details-fixture.json:393:    "rating": "6.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:722:- tools/details-parity-v1/expanded-details-fixture.json:409:    "rating": "6.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:723:- tools/details-parity-v1/expanded-details-fixture.json:425:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:724:- tools/details-parity-v1/expanded-details-fixture.json:441:    "rating": "5.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:725:- tools/details-parity-v1/expanded-details-fixture.json:457:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:726:- tools/details-parity-v1/expanded-details-fixture.json:473:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:727:- tools/details-parity-v1/expanded-details-fixture.json:489:    "rating": "6.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:728:- tools/details-parity-v1/expanded-details-fixture.json:505:    "rating": "7.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:729:- tools/details-parity-v1/expanded-details-fixture.json:521:    "rating": "5.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:730:- tools/details-parity-v1/expanded-details-fixture.json:537:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:731:- tools/details-parity-v1/expanded-details-fixture.json:553:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:732:- tools/details-parity-v1/expanded-details-fixture.json:569:    "rating": "10.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:733:- tools/details-parity-v1/expanded-details-fixture.json:575:    "overview": "In a mind void of the line separating reality, broken pencils tells the truth.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:734:- tools/details-parity-v1/expanded-details-fixture.json:585:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:735:- tools/details-parity-v1/expanded-details-fixture.json:601:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:736:- tools/details-parity-v1/expanded-details-fixture.json:617:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:737:- tools/details-parity-v1/expanded-details-fixture.json:633:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:738:- tools/details-parity-v1/expanded-details-fixture.json:649:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:739:- tools/details-parity-v1/expanded-details-fixture.json:665:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:740:- tools/details-parity-v1/expanded-details-fixture.json:681:    "rating": "8.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:741:- tools/details-parity-v1/expanded-details-fixture.json:697:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:742:- tools/details-parity-v1/expanded-details-fixture.json:713:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:743:- tools/details-parity-v1/expanded-details-fixture.json:729:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:744:- tools/details-parity-v1/expanded-details-fixture.json:745:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:745:- tools/details-parity-v1/expanded-details-fixture.json:761:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:746:- tools/details-parity-v1/expanded-details-fixture.json:777:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:747:- tools/details-parity-v1/expanded-details-fixture.json:793:    "rating": "4.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:748:- tools/details-parity-v1/expanded-details-fixture.json:809:    "rating": "5.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:749:- tools/details-parity-v1/expanded-details-fixture.json:825:    "rating": "3.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:750:- tools/details-parity-v1/expanded-details-fixture.json:841:    "rating": "6.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:751:- tools/details-parity-v1/expanded-details-fixture.json:857:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:752:- tools/details-parity-v1/expanded-details-fixture.json:873:    "rating": "6.7",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:753:- tools/details-parity-v1/expanded-details-fixture.json:889:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:754:- tools/details-parity-v1/expanded-details-fixture.json:905:    "rating": "8.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:755:- tools/details-parity-v1/expanded-details-fixture.json:921:    "rating": "6.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:756:- tools/details-parity-v1/expanded-details-fixture.json:937:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:757:- tools/details-parity-v1/expanded-details-fixture.json:953:    "rating": "4.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:758:- tools/details-parity-v1/expanded-details-fixture.json:969:    "rating": "3.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:759:- tools/details-parity-v1/expanded-details-fixture.json:985:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:760:- tools/details-parity-v1/expanded-details-fixture.json:1001:    "rating": "6.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:761:- tools/details-parity-v1/expanded-details-fixture.json:1017:    "rating": "8.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:762:- tools/details-parity-v1/expanded-details-fixture.json:1033:    "rating": "6.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:763:- tools/details-parity-v1/expanded-details-fixture.json:1049:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:764:- tools/details-parity-v1/expanded-details-fixture.json:1065:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:765:- tools/details-parity-v1/expanded-details-fixture.json:1081:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:766:- tools/details-parity-v1/expanded-details-fixture.json:1097:    "rating": "4.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:767:- tools/details-parity-v1/expanded-details-fixture.json:1113:    "rating": "7.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:768:- tools/details-parity-v1/expanded-details-fixture.json:1129:    "rating": "3.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:769:- tools/details-parity-v1/expanded-details-fixture.json:1145:    "rating": "4.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:770:- tools/details-parity-v1/expanded-details-fixture.json:1161:    "rating": "7.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:771:- tools/details-parity-v1/expanded-details-fixture.json:1177:    "rating": "4.7",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:772:- tools/details-parity-v1/expanded-details-fixture.json:1193:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:773:- tools/details-parity-v1/expanded-details-fixture.json:1209:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:774:- tools/details-parity-v1/expanded-details-fixture.json:1225:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:775:- tools/details-parity-v1/expanded-details-fixture.json:1241:    "rating": "6.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:776:- tools/details-parity-v1/expanded-details-fixture.json:1257:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:777:- tools/details-parity-v1/expanded-details-fixture.json:1273:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:778:- tools/details-parity-v1/expanded-details-fixture.json:1289:    "rating": "8.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:779:- tools/details-parity-v1/expanded-details-fixture.json:1305:    "rating": "6.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:780:- tools/details-parity-v1/expanded-details-fixture.json:1321:    "rating": "7.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:781:- tools/details-parity-v1/expanded-details-fixture.json:1337:    "rating": "6.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:782:- tools/details-parity-v1/expanded-details-fixture.json:1353:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:783:- tools/details-parity-v1/expanded-details-fixture.json:1369:    "rating": "7.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:784:- tools/details-parity-v1/expanded-details-fixture.json:1385:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:785:- tools/details-parity-v1/expanded-details-fixture.json:1401:    "rating": "10.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:786:- tools/details-parity-v1/expanded-details-fixture.json:1417:    "rating": "6.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:787:- tools/details-parity-v1/expanded-details-fixture.json:1433:    "rating": "6.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:788:- tools/details-parity-v1/expanded-details-fixture.json:1449:    "rating": "5.4",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:789:- tools/details-parity-v1/expanded-details-fixture.json:1465:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:790:- tools/details-parity-v1/expanded-details-fixture.json:1481:    "rating": "8.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:791:- tools/details-parity-v1/expanded-details-fixture.json:1497:    "rating": "7.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:792:- tools/details-parity-v1/expanded-details-fixture.json:1513:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:793:- tools/details-parity-v1/expanded-details-fixture.json:1529:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:794:- tools/details-parity-v1/expanded-details-fixture.json:1545:    "rating": "8.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:795:- tools/details-parity-v1/expanded-details-fixture.json:1561:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:796:- tools/details-parity-v1/expanded-details-fixture.json:1577:    "rating": "4.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:797:- tools/details-parity-v1/expanded-details-fixture.json:1593:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:798:- tools/details-parity-v1/expanded-details-fixture.json:1609:    "rating": "7.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:799:- tools/details-parity-v1/expanded-details-fixture.json:1625:    "rating": "7.7",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:800:- tools/details-parity-v1/expanded-details-fixture.json:1641:    "rating": "5.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:801:- tools/details-parity-v1/expanded-details-fixture.json:1657:    "rating": "6.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:802:- tools/details-parity-v1/expanded-details-fixture.json:1673:    "rating": "7.5",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:803:- tools/details-parity-v1/expanded-details-fixture.json:1689:    "rating": "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:804:- tools/details-parity-v1/expanded-details-fixture.json:1705:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:805:- tools/details-parity-v1/expanded-details-fixture.json:1721:    "rating": "7.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:806:- tools/details-parity-v1/expanded-details-fixture.json:1737:    "rating": "6.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:807:- tools/details-parity-v1/expanded-details-fixture.json:1753:    "rating": "7.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:808:- tools/details-parity-v1/expanded-details-fixture.json:1769:    "rating": "7.9",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:809:- tools/details-parity-v1/expanded-details-fixture.json:1785:    "rating": "5.0",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:810:- tools/details-parity-v1/expanded-details-fixture.json:1801:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:811:- tools/details-parity-v1/expanded-details-fixture.json:1817:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:812:- tools/details-parity-v1/expanded-details-fixture.json:1833:    "rating": "7.1",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:813:- tools/details-parity-v1/expanded-details-fixture.json:1849:    "rating": "7.3",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:814:- tools/details-parity-v1/expanded-details-fixture.json:1865:    "rating": "6.6",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:815:- tools/details-parity-v1/expanded-details-fixture.json:1881:    "rating": "7.2",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:816:- tools/details-parity-v1/expanded-details-fixture.json:1897:    "rating": "7.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:817:- tools/details-parity-v1/expanded-details-fixture.json:1913:    "rating": "6.8",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:818:- tools/details-parity-v1/report-details-gap-priority.js:38:  ["rating", Number(values.GAP_MISSING_RATING || 0)]
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:819:- tools/details-parity-v1/test-details-fixture-coverage-negative.js:16:  rating: "",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:820:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:821:- tools/details-parity-v1/test-details-response-parity-basic.js:22:    rating: clean(r.rating),
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:863:- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:865:- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:928:- server.js:2854:      poster, year, rating, type: 'movie', genre, streamUrl: m.streamUrl, isFtp: true,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:954:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1082:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1114:- server.js:2370:      tmdbId:s.tmdbId || null, overview:s.overview || '', year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1129:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1169:- tools/details-parity-v1/expanded-details-fixture.json:575:    "overview": "In a mind void of the line separating reality, broken pencils tells the truth.",
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1256:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1280:- server.js:734:    backdrop:m.backdrop || m.poster || null, tmdbId:m.tmdbId || null, year:m.year || '', rating:m.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1281:- server.js:740:    backdrop:s.backdrop || s.poster || null, tmdbId:s.tmdbId || null, year:s.year || '', rating:s.rating || null,
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1313:- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md:1440:- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md:18:RAW_rating=97
+- tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md:12:- Partial gaps to handle first: poster, overview, backdrop, rating
+- tools/details-parity-v1/audit-details-fixture-gaps.js:21:  "rating",
+- tools/details-parity-v1/build-details-response-snapshot.js:14:    rating: clean(r.rating),
+- tools/details-parity-v1/build-expanded-details-fixture.js:25:    rating: clean(item.rating),
+- tools/details-parity-v1/expanded-details-fixture.json:9:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:25:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:41:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:57:    "rating": "5.5",
+- tools/details-parity-v1/expanded-details-fixture.json:73:    "rating": "7.1",
+- tools/details-parity-v1/expanded-details-fixture.json:89:    "rating": "6.5",
+- tools/details-parity-v1/expanded-details-fixture.json:105:    "rating": "6.9",
+- tools/details-parity-v1/expanded-details-fixture.json:121:    "rating": "6.1",
+- tools/details-parity-v1/expanded-details-fixture.json:137:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:153:    "rating": "8.2",
+- tools/details-parity-v1/expanded-details-fixture.json:169:    "rating": "6.0",
+- tools/details-parity-v1/expanded-details-fixture.json:185:    "rating": "6.9",
+- tools/details-parity-v1/expanded-details-fixture.json:201:    "rating": "6.5",
+- tools/details-parity-v1/expanded-details-fixture.json:217:    "rating": "6.4",
+- tools/details-parity-v1/expanded-details-fixture.json:233:    "rating": "4.6",
+- tools/details-parity-v1/expanded-details-fixture.json:249:    "rating": "7.2",
+- tools/details-parity-v1/expanded-details-fixture.json:265:    "rating": "6.7",
+- tools/details-parity-v1/expanded-details-fixture.json:281:    "rating": "7.0",
+- tools/details-parity-v1/expanded-details-fixture.json:297:    "rating": "6.5",
+- tools/details-parity-v1/expanded-details-fixture.json:313:    "rating": "7.0",
+- tools/details-parity-v1/expanded-details-fixture.json:329:    "rating": "7.2",
+- tools/details-parity-v1/expanded-details-fixture.json:345:    "rating": "7.0",
+- tools/details-parity-v1/expanded-details-fixture.json:361:    "rating": "6.0",
+- tools/details-parity-v1/expanded-details-fixture.json:377:    "rating": "7.0",
+- tools/details-parity-v1/expanded-details-fixture.json:393:    "rating": "6.8",
+- tools/details-parity-v1/expanded-details-fixture.json:409:    "rating": "6.2",
+- tools/details-parity-v1/expanded-details-fixture.json:425:    "rating": "7.1",
+- tools/details-parity-v1/expanded-details-fixture.json:441:    "rating": "5.2",
+- tools/details-parity-v1/expanded-details-fixture.json:457:    "rating": "6.9",
+- tools/details-parity-v1/expanded-details-fixture.json:473:    "rating": "7.2",
+- tools/details-parity-v1/expanded-details-fixture.json:489:    "rating": "6.5",
+- tools/details-parity-v1/expanded-details-fixture.json:505:    "rating": "7.3",
+- tools/details-parity-v1/expanded-details-fixture.json:521:    "rating": "5.9",
+- tools/details-parity-v1/expanded-details-fixture.json:537:    "rating": "7.5",
+- tools/details-parity-v1/expanded-details-fixture.json:553:    "rating": "6.9",
+- tools/details-parity-v1/expanded-details-fixture.json:569:    "rating": "10.0",
+- tools/details-parity-v1/expanded-details-fixture.json:575:    "overview": "In a mind void of the line separating reality, broken pencils tells the truth.",
+- tools/details-parity-v1/expanded-details-fixture.json:585:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:601:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:617:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:633:    "rating": "7.5",
+- tools/details-parity-v1/expanded-details-fixture.json:649:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:665:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:681:    "rating": "8.0",
+- tools/details-parity-v1/expanded-details-fixture.json:697:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:713:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:729:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:745:    "rating": "7.8",
+- tools/details-parity-v1/expanded-details-fixture.json:761:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:777:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:793:    "rating": "4.5",
+- tools/details-parity-v1/expanded-details-fixture.json:809:    "rating": "5.5",
+- tools/details-parity-v1/expanded-details-fixture.json:825:    "rating": "3.5",
+- tools/details-parity-v1/expanded-details-fixture.json:841:    "rating": "6.4",
+- tools/details-parity-v1/expanded-details-fixture.json:857:    "rating": "7.8",
+- tools/details-parity-v1/expanded-details-fixture.json:873:    "rating": "6.7",
+- tools/details-parity-v1/expanded-details-fixture.json:889:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:905:    "rating": "8.1",
+- tools/details-parity-v1/expanded-details-fixture.json:921:    "rating": "6.0",
+- tools/details-parity-v1/expanded-details-fixture.json:937:    "rating": "7.5",
+- tools/details-parity-v1/expanded-details-fixture.json:953:    "rating": "4.8",
+- tools/details-parity-v1/expanded-details-fixture.json:969:    "rating": "3.5",
+- tools/details-parity-v1/expanded-details-fixture.json:985:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1001:    "rating": "6.2",
+- tools/details-parity-v1/expanded-details-fixture.json:1017:    "rating": "8.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1033:    "rating": "6.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1049:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1065:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1081:    "rating": "7.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1097:    "rating": "4.4",
+- tools/details-parity-v1/expanded-details-fixture.json:1113:    "rating": "7.6",
+- tools/details-parity-v1/expanded-details-fixture.json:1129:    "rating": "3.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1145:    "rating": "4.3",
+- tools/details-parity-v1/expanded-details-fixture.json:1161:    "rating": "7.9",
+- tools/details-parity-v1/expanded-details-fixture.json:1177:    "rating": "4.7",
+- tools/details-parity-v1/expanded-details-fixture.json:1193:    "rating": "7.8",
+- tools/details-parity-v1/expanded-details-fixture.json:1209:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1225:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1241:    "rating": "6.9",
+- tools/details-parity-v1/expanded-details-fixture.json:1257:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1273:    "rating": "7.1",
+- tools/details-parity-v1/expanded-details-fixture.json:1289:    "rating": "8.4",
+- tools/details-parity-v1/expanded-details-fixture.json:1305:    "rating": "6.3",
+- tools/details-parity-v1/expanded-details-fixture.json:1321:    "rating": "7.4",
+- tools/details-parity-v1/expanded-details-fixture.json:1337:    "rating": "6.4",
+- tools/details-parity-v1/expanded-details-fixture.json:1353:    "rating": "7.5",
+- tools/details-parity-v1/expanded-details-fixture.json:1369:    "rating": "7.3",
+- tools/details-parity-v1/expanded-details-fixture.json:1385:    "rating": "7.2",
+- tools/details-parity-v1/expanded-details-fixture.json:1401:    "rating": "10.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1417:    "rating": "6.8",
+- tools/details-parity-v1/expanded-details-fixture.json:1433:    "rating": "6.6",
+- tools/details-parity-v1/expanded-details-fixture.json:1449:    "rating": "5.4",
+- tools/details-parity-v1/expanded-details-fixture.json:1465:    "rating": "7.1",
+- tools/details-parity-v1/expanded-details-fixture.json:1481:    "rating": "8.2",
+- tools/details-parity-v1/expanded-details-fixture.json:1497:    "rating": "7.6",
+- tools/details-parity-v1/expanded-details-fixture.json:1513:    "rating": "7.2",
+- tools/details-parity-v1/expanded-details-fixture.json:1529:    "rating": "7.1",
+- tools/details-parity-v1/expanded-details-fixture.json:1545:    "rating": "8.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1561:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1577:    "rating": "4.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1593:    "rating": "7.8",
+- tools/details-parity-v1/expanded-details-fixture.json:1609:    "rating": "7.3",
+- tools/details-parity-v1/expanded-details-fixture.json:1625:    "rating": "7.7",
+- tools/details-parity-v1/expanded-details-fixture.json:1641:    "rating": "5.1",
+- tools/details-parity-v1/expanded-details-fixture.json:1657:    "rating": "6.6",
+- tools/details-parity-v1/expanded-details-fixture.json:1673:    "rating": "7.5",
+- tools/details-parity-v1/expanded-details-fixture.json:1689:    "rating": "",
+- tools/details-parity-v1/expanded-details-fixture.json:1705:    "rating": "7.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1721:    "rating": "7.6",
+- tools/details-parity-v1/expanded-details-fixture.json:1737:    "rating": "6.3",
+- tools/details-parity-v1/expanded-details-fixture.json:1753:    "rating": "7.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1769:    "rating": "7.9",
+- tools/details-parity-v1/expanded-details-fixture.json:1785:    "rating": "5.0",
+- tools/details-parity-v1/expanded-details-fixture.json:1801:    "rating": "7.1",
+- tools/details-parity-v1/expanded-details-fixture.json:1817:    "rating": "7.1",
+- tools/details-parity-v1/expanded-details-fixture.json:1833:    "rating": "7.1",
+- tools/details-parity-v1/expanded-details-fixture.json:1849:    "rating": "7.3",
+- tools/details-parity-v1/expanded-details-fixture.json:1865:    "rating": "6.6",
+- tools/details-parity-v1/expanded-details-fixture.json:1881:    "rating": "7.2",
+- tools/details-parity-v1/expanded-details-fixture.json:1897:    "rating": "7.8",
+- tools/details-parity-v1/expanded-details-fixture.json:1913:    "rating": "6.8",
+- tools/details-parity-v1/report-details-gap-priority.js:38:  ["rating", Number(values.GAP_MISSING_RATING || 0)]
+- tools/details-parity-v1/report-raw-fixture-metadata-coverage.js:7:const fields = ["poster","backdrop","overview","rating","genre","runtime","language","director","productionCompanies"];
+- tools/details-parity-v1/test-details-fixture-coverage-negative.js:16:  rating: "",
+- tools/details-parity-v1/test-details-fixture-coverage.js:7:const requiredFields = ["key","status","type","title","name","year","rating","genre","runtime","language","poster","backdrop","overview","streamUrl"];
+- tools/details-parity-v1/test-details-response-parity-basic.js:22:    rating: clean(r.rating),

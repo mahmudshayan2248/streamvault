@@ -1,0 +1,162 @@
+﻿=== RESTORE WARP HEALTH AUDIT ===
+DATE=2026-06-09 16:55:52
+WORK_BRANCH=haskell-baseline-master-restore-haskell-files-20260609-165231
+SOURCE_BRANCH=origin/haskell-migration-baseline-audit-20260609-133901
+HEAD=1069bdb1edbdf9147cb3746beda66eae28e2e6fd
+
+RESTORED tools/haskell-warp-health FROM origin/haskell-migration-baseline-audit-20260609-133901
+
+============================================================
+RUN: details fixture schema
+CMD: node tools\details-parity-v1\validate-details-fixture-schema.js
+============================================================
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details route contract
+CMD: node tools\details-parity-v1\test-details-route-contract.js
+============================================================
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture coverage
+CMD: node tools\details-parity-v1\test-details-fixture-coverage.js
+============================================================
+COVERAGE_ROWS=120
+COVERAGE_MOVIES=80
+COVERAGE_TV=40
+COVERAGE_POSTERS=116
+COVERAGE_OVERVIEWS=115
+DETAILS_FIXTURE_COVERAGE_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture builder determinism
+CMD: node tools\details-parity-v1\test-details-fixture-builder-determinism.js
+============================================================
+WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+FIXTURE_BUILDER_DETERMINISM_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details response snapshot
+CMD: node tools\details-parity-v1\test-details-response-snapshot.js
+============================================================
+RESPONSE_SNAPSHOT_ROWS=120
+RESPONSE_SNAPSHOT_BAD=0
+DETAILS_RESPONSE_SNAPSHOT_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: cabal build all
+CMD: cabal build all
+============================================================
+Configuration is affected by the following files:
+- cabal.project
+Build profile: -w ghc-9.6.7 -O1
+In order, the following will be built (use -v for more details):
+ - streamvault-haskell-backend-0.1.0.0 (exe:streamvault-warp-health) (first run)
+Preprocessing executable 'streamvault-warp-health' for streamvault-haskell-backend-0.1.0.0...
+Building executable 'streamvault-warp-health' for streamvault-haskell-backend-0.1.0.0...
+[1 of 1] Compiling Main             ( tools\haskell-warp-health\HealthOnly.hs, dist-newstyle\build\x86_64-windows\ghc-9.6.7\streamvault-haskell-backend-0.1.0.0\x\streamvault-warp-health\build\streamvault-warp-health\streamvault-warp-health-tmp\Main.o )
+[2 of 2] Linking dist-newstyle\\build\\x86_64-windows\\ghc-9.6.7\\streamvault-haskell-backend-0.1.0.0\\x\\streamvault-warp-health\\build\\streamvault-warp-health\\streamvault-warp-health.exe
+EXIT_CODE=0
+
+=== FINAL STATUS BEFORE COMMIT ===
+A  app/CatalogApi.hs
+A  app/CryptoHashCompat.hs
+A  app/Main.hs
+A  streamvault-haskell-backend.cabal
+A  tools/details-parity-v1/DETAILS_7O_SHADOW_ALL_BASELINE.md
+A  tools/details-parity-v1/DETAILS_7P_POWERSHELL_SAFE_SHADOW_RUNNER.md
+A  tools/details-parity-v1/DETAILS_7Q_PSSAFE_RUNNER_ROOT_FIX.md
+A  tools/details-parity-v1/DETAILS_7R_SHADOW_OUTPUT_SUMMARY.md
+A  tools/details-parity-v1/DETAILS_7S_SHADOW_FAILURE_BUCKETS.md
+A  tools/details-parity-v1/DETAILS_7T_NEGATIVE_SCHEMA_CLASSIFICATION.md
+A  tools/details-parity-v1/DETAILS_7U_METADATA_GAP_SOURCE_LOCATOR.md
+A  tools/details-parity-v1/DETAILS_7V_RAW_FIXTURE_METADATA_COVERAGE.md
+A  tools/details-parity-v1/DETAILS_7W_FIXTURE_ENRICHMENT_SOURCE_AUDIT.md
+A  tools/details-parity-v1/DETAILS_7X_FIXTURE_GENERATION_HISTORY_AUDIT.md
+A  tools/details-parity-v1/DETAILS_7Y_FIXTURE_METADATA_ENRICHER.md
+A  tools/details-parity-v1/DETAILS_7Z_FIXTURE_CACHE_MATCH_AUDIT.md
+A  tools/details-parity-v1/DETAILS_8A_POSTER_CACHE_METADATA_INVENTORY.md
+A  tools/details-parity-v1/DETAILS_8B_CACHE_FIXTURE_REAL_MATCH_AUDIT.md
+A  tools/details-parity-v1/DETAILS_8C_FIXTURE_ENRICHMENT_DECISION.md
+A  tools/details-parity-v1/DETAILS_8D_FIXTURE_CACHE_DRY_RUN_MATCHER.md
+A  tools/details-parity-v1/DETAILS_8E_DRY_RUN_MATCH_DECISION.md
+A  tools/details-parity-v1/DETAILS_8F_FIXTURE_ENRICHMENT_PREVIEW.md
+A  tools/details-parity-v1/DETAILS_8G_GUARDED_FIXTURE_ENRICHER.md
+A  tools/details-parity-v1/DETAILS_8H_STRONG_MATCH_ENRICHMENT_PREVIEW.md
+A  tools/details-parity-v1/DETAILS_8I_TEMP_ENRICHED_FIXTURE_VALIDATION.md
+A  tools/details-parity-v1/DETAILS_8J_FIXTURE_ENRICHMENT_REVIEW_PACK.md
+A  tools/details-parity-v1/DETAILS_8K_FIXTURE_ENRICHMENT_REVIEW_GATE.md
+A  tools/details-parity-v1/DETAILS_8L_APPLY_READINESS_DECISION.md
+A  tools/details-parity-v1/DETAILS_8M_REVIEW_PACK_REGENERATOR.md
+A  tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7E.md
+A  tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7F.md
+A  tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7G.md
+A  tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7H.md
+A  tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7I.md
+A  tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7K.md
+A  tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7L.md
+A  tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7M.md
+A  tools/details-parity-v1/DETAILS_SHADOW_CHECKPOINT_7N.md
+A  tools/details-parity-v1/DETAILS_SHADOW_GATES.md
+A  tools/details-parity-v1/audit-details-fixture-gaps.js
+A  tools/details-parity-v1/audit-details-fixtures.js
+A  tools/details-parity-v1/audit-fixture-cache-matches.js
+A  tools/details-parity-v1/build-details-contract-manifest.js
+A  tools/details-parity-v1/build-details-response-snapshot.js
+A  tools/details-parity-v1/build-details-route-snapshot.js
+A  tools/details-parity-v1/build-expanded-details-fixture.js
+A  tools/details-parity-v1/check-source-metadata-report.ps1
+A  tools/details-parity-v1/dry-run-fixture-cache-matcher.ps1
+A  tools/details-parity-v1/enrich-expanded-details-fixture.js
+A  tools/details-parity-v1/expanded-details-fixture.json
+A  tools/details-parity-v1/export-fixture-enrichment-review-pack.ps1
+A  tools/details-parity-v1/fixture-shape-audit-summary.txt
+A  tools/details-parity-v1/guarded-fixture-cache-enricher.ps1
+A  tools/details-parity-v1/out/details-shadow-all-7o-20260608-202843.txt
+A  tools/details-parity-v1/out/fixture-enrichment-candidates-8m.json
+A  tools/details-parity-v1/preview-fixture-cache-enrichment.ps1
+A  tools/details-parity-v1/preview-strong-match-fixture-enrichment.ps1
+A  tools/details-parity-v1/report-details-gap-priority.js
+A  tools/details-parity-v1/report-raw-fixture-metadata-coverage.js
+A  tools/details-parity-v1/run-details-shadow-all-powershell-safe.ps1
+A  tools/details-parity-v1/source-metadata-match-dry-run.js
+A  tools/details-parity-v1/source-metadata-match-report.json
+A  tools/details-parity-v1/source-metadata-match-summary.txt
+A  tools/details-parity-v1/source-metadata-report-gate-summary.txt
+A  tools/details-parity-v1/summarize-details-shadow-output.js
+A  tools/details-parity-v1/test-details-contract-manifest-negative.js
+A  tools/details-parity-v1/test-details-contract-manifest.js
+A  tools/details-parity-v1/test-details-fixture-builder-determinism.js
+A  tools/details-parity-v1/test-details-fixture-coverage-negative.js
+A  tools/details-parity-v1/test-details-fixture-coverage.js
+A  tools/details-parity-v1/test-details-fixture-schema-negative.js
+A  tools/details-parity-v1/test-details-gate-inventory.js
+A  tools/details-parity-v1/test-details-response-parity-basic.js
+A  tools/details-parity-v1/test-details-response-parity-negative.js
+A  tools/details-parity-v1/test-details-response-snapshot-negative.js
+A  tools/details-parity-v1/test-details-response-snapshot.js
+A  tools/details-parity-v1/test-details-route-contract-negative.js
+A  tools/details-parity-v1/test-details-route-contract.js
+A  tools/details-parity-v1/test-details-route-roundtrip-negative.js
+A  tools/details-parity-v1/test-details-route-roundtrip.js
+A  tools/details-parity-v1/test-details-route-snapshot-negative.js
+A  tools/details-parity-v1/test-details-route-snapshot.js
+A  tools/details-parity-v1/test-native-details-shadow.js
+A  tools/details-parity-v1/validate-details-fixture-schema.js
+A  tools/details-parity-v1/validate-temp-enriched-fixture.ps1
+A  tools/haskell-warp-health/HealthOnly.hs
+?? tools/haskell-migration-baseline/master-integration-restore-haskell-files-audit-20260609-165231.txt
+?? tools/haskell-migration-baseline/restore-warp-health-audit-20260609-165550.txt

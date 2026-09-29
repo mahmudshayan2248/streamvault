@@ -1,0 +1,137 @@
+﻿=== SERIES CONTRACT FIXTURE REPORT ===
+DATE=2026-06-10 18:15:18
+WORK_BRANCH=haskell-series-contract-fixture-20260610-181514
+BASE_BRANCH=haskell-series-api-audit-20260610-181146
+MASTER_LEFT_AT=0f9bec0dd6c87fab550968fea1bb9507c98e59cd
+HEAD=b8130dad3d4a4a6e83329a6e67d2b9c10793ba74
+MASTER_NOT_TOUCHED=YES
+
+
+============================================================
+RUN: build series fixture
+CMD: node tools\series-parity-v1\build-series-fixture.js
+============================================================
+SERIES_CATALOG_TOTAL=3431
+SERIES_FIXTURE_ROWS=120
+SERIES_FIRST_TITLE=A Knight of the Seven Kingdoms (TV Series 2026– ) 1080p [Dual Audio]
+SERIES_FIXTURE_BUILD_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: test series fixture schema
+CMD: node tools\series-parity-v1\test-series-fixture-schema.js
+============================================================
+SERIES_SCHEMA_ROWS=120
+SERIES_SCHEMA_BAD=0
+SERIES_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: home-feed fixture schema
+CMD: node tools\home-feed-parity-v1\test-home-feed-fixture-schema.js
+============================================================
+HOME_FEED_SCHEMA_SECTIONS=5
+HOME_FEED_SCHEMA_BAD=0
+HOME_FEED_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: home-feed shadow pager compile
+CMD: ghc -Wall -o tools\home-feed-parity-v1\home-feed-shadow-pager.exe tools\home-feed-parity-v1\HomeFeedShadowPager.hs
+============================================================
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\home-feed-parity-v1\HomeFeedShadowPager.hs, tools\home-feed-parity-v1\HomeFeedShadowPager.o )
+[2 of 2] Linking tools\\home-feed-parity-v1\\home-feed-shadow-pager.exe
+EXIT_CODE=0
+
+============================================================
+RUN: home-feed shadow pager run
+CMD: tools\home-feed-parity-v1\home-feed-shadow-pager.exe 24
+============================================================
+HOME_FEED_SHADOW_SECTION_COUNT=5
+HOME_FEED_SHADOW_LIMIT=24
+HOME_FEED_SHADOW_ITEMS_BLOCKS=5
+HOME_FEED_SHADOW_TITLE_ROWS=106
+HOME_FEED_SHADOW_TYPE_ROWS=106
+{"ok":true,"source":"haskell-home-feed-shadow","limit":24,"sectionCount":5,"sections":[]}
+HOME_FEED_SHADOW_PAGER_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: movies fixture schema
+CMD: node tools\movies-parity-v1\test-movies-fixture-schema.js
+============================================================
+MOVIES_SCHEMA_ROWS=120
+MOVIES_SCHEMA_BAD=0
+MOVIES_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: movies shadow pager compile
+CMD: ghc -Wall -o tools\movies-parity-v1\movies-shadow-pager.exe tools\movies-parity-v1\MoviesShadowPager.hs
+============================================================
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\movies-parity-v1\MoviesShadowPager.hs, tools\movies-parity-v1\MoviesShadowPager.o )
+[2 of 2] Linking tools\\movies-parity-v1\\movies-shadow-pager.exe
+EXIT_CODE=0
+
+============================================================
+RUN: movies shadow pager run
+CMD: tools\movies-parity-v1\movies-shadow-pager.exe 0 24
+============================================================
+MOVIES_SHADOW_TOTAL=120
+MOVIES_SHADOW_PAGE=0
+MOVIES_SHADOW_LIMIT=24
+MOVIES_SHADOW_ROWS=24
+MOVIES_SHADOW_PAGES=5
+{"movies":[],"total":120,"page":0,"pages":5}
+MOVIES_SHADOW_PAGER_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture schema
+CMD: node tools\details-parity-v1\validate-details-fixture-schema.js
+============================================================
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details route contract
+CMD: node tools\details-parity-v1\test-details-route-contract.js
+============================================================
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details response snapshot
+CMD: node tools\details-parity-v1\test-details-response-snapshot.js
+============================================================
+RESPONSE_SNAPSHOT_ROWS=120
+RESPONSE_SNAPSHOT_BAD=0
+DETAILS_RESPONSE_SNAPSHOT_PASS
+EXIT_CODE=0
+
+=== CABAL BUILD ALL SAFE CAPTURE ===
+cabal : Configuration is affected by the following files:
+At line:191 char:1
++ cabal build all *> $cabalTmp
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Configuration i...ollowing files::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+- cabal.project
+Up to date
+EXIT_CODE=0
+
+=== FINAL STATUS BEFORE COMMIT ===
+?? tools/series-parity-v1/build-series-fixture.js
+?? tools/series-parity-v1/cabal-build-series-fixture-20260610-181514.txt
+?? tools/series-parity-v1/series-contract-fixture-report-20260610-181514.txt
+?? tools/series-parity-v1/series-contract-fixture.json
+?? tools/series-parity-v1/test-series-fixture-schema.js

@@ -1,0 +1,21 @@
+﻿Status: fixture shape audit only
+Runtime/frontend/playback files changed: no
+expanded-details-fixture.json mutated: no
+
+fixture file: tools\details-parity-v1\expanded-details-fixture.json
+raw length: 101952
+top type: System.Object[]
+array count: 120
+top-level property count: 8
+route/title-like key count: 360
+object brace count: 120
+
+Top-level properties:
+Count
+Length
+LongLength
+Rank
+SyncRoot
+IsReadOnly
+IsFixedSize
+IsSynchronized

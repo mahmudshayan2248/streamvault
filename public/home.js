@@ -3,9 +3,6 @@
     { rowId:'netflixRow', trackId:'netflixTrack', sectionKey:'netflix', title:'Netflix Originals' },
     { rowId:'marvelRow', trackId:'marvelTrack', sectionKey:'marvel', title:'Marvel Studios' },
     { rowId:'dcRow', trackId:'dcTrack', sectionKey:'dc', title:'DC' },
-    { rowId:'trendingRow', trackId:'trendingTrack', sectionKey:'trending', title:'🔥 Trending Now' },
-    { rowId:'seriesRow', trackId:'seriesTrack', sectionKey:'series', title:'Series' },
-    { rowId:'newRow', trackId:'newTrack', sectionKey:'new', title:'New to StreamVault' },
     { rowId:'universalRow', trackId:'universalTrack', sectionKey:'universal', title:'Universal Pictures' },
     { rowId:'disneyRow', trackId:'disneyTrack', sectionKey:'disney', title:'Disney' },
     { rowId:'warnerRow', trackId:'warnerTrack', sectionKey:'warner', title:'Warner Bros' },
@@ -15,15 +12,15 @@
     { rowId:'dramaRow', trackId:'dramaTrack', sectionKey:'drama', title:'Drama & Emotion' },
     { rowId:'spanishRow', trackId:'spanishTrack', sectionKey:'spanish', title:'Spanish & Latino' },
     { rowId:'highRatedRow', trackId:'highRatedTrack', sectionKey:'topRated', title:'⭐ Top Rated (8+)' },
-    { rowId:'allRow', trackId:'allTrack', sectionKey:'allMovies', title:'All Movies' }
+    { rowId:'allRow', trackId:'allTrack', sectionKey:'allMovies', title:'All Movies' },
+    { rowId:'trendingRow', trackId:'trendingTrack', sectionKey:'trending', title:'🔥 Trending Now' },
+    { rowId:'seriesRow', trackId:'seriesTrack', sectionKey:'series', title:'Series' },
+    { rowId:'newRow', trackId:'newTrack', sectionKey:'new', title:'New to StreamVault' }
   ];
   var SV_PERF_HOME_MAIN = [
     { rowId:'netflixRow', trackId:'netflixTrack', sectionKey:'netflix', title:'Netflix Originals' },
     { rowId:'marvelRow', trackId:'marvelTrack', sectionKey:'marvel', title:'Marvel Studios' },
     { rowId:'dcRow', trackId:'dcTrack', sectionKey:'dc', title:'DC' },
-    { rowId:'trendingRow', trackId:'trendingTrack', sectionKey:'trending', title:'🔥 Trending Now' },
-    { rowId:'seriesRow', trackId:'seriesTrack', sectionKey:'series', title:'Series' },
-    { rowId:'newRow', trackId:'newTrack', sectionKey:'new', title:'New to StreamVault' },
     { rowId:'universalRow', trackId:'universalTrack', sectionKey:'universal', title:'Universal Pictures' },
     { rowId:'disneyRow', trackId:'disneyTrack', sectionKey:'disney', title:'Disney' },
     { rowId:'warnerRow', trackId:'warnerTrack', sectionKey:'warner', title:'Warner Bros' },
@@ -61,7 +58,10 @@
     { rowId:'highRatedRow', trackId:'highRatedTrack', sectionKey:'topRated', title:'⭐ Top Rated (8+)' },
     { rowId:'allRow', trackId:'allTrack', sectionKey:'allMovies', title:'All Movies' },
     { rowId:'recentlyAddedRow', trackId:'recentlyAddedTrack', sectionKey:'recentlyAdded', title:'Recently Added' },
-    { rowId:'mostWatchedTodayRow', trackId:'mostWatchedTodayTrack', sectionKey:'mostWatchedToday', title:'Most Watched Today' }
+    { rowId:'mostWatchedTodayRow', trackId:'mostWatchedTodayTrack', sectionKey:'mostWatchedToday', title:'Most Watched Today' },
+    { rowId:'trendingRow', trackId:'trendingTrack', sectionKey:'trending', title:'🔥 Trending Now' },
+    { rowId:'seriesRow', trackId:'seriesTrack', sectionKey:'series', title:'Series' },
+    { rowId:'newRow', trackId:'newTrack', sectionKey:'new', title:'New to StreamVault' }
   ];
   var SV_PERF_HOME_BY_ID = Object.fromEntries(SV_PERF_HOME_MAIN.map(row=>[row.rowId,row]));
   var svHomePayload = null;
@@ -72,6 +72,22 @@
   var svHomeHeroClaims = new Set();
   var svHomeRowClaims = new Map();
   var svWeakDevice = ((navigator.deviceMemory || 4) <= 2) || ((navigator.hardwareConcurrency || 4) <= 2) || (innerWidth < 760 && ((navigator.deviceMemory || 4) <= 3));
+  var SV_HOME_MIN_ROW_ITEMS = svWeakDevice ? 6 : 8;
+  var SV_DYNAMIC_BRAND_ROWS = new Set(['warnerRow','hboRow']);
+
+  function svInstallNormalStudioPosterSizing(){
+    if(document.getElementById('svNormalStudioPosterSizing'))return;
+    const style = document.createElement('style');
+    style.id = 'svNormalStudioPosterSizing';
+    style.textContent = `
+      #marvelTrack,#dcTrack{height:calc(var(--card-h) + 24px)!important;gap:16px!important}
+      #marvelTrack .card,#dcTrack .card{flex:0 0 var(--card-w)!important;width:var(--card-w)!important;min-width:var(--card-w)!important;max-width:var(--card-w)!important;height:var(--card-h)!important;min-height:var(--card-h)!important;max-height:var(--card-h)!important;border-radius:var(--card-radius)!important}
+      #marvelTrack .card img,#dcTrack .card img,#marvelTrack .card-placeholder,#dcTrack .card-placeholder{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:var(--card-radius)!important}
+      #marvelTrack .card-overlay,#dcTrack .card-overlay{padding:12px 10px 10px!important;border-radius:var(--card-radius)!important}
+    `;
+    document.head.appendChild(style);
+  }
+  svInstallNormalStudioPosterSizing();
 
   function svHomeRenderer(item, index){
     const isSeries = item?.type === 'tv' || item?.type === 'series' || item?.isSummary || item?.seasons;
@@ -214,16 +230,25 @@
   svApplyHomeOrder = function(){
     const main = document.getElementById('mainSection');
     if(!main)return;
+    const bottomIds = new Set(['trendingRow','seriesRow','newRow']);
     const liveRow = document.getElementById('liveHomeRow');
     if(liveRow)main.appendChild(liveRow);
-    const continueRow = document.getElementById('continueRow');
-    if(continueRow)main.appendChild(continueRow);
-    SV_PERF_HOME_MAIN.forEach(meta=>{
+    SV_PERF_HOME_MAIN.slice(0,3).forEach(meta=>{
       const row = svEnsureHomeRow(meta.rowId);
       if(row)main.appendChild(row);
     });
+    SV_PERF_HOME_MAIN.slice(3).filter(meta=>!bottomIds.has(meta.rowId)).forEach(meta=>{
+      const row = svEnsureHomeRow(meta.rowId);
+      if(row)main.appendChild(row);
+    });
+    const continueRow = document.getElementById('continueRow');
+    if(continueRow)main.appendChild(continueRow);
     ['becauseRow'].forEach(id=>{
       const row = document.getElementById(id);
+      if(row)main.appendChild(row);
+    });
+    SV_PERF_HOME_MAIN.filter(meta=>bottomIds.has(meta.rowId)).forEach(meta=>{
+      const row = svEnsureHomeRow(meta.rowId);
       if(row)main.appendChild(row);
     });
     Array.from(main.children).forEach(el=>{
@@ -239,8 +264,10 @@
     const requestedLimit = limit || (svWeakDevice ? 12 : 24);
     if(svHomePayload && (svHomePayload._limit || 0) >= requestedLimit)return Promise.resolve(svHomePayload);
     if(svHomePayloadPromise)return svHomePayloadPromise;
-    svHomePayloadPromise = fetch(`/api/home-feed?limit=${requestedLimit}`)
-      .then(r=>r.ok ? r.json() : Promise.reject(new Error('home feed failed')))
+    const readJson = r=>r.ok ? r.json() : Promise.reject(new Error('home feed failed'));
+    svHomePayloadPromise = fetch('/home-feed.json?v=20260620-player-tracks-sections-final1', { cache:'force-cache' })
+      .then(readJson)
+      .catch(()=>fetch(`/api/home-feed?limit=${requestedLimit}`).then(readJson))
       .then(data=>{
         data._limit = requestedLimit;
         svHomePayload = data;
@@ -251,49 +278,59 @@
   }
   const svHomeFeedPrime = svFetchHomeFeed(svWeakDevice ? 12 : 24).catch(()=>null);
 
-  function svFetchHomeSection(meta){
-    return fetch(`/api/section/${encodeURIComponent(meta.sectionKey)}?page=0&limit=${svWeakDevice ? 12 : 24}&summary=1`)
+  function svFetchHomeSection(meta, options={}){
+    const limit = options.limit || (svWeakDevice ? 12 : 24);
+    const summary = options.summary === false ? '0' : '1';
+    return fetch(`/api/section/${encodeURIComponent(meta.sectionKey)}?page=0&limit=${limit}&summary=${summary}&v=20260620-player-tracks-sections-final1`)
       .then(r=>r.ok ? r.json() : Promise.reject(new Error(`section ${meta.sectionKey} failed`)))
-      .then(data=>({ rowId:meta.rowId, items:Array.isArray(data?.items) ? data.items : [] }))
+      .then(data=>({ rowId:meta.rowId, items:Array.isArray(data?.items) ? data.items : [], _svFresh:options.summary === false }))
       .catch(err=>{
         console.warn('[Homepage] section unavailable:', meta.sectionKey, err.message);
         return { rowId:meta.rowId, items:[] };
       });
   }
 
+  function svShouldRefillHomeRow(rowId, items, rowData){
+    if(rowData?._svFresh)return false;
+    if(!SV_PERF_HOME_BY_ID[rowId])return false;
+    if(['trendingRow','seriesRow','newRow'].includes(rowId))return false;
+    const count = Array.isArray(items) ? items.length : 0;
+    return count > 0 && (count < SV_HOME_MIN_ROW_ITEMS || SV_DYNAMIC_BRAND_ROWS.has(rowId));
+  }
+
   function svLoadHomeSections(){
-    const immediateCount = svWeakDevice ? 2 : 4;
+    const immediateCount = 3;
     const immediate = SV_PERF_HOME_MAIN.slice(0, immediateCount);
     const delayed = SV_PERF_HOME_MAIN.slice(immediateCount);
+    const prepareDelayedRows = rowMap=>{
+      let index = 0;
+      const prepareBatch = ()=>{
+        const end = Math.min(delayed.length, index + (svWeakDevice ? 3 : 5));
+        for(; index < end; index++){
+          const meta = delayed[index];
+          svPrepareHomeRow(meta.rowId, rowMap[meta.rowId] || null, false);
+        }
+        if(index < delayed.length)requestAnimationFrame(prepareBatch);
+      };
+      requestAnimationFrame(prepareBatch);
+    };
     const renderRows = data=>{
       const feedRows = Array.isArray(data?.rows) ? data.rows : [];
       const rowMap = Object.fromEntries(feedRows.map(row=>[row.rowId,row]));
       svRenderHeroFromFeed(data);
-      immediate.forEach((meta, idx)=>svPrepareHomeRow(meta.rowId, rowMap[meta.rowId], idx < (svWeakDevice ? 2 : 3)));
-      svRenderPersonalRows();
       svApplyHomeOrder();
+      immediate.forEach(meta=>svPrepareHomeRow(meta.rowId, rowMap[meta.rowId] || null, true));
+      svRenderPersonalRows();
       if(typeof svPrefetchHomeFeedPosters === 'function')svPrefetchHomeFeedPosters(data);
-      const idle = window.requestIdleCallback || (fn=>setTimeout(fn,120));
-      delayed.forEach((meta, i)=>{
-        idle(()=>Promise.resolve(rowMap[meta.rowId] || svFetchHomeSection(meta)).then(row=>{
-          svPrepareHomeRow(row.rowId, row, false);
-          svApplyHomeOrder();
-        }), { timeout: (svWeakDevice ? 1800 : 1200) + i * (svWeakDevice ? 180 : 120) });
-      });
+      prepareDelayedRows(rowMap);
     };
     const renderSectionFallback = ()=>{
-      immediate.forEach((meta, idx)=>{
-        svFetchHomeSection(meta).then(row=>svPrepareHomeRow(meta.rowId, row, idx < (svWeakDevice ? 2 : 3)));
+      svApplyHomeOrder();
+      immediate.forEach(meta=>{
+        svFetchHomeSection(meta).then(row=>svPrepareHomeRow(meta.rowId, row, true));
       });
       svRenderPersonalRows();
-      svApplyHomeOrder();
-      const idle = window.requestIdleCallback || (fn=>setTimeout(fn,120));
-      delayed.forEach((meta, i)=>{
-        idle(()=>svFetchHomeSection(meta).then(row=>{
-          svPrepareHomeRow(row.rowId, row, false);
-          svApplyHomeOrder();
-        }), { timeout:(svWeakDevice ? 1800 : 1200) + i * (svWeakDevice ? 180 : 120) });
-      });
+      prepareDelayedRows({});
     };
     return svFetchHomeFeed(svWeakDevice ? 8 : 12)
       .then(renderRows)
@@ -310,7 +347,14 @@
         entries.forEach(entry=>{
           if(entry.isIntersecting || entry.intersectionRatio > 0){
             svHomeObserver.unobserve(entry.target);
-            svMountHomeRow(entry.target.id);
+            entry.target._svObserved = false;
+            const meta = SV_PERF_HOME_BY_ID[entry.target.id];
+            if(entry.target._svNeedsFetch && meta){
+              entry.target._svNeedsFetch = false;
+              svFetchHomeSection(meta).then(row=>svPrepareHomeRow(row.rowId, row, true));
+            }else{
+              svMountHomeRow(entry.target.id);
+            }
           }
         });
       }, { root:null, rootMargin:svWeakDevice ? '420px 0px 560px 0px' : '850px 0px 850px 0px', threshold:.01 });
@@ -325,6 +369,27 @@
     if(!row || !meta)return;
     const items = Array.isArray(rowData?.items) ? rowData.items : [];
     const track = document.getElementById(meta.trackId);
+    if(rowData && svShouldRefillHomeRow(rowId, items, rowData) && !row._svRefillStarted){
+      row._svRefillStarted = true;
+      svFetchHomeSection(meta, { summary:false, limit:svWeakDevice ? 24 : 50 }).then(fresh=>{
+        if(!fresh?.items?.length || fresh.items.length <= items.length)return;
+        row._svLoaded = false;
+        track && (track.innerHTML = '');
+        svPrepareHomeRow(rowId, fresh, true);
+      }).catch(()=>{});
+    }
+    if(!rowData){
+      row._svItems = [];
+      row._svLoaded = false;
+      row._svNeedsFetch = true;
+      row.classList.add('sv-row-pending');
+      row.classList.remove('sv-row-loaded');
+      svSkeletonTrack(track);
+      show(rowId);
+      svObserveRow(row);
+      return;
+    }
+    row._svNeedsFetch = false;
     if(!items.length){
       if(track?.querySelector('.card,.live-ch-card')){
         show(rowId);
@@ -392,7 +457,6 @@
     let width = first ? first.getBoundingClientRect().width : 0;
     if(!width){
       if(track.classList.contains('live-home-track')) width = window.innerWidth < 760 ? 72 : 92;
-      else if(rowId === 'marvelRow' || rowId === 'dcRow') width = Math.min(Math.max(window.innerWidth * .76, 260), 430);
       else width = Math.min(Math.max(window.innerWidth * .30, 118), 162);
     }
     return Math.max(64, width + gap);
@@ -447,7 +511,8 @@
     const target = Math.min(total, rendered + (force ? (track._svInitial || batch) : batch));
     if(target <= rendered)return;
     const rowId = track._svRowId || track.closest('.row')?.id || '';
-    const priorityCount = window.innerWidth < 760 || svWeakDevice ? 5 : 8;
+    const priorityRow = ['netflixRow','marvelRow','dcRow'].includes(rowId);
+    const priorityCount = priorityRow ? (window.innerWidth < 760 || svWeakDevice ? 5 : 8) : 0;
     const html = track._svItems.slice(rendered, target).map((item,i)=>{
       const index = rendered + i;
       const immediateImage = index < priorityCount;
@@ -707,6 +772,1775 @@
     return svExclusiveHeroDedup([...movieItems, ...seriesItems]).slice(0, SV_EXCLUSIVE_HERO_LIMIT);
   }
 
+  var svFifaLiveState = {
+    started:false,
+    loading:false,
+    timer:null,
+    countdownTimer:null,
+    countdownMatch:null,
+    countdownMatchKey:'',
+    controller:null,
+    payload:null,
+    matchesByKey:new Map(),
+    detailController:null,
+    detailMatch:null,
+    detailPayload:null,
+    detailTab:'overview',
+    detailBound:false,
+    featuredDetailController:null,
+    featuredDetailKey:'',
+    featuredDetailPayload:null,
+    newsLoading:false,
+    newsController:null,
+    newsPayload:null,
+    newsFetchedAt:0,
+    newsTimer:null,
+    detailScrollY:0,
+    renderSignature:'',
+    postRenderTimer:null,
+    earlyPromiseUsed:false
+  };
+
+  const SV_FIFA_LOCAL_CACHE_KEY = 'streamvault:fifa-live:last-real:v1';
+  const SV_FIFA_NEWS_CLIENT_TTL = 5 * 60 * 1000;
+  const SV_FIFA_PAST_MATCH_LIMIT = 6;
+  const SV_FIFA_FORWARD_MATCH_LIMIT = 12;
+  const SV_LIVE_MATCH_CHANNEL_ID = 'tsports';
+  let svLiveMatchChannelsPromise = null;
+
+  function svFifaEsc(value){
+    if(typeof esc === 'function')return esc(value);
+    return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function svFifaClientFallbackPayload(message){
+    const now = Date.now();
+    return {
+      ok:false,
+      generatedAt:new Date(now).toISOString(),
+      source:'none',
+      stale:false,
+      competition:'FIFA / Football Live',
+      message:message || 'Real live football data is unavailable right now',
+      liveMatches:[],
+      upcomingMatches:[],
+      recentResults:[],
+      standings:[],
+      headlines:[],
+      capabilities:{
+        liveScores:false,
+        matchStats:false,
+        lineups:false,
+        formations:false,
+        events:false,
+        standings:false,
+        headlines:false,
+        teamFlags:false
+      },
+      provider:{
+        active:'none',
+        apiFootballConfigured:false,
+        limited:false,
+        fallback:false
+      }
+    };
+  }
+
+  function svFifaPayloadHasRealData(payload){
+    return !!payload && [
+      payload.liveMatches,
+      payload.upcomingMatches,
+      payload.recentResults,
+      payload.standings,
+      payload.headlines
+    ].some(items=>Array.isArray(items) && items.length);
+  }
+
+  function svSetMobileLiveMatchState(live){
+    const isLive = !!live;
+    document.documentElement.classList.toggle('sv-fifa-match-live', isLive);
+    const btn = document.getElementById('bnLiveMatch');
+    if(btn){
+      btn.classList.toggle('is-live', isLive);
+      btn.dataset.fifaLive = isLive ? '1' : '0';
+    }
+  }
+
+  function svFifaUniqueMatches(list, limit, seen){
+    const out = [];
+    const used = seen || new Set();
+    (Array.isArray(list) ? list : []).some(match=>{
+      const key = svFifaMatchKey(match) || [
+        match?.homeTeam || match?.home?.name || '',
+        match?.awayTeam || match?.away?.name || '',
+        match?.startTime || match?.kickoff || ''
+      ].join(':');
+      if(!key || used.has(key))return false;
+      used.add(key);
+      out.push(match);
+      return limit && out.length >= limit;
+    });
+    return out;
+  }
+
+  function svFifaCarouselMatches(payload){
+    const seen = new Set();
+    const liveMatches = Array.isArray(payload?.liveMatches) ? payload.liveMatches : [];
+    const upcomingMatches = Array.isArray(payload?.upcomingMatches) ? payload.upcomingMatches : [];
+    const recentResults = Array.isArray(payload?.recentResults) ? payload.recentResults : [];
+    const forward = svFifaUniqueMatches([...liveMatches, ...upcomingMatches], SV_FIFA_FORWARD_MATCH_LIMIT, seen);
+    const past = svFifaUniqueMatches(recentResults, SV_FIFA_PAST_MATCH_LIMIT, seen).reverse();
+    if(forward.length){
+      return { matches:[...past, ...forward], startIndex:past.length, pastCount:past.length, forwardCount:forward.length };
+    }
+    const fallback = svFifaUniqueMatches(recentResults, SV_FIFA_PAST_MATCH_LIMIT, new Set());
+    return { matches:fallback, startIndex:0, pastCount:fallback.length, forwardCount:0 };
+  }
+
+  function svFifaPayloadSignature(payload){
+    if(!payload)return '';
+    const carousel = svFifaCarouselMatches(payload);
+    const matches = carousel.matches.map(match=>[
+      match?.id || '',
+      match?.homeScore ?? '',
+      match?.awayScore ?? '',
+      match?.status || '',
+      match?.startTime || match?.kickoff || ''
+    ].join(':'));
+    return [
+      payload.generatedAt || '',
+      payload.source || '',
+      !!payload.stale,
+      matches.join('|')
+    ].join('::');
+  }
+
+  function svFifaReadEarlyPayload(){
+    try{
+      const payload = window.__svFifaEarlyPayload || window.__svFifaFastPayload || window.__svFifaCachedPayload || null;
+      if(!svFifaPayloadHasRealData(payload))return null;
+      if(payload === window.__svFifaCachedPayload && !payload.stale){
+        return {
+          ...payload,
+          stale:true,
+          message:payload.message || 'Showing cached real football data while the live feed refreshes'
+        };
+      }
+      return payload;
+    }catch(_err){
+      return null;
+    }
+  }
+
+  function svFifaTakeEarlyPromise(){
+    const early = window.__svFifaLiveEarlyPromise;
+    if(!early || svFifaLiveState.earlyPromiseUsed)return null;
+    svFifaLiveState.earlyPromiseUsed = true;
+    return Promise.resolve(early).then(payload=>{
+      if(!svFifaPayloadHasRealData(payload))throw new Error('Early FIFA payload was empty');
+      return payload;
+    });
+  }
+
+  function svFifaReadCachedPayload(){
+    try{
+      const raw = localStorage.getItem(SV_FIFA_LOCAL_CACHE_KEY);
+      if(!raw)return null;
+      const payload = JSON.parse(raw);
+      if(!svFifaPayloadHasRealData(payload))return null;
+      return {
+        ...payload,
+        stale:true,
+        message:payload.message || 'Showing cached real football data while the live feed refreshes'
+      };
+    }catch(_err){
+      return null;
+    }
+  }
+
+  function svFifaWriteCachedPayload(payload){
+    try{
+      if(!payload || !svFifaPayloadHasRealData(payload))return;
+      localStorage.setItem(SV_FIFA_LOCAL_CACHE_KEY, JSON.stringify(payload));
+    }catch(_err){}
+  }
+
+  function svFifaCleanText(value){
+    const text = String(value ?? '').trim();
+    return text && text.toLowerCase() !== 'null' && text.toLowerCase() !== 'undefined' ? text : '';
+  }
+
+  function svFifaTeamName(team){
+    if(typeof team === 'string')return svFifaCleanText(team);
+    return svFifaCleanText(team?.team || team?.name || team?.displayName || team?.homeTeam || team?.awayTeam);
+  }
+
+  const SV_FIFA_COUNTRY_CODES = {
+    algeria:'DZ',
+    argentina:'AR',
+    australia:'AU',
+    austria:'AT',
+    belgium:'BE',
+    'bosnia herzegovina':'BA',
+    bosnia:'BA',
+    brazil:'BR',
+    canada:'CA',
+    colombia:'CO',
+    croatia:'HR',
+    curacao:'CW',
+    'curaçao':'CW',
+    czechia:'CZ',
+    'czech republic':'CZ',
+    denmark:'DK',
+    ecuador:'EC',
+    egypt:'EG',
+    england:'GB-ENG',
+    france:'FR',
+    germany:'DE',
+    ghana:'GH',
+    haiti:'HT',
+    iraq:'IQ',
+    iran:'IR',
+    italy:'IT',
+    'ivory coast':'CI',
+    'cote d ivoire':'CI',
+    japan:'JP',
+    jordan:'JO',
+    mexico:'MX',
+    morocco:'MA',
+    netherlands:'NL',
+    'new zealand':'NZ',
+    norway:'NO',
+    panama:'PA',
+    paraguay:'PY',
+    portugal:'PT',
+    qatar:'QA',
+    'saudi arabia':'SA',
+    scotland:'GB-SCT',
+    senegal:'SN',
+    'south africa':'ZA',
+    'south korea':'KR',
+    spain:'ES',
+    sweden:'SE',
+    switzerland:'CH',
+    tunisia:'TN',
+    turkiye:'TR',
+    turkey:'TR',
+    'united states':'US',
+    usa:'US',
+    uruguay:'UY',
+    'cape verde':'CV',
+    wales:'GB-WLS',
+    uzbekistan:'UZ'
+  };
+
+  const SV_FIFA_THREE_LETTER_CODES = {
+    ARG:'AR',
+    AUS:'AU',
+    BEL:'BE',
+    BRA:'BR',
+    CAN:'CA',
+    COL:'CO',
+    CIV:'CI',
+    CUW:'CW',
+    CZE:'CZ',
+    DEN:'DK',
+    ECU:'EC',
+    ENG:'GB-ENG',
+    FRA:'FR',
+    GER:'DE',
+    GHA:'GH',
+    ITA:'IT',
+    JPN:'JP',
+    KOR:'KR',
+    MAR:'MA',
+    MEX:'MX',
+    NED:'NL',
+    NOR:'NO',
+    POR:'PT',
+    QAT:'QA',
+    RSA:'ZA',
+    SCO:'GB-SCT',
+    SEN:'SN',
+    ESP:'ES',
+    SWE:'SE',
+    SUI:'CH',
+    TUR:'TR',
+    USA:'US',
+    UZB:'UZ',
+    WAL:'GB-WLS'
+  };
+
+  const SV_FIFA_SUBDIVISION_FLAGS = {
+    'GB-ENG':String.fromCodePoint(0x1f3f4,0xe0067,0xe0062,0xe0065,0xe006e,0xe0067,0xe007f),
+    'GB-SCT':String.fromCodePoint(0x1f3f4,0xe0067,0xe0062,0xe0073,0xe0063,0xe0074,0xe007f),
+    'GB-WLS':String.fromCodePoint(0x1f3f4,0xe0067,0xe0062,0xe0077,0xe006c,0xe0073,0xe007f)
+  };
+
+  function svFifaTeamKey(value){
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .replace(/&/g,' and ')
+      .replace(/\b(?:u|under)[-\s]?\d+\b/g,'')
+      .replace(/\b(?:women|men|olympic|national team|football team|soccer team)\b/g,'')
+      .replace(/[^a-z0-9]+/g,' ')
+      .trim();
+  }
+
+  function svFifaCountryCodeFromName(name){
+    const key = svFifaTeamKey(name);
+    return SV_FIFA_COUNTRY_CODES[key] || SV_FIFA_COUNTRY_CODES[key.replace(/\s+/g,'')] || '';
+  }
+
+  function svFifaFlagEmojiFromCode(code){
+    const clean = String(code || '').trim().toUpperCase();
+    const two = SV_FIFA_THREE_LETTER_CODES[clean] || clean;
+    if(!two)return '';
+    if(SV_FIFA_SUBDIVISION_FLAGS[two])return SV_FIFA_SUBDIVISION_FLAGS[two];
+    if(!/^[A-Z]{2}$/.test(two))return '';
+    return two.split('').map(ch=>String.fromCodePoint(0x1f1e6 + ch.charCodeAt(0) - 65)).join('');
+  }
+
+  function svFifaHttpUrl(value){
+    const text = svFifaCleanText(value);
+    return /^https?:\/\//i.test(text) ? text : '';
+  }
+
+  function svFifaLooksLikeFlagEmoji(value){
+    const text = svFifaCleanText(value);
+    if(!text)return false;
+    if(text.includes(String.fromCodePoint(0x1f3f4)))return true;
+    const points = Array.from(text);
+    return points.length >= 2 && points.slice(0,2).every(ch=>{
+      const code = ch.codePointAt(0);
+      return code >= 0x1f1e6 && code <= 0x1f1ff;
+    });
+  }
+
+  function svFifaFlagEmojiFromText(rawFlag, countryCode, mappedCode){
+    const raw = svFifaCleanText(rawFlag);
+    if(raw && !svFifaHttpUrl(raw)){
+      const codeFlag = svFifaFlagEmojiFromCode(raw);
+      if(codeFlag)return codeFlag;
+      if(svFifaLooksLikeFlagEmoji(raw))return raw;
+    }
+    return svFifaFlagEmojiFromCode(countryCode) || svFifaFlagEmojiFromCode(mappedCode);
+  }
+
+  function svFifaTeamIdentity(source, side){
+    const prefix = side ? `${side}` : '';
+    const name = side
+      ? svFifaCleanText(source?.[`${prefix}Team`] || source?.team || source?.name)
+      : svFifaTeamName(source);
+    const rawCode = svFifaCleanText(source?.countryCode || source?.teamCountryCode || source?.code || source?.abbreviation || (side ? source?.[`${prefix}CountryCode`] : ''));
+    const mappedCode = svFifaCountryCodeFromName(name);
+    const countryCode = rawCode || mappedCode;
+    const rawLogo = svFifaCleanText((side ? source?.[`${prefix}Logo`] : '') || source?.logo || source?.teamLogo);
+    const rawFlag = svFifaCleanText(source?.flag || source?.teamFlag || (side ? source?.[`${prefix}Flag`] : ''));
+    const flagUrl = svFifaHttpUrl(rawFlag);
+    const flag = flagUrl ? '' : svFifaFlagEmojiFromText(rawFlag, countryCode, mappedCode);
+    const logo = flagUrl || flag ? '' : svFifaHttpUrl(rawLogo);
+    return {
+      name,
+      logo,
+      flagUrl,
+      flag,
+      countryCode
+    };
+  }
+
+  function svFifaFlagHtml(source, side, eager){
+    const info = svFifaTeamIdentity(source, side);
+    const logo = svFifaHttpUrl(info.logo);
+    const flagUrl = logo ? '' : svFifaHttpUrl(info.flagUrl);
+    const imageUrl = logo || flagUrl;
+    const attrs = eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
+    if(imageUrl){
+      const kind = logo ? 'logo' : 'flag';
+      return `<img class="fifa-team-flag" data-fifa-flag="1" data-fifa-identity="${kind}" src="${svFifaEsc(imageUrl)}" alt="" width="22" height="22" decoding="async" ${attrs} onerror="this.onerror=null;this.classList.add('fifa-team-flag-blank');this.removeAttribute('src')">`;
+    }
+    if(info.flag){
+      return `<span class="fifa-team-flag emoji" data-fifa-flag="1" aria-hidden="true">${svFifaEsc(info.flag)}</span>`;
+    }
+    return '<span class="fifa-team-flag fifa-team-flag-blank" data-fifa-flag="0" aria-hidden="true"></span>';
+  }
+
+  function svFifaTeamHtml(source, side, fallback, eager){
+    const info = svFifaTeamIdentity(source, side);
+    const name = info.name || fallback || 'Team';
+    return `<span class="fifa-team-name">${svFifaFlagHtml(source, side, eager)}<span>${svFifaEsc(name)}</span></span>`;
+  }
+
+  function svFifaDetailValue(value){
+    const text = svFifaCleanText(value);
+    return text ? svFifaEsc(text) : '';
+  }
+
+  function svFifaRealDetailMessage(payload, fallback){
+    if(payload?.provider?.limited || (payload?.source === 'espn' && payload?.capabilities?.apiFootballConfigured === false)){
+      return 'Lineups and formations are not available from the current provider for this match.';
+    }
+    return fallback || 'This detail is unavailable from the current provider for this fixture.';
+  }
+
+  function svFifaProviderLimitMessage(payload){
+    const limitations = Array.isArray(payload?.providerLimitations) ? payload.providerLimitations.filter(Boolean) : [];
+    return limitations[0] || svFifaRealDetailMessage(payload, '');
+  }
+
+  function svFifaValueSource(payload, item){
+    const raw = svFifaCleanText(item?.source);
+    if(raw === 'cache' || payload?.stale || payload?.source === 'cache')return 'cache';
+    if(raw === 'missing')return 'missing';
+    return 'provider';
+  }
+
+  function svFifaProviderStatLabel(label){
+    const labels = {
+      shots:'Shots',
+      totalshots:'Shots',
+      shotsongoal:'Shots on target',
+      shotsontarget:'Shots on target',
+      sog:'Shots on target',
+      possession:'Possession',
+      ballpossession:'Possession',
+      possessionpct:'Possession',
+      passes:'Passes',
+      totalpasses:'Passes',
+      passaccuracy:'Pass Accuracy',
+      passcompletion:'Pass Accuracy',
+      accuratepasses:'Pass Accuracy',
+      fouls:'Fouls',
+      foulscommitted:'Fouls',
+      yellowcards:'Yellow Cards',
+      redcards:'Red Cards',
+      offsides:'Offsides',
+      corners:'Corners',
+      cornerkicks:'Corners',
+      woncorners:'Corners',
+      saves:'Saves',
+      goalkeepersaves:'Saves',
+      expectedgoals:'Expected Goals',
+      xg:'Expected Goals'
+    };
+    return labels[svFifaStatKey(label)] || '';
+  }
+
+  function svFifaProviderStatRows(rows, payload){
+    return svFifaOrderedStats(rows).map(row=>{
+      const label = svFifaProviderStatLabel(row?.label);
+      if(!label)return null;
+      return { ...row, label, source:svFifaValueSource(payload, row) };
+    }).filter(row=>row && (svFifaCleanText(row.home) || svFifaCleanText(row.away)));
+  }
+
+  function svFifaHasStatRows(payload){
+    return svFifaProviderStatRows(payload?.statistics, payload).length > 0;
+  }
+
+  function svFifaHasPlayerRows(lineup){
+    return !!(
+      (Array.isArray(lineup?.players) && lineup.players.some(player=>svFifaCleanText(player?.name))) ||
+      (Array.isArray(lineup?.substitutes) && lineup.substitutes.some(player=>svFifaCleanText(player?.name)))
+    );
+  }
+
+  function svFifaHasLineupRows(payload){
+    const lineups = payload?.lineups || {};
+    return svFifaHasPlayerRows(lineups.home) || svFifaHasPlayerRows(lineups.away);
+  }
+
+  function svFifaHasFormationRows(payload){
+    const lineups = payload?.lineups || {};
+    return !!(svFifaCleanText(lineups.home?.formation) || svFifaCleanText(lineups.away?.formation));
+  }
+
+  function svFifaHasEventRows(payload){
+    return Array.isArray(payload?.events) && payload.events.some(event=>svFifaCleanText(event?.type) || svFifaCleanText(event?.player) || svFifaCleanText(event?.team) || svFifaCleanText(event?.detail));
+  }
+
+  function svFifaStandingHasValues(row){
+    return ['played','wins','draws','losses','goalDifference','points'].some(key=>svFifaCleanText(row?.[key]) !== '');
+  }
+
+  function svFifaHasStandingRows(payload){
+    return Array.isArray(payload?.standings) && payload.standings.some(row=>svFifaCleanText(row?.team) && svFifaStandingHasValues(row));
+  }
+
+  function svFifaDetailCapabilities(payload){
+    const caps = payload?.capabilities || {};
+    return {
+      matchStats:!!caps.matchStats && svFifaHasStatRows(payload),
+      lineups:!!caps.lineups && svFifaHasLineupRows(payload),
+      formations:!!caps.formations && svFifaHasFormationRows(payload),
+      events:!!caps.events && svFifaHasEventRows(payload),
+      standings:!!caps.standings && svFifaHasStandingRows(payload)
+    };
+  }
+
+  function svFifaMatchProvider(match){
+    const provider = String(match?.provider || svFifaLiveState.payload?.source || '').toLowerCase();
+    if(provider === 'api-football' || provider === 'espn')return provider;
+    if(provider.includes('api'))return 'api-football';
+    return 'espn';
+  }
+
+  function svFifaMatchKey(match){
+    if(!match?.id)return '';
+    return [svFifaMatchProvider(match), match.id, match.leagueSlug || ''].filter(Boolean).join(':');
+  }
+
+  function svFifaBuildDetailUrl(match){
+    const provider = encodeURIComponent(svFifaMatchProvider(match));
+    const id = encodeURIComponent(String(match?.id || ''));
+    const params = new URLSearchParams();
+    if(match?.leagueSlug)params.set('league', match.leagueSlug);
+    return `/api/fifa-live/match/${provider}/${id}${params.toString() ? `?${params}` : ''}`;
+  }
+
+  function svLockFifaPageScroll(){
+    if(document.body.dataset.svFifaDetailModal === '1')return;
+    const y = Math.max(0, window.scrollY || document.documentElement.scrollTop || 0);
+    svFifaLiveState.detailScrollY = y;
+    document.documentElement.classList.add('modal-open','fifa-detail-lock','fifa-modal-open');
+    document.body.classList.add('modal-open','fifa-detail-lock','fifa-modal-open');
+    document.body.dataset.svFifaDetailModal = '1';
+    document.body.style.setProperty('--sv-fifa-scroll-y', `${y}px`);
+    document.body.style.top = `-${y}px`;
+  }
+
+  function svUnlockFifaPageScroll(){
+    if(document.body.dataset.svFifaDetailModal !== '1')return;
+    const y = svFifaLiveState.detailScrollY || 0;
+    delete document.body.dataset.svFifaDetailModal;
+    document.documentElement.classList.remove('modal-open','fifa-detail-lock','fifa-modal-open');
+    document.body.classList.remove('modal-open','fifa-detail-lock','fifa-modal-open');
+    document.body.style.removeProperty('--sv-fifa-scroll-y');
+    document.body.style.top = '';
+    svFifaLiveState.detailScrollY = 0;
+    requestAnimationFrame(()=>window.scrollTo({ top:y, left:0, behavior:'auto' }));
+  }
+
+  function svEnsureFifaDetailModal(){
+    let modal = document.getElementById('fifaDetailModal');
+    if(!modal){
+      modal = document.createElement('div');
+      modal.id = 'fifaDetailModal';
+      modal.className = 'fifa-detail-modal';
+      modal.setAttribute('aria-hidden','true');
+      modal.innerHTML = `
+        <div class="fifa-detail-backdrop" data-fifa-detail-close></div>
+        <section class="fifa-detail-panel" role="dialog" aria-modal="true" aria-labelledby="fifaDetailTitle">
+          <div class="fifa-detail-content" id="fifaDetailContent"></div>
+        </section>
+      `;
+      document.body.appendChild(modal);
+    }
+    if(!svFifaLiveState.detailBound){
+      modal.addEventListener('click', svHandleFifaDetailClick);
+      svFifaLiveState.detailBound = true;
+    }
+    return modal;
+  }
+
+  function svHandleFifaDetailClick(event){
+    if(event.target.closest('[data-fifa-detail-close]')){
+      svCloseFifaDetailModal();
+      return;
+    }
+    const tab = event.target.closest('[data-fifa-detail-tab]');
+    if(tab){
+      svFifaLiveState.detailTab = tab.dataset.fifaDetailTab || 'overview';
+      svRenderFifaDetailContent();
+    }
+  }
+
+  function svHandleFifaDetailKeydown(event){
+    if(event.key === 'Escape')svCloseFifaDetailModal();
+  }
+
+  function svCloseFifaDetailModal(){
+    const modal = document.getElementById('fifaDetailModal');
+    if(svFifaLiveState.detailController){
+      svFifaLiveState.detailController.abort();
+      svFifaLiveState.detailController = null;
+    }
+    document.removeEventListener('keydown', svHandleFifaDetailKeydown);
+    if(modal){
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+    }
+    svUnlockFifaPageScroll();
+    const opener = svFifaLiveState.detailOpener;
+    svFifaLiveState.detailOpener = null;
+    if(opener && typeof opener.focus === 'function'){
+      requestAnimationFrame(()=>opener.focus({ preventScroll:true }));
+    }
+  }
+
+  function svOpenFifaMatchDetail(match, opener){
+    if(!match?.id)return;
+    const modal = svEnsureFifaDetailModal();
+    const prefetched = svFifaFeaturedDetailFor(match);
+    svFifaLiveState.detailMatch = match;
+    svFifaLiveState.detailPayload = prefetched || null;
+    svFifaLiveState.detailTab = prefetched ? svFifaDefaultDetailTab(prefetched) : 'overview';
+    svFifaLiveState.detailOpener = opener || null;
+    svRenderFifaDetailContent(!prefetched);
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+    svLockFifaPageScroll();
+    document.addEventListener('keydown', svHandleFifaDetailKeydown);
+    requestAnimationFrame(()=>{
+      modal.querySelector('.fifa-detail-content')?.scrollTo({ top:0, behavior:'auto' });
+      modal.querySelector('[data-fifa-detail-close]')?.focus?.({ preventScroll:true });
+    });
+    svFetchFifaMatchDetail(match);
+  }
+
+  function svFetchFifaMatchDetail(match){
+    if(svFifaLiveState.detailController)svFifaLiveState.detailController.abort();
+    svFifaLiveState.detailController = new AbortController();
+    fetch(svFifaBuildDetailUrl(match), {
+      cache:'no-store',
+      headers:{ Accept:'application/json' },
+      signal:svFifaLiveState.detailController.signal
+    })
+      .then(response=>response.ok ? response.json() : Promise.reject(new Error('Match details failed')))
+      .then(data=>{
+        svFifaLiveState.detailPayload = data;
+        if(svFifaLiveState.detailTab === 'overview')svFifaLiveState.detailTab = svFifaDefaultDetailTab(data);
+        svRenderFifaDetailContent(false);
+      })
+      .catch(err=>{
+        if(err?.name === 'AbortError')return;
+        svFifaLiveState.detailPayload = {
+          ok:false,
+          message:'Detailed match data is unavailable for this fixture right now.',
+          match:svFifaLiveState.detailMatch,
+          overview:{},
+          statistics:[],
+          lineups:{ home:{}, away:{} },
+          events:[],
+          standings:[],
+          capabilities:{
+            liveScores:false,
+            matchStats:false,
+            lineups:false,
+            formations:false,
+            events:false,
+            standings:false,
+            teamFlags:false
+          },
+          provider:{
+            active:'none',
+            apiFootballConfigured:false,
+            limited:false,
+            fallback:false
+          }
+        };
+        svRenderFifaDetailContent(false);
+      });
+  }
+
+  function svFifaDetailTabList(payload, loading){
+    if(loading || !payload)return [['overview','Overview']];
+    const tabs = [['overview','Overview']];
+    const caps = svFifaDetailCapabilities(payload);
+    if(caps.matchStats)tabs.push(['stats','Stats']);
+    if(caps.events)tabs.push(['events','Timeline']);
+    if(caps.lineups)tabs.push(['lineups','Lineups']);
+    if(caps.standings)tabs.push(['table','Table']);
+    return tabs;
+  }
+
+  function svFifaDefaultDetailTab(payload){
+    const tabs = svFifaDetailTabList(payload, false);
+    return tabs[0]?.[0] || 'overview';
+  }
+
+  function svFifaDetailMetaChips(match, payload){
+    const overview = payload?.overview || {};
+    const chips = [
+      match.competition,
+      match.stage || match.group || overview.round,
+      match.venue,
+      match.startTime ? svFifaFormatTime(match.startTime) : ''
+    ].map(svFifaCleanText).filter(Boolean);
+    if(!chips.length)return '';
+    return `<div class="fifa-detail-context">${chips.map(chip=>`<span>${svFifaEsc(chip)}</span>`).join('')}</div>`;
+  }
+
+  function svRenderFifaDetailScoreNotes(payload){
+    const events = Array.isArray(payload?.events)
+      ? payload.events.filter(event=>svFifaCleanText(event?.type) || svFifaCleanText(event?.player) || svFifaCleanText(event?.team) || svFifaCleanText(event?.detail))
+      : [];
+    if(!events.length)return '';
+    const goals = events.filter(event=>/goal/i.test(`${event.type || ''} ${event.detail || ''}`));
+    const picked = (goals.length ? goals : events).slice(0,4);
+    return `<div class="fifa-detail-scorers" aria-label="Match events under score">${picked.map(event=>{
+      const text = [event.minute, event.player || event.team, event.type || event.detail].filter(Boolean).join(' - ');
+      return `<span>${svFifaFlagHtml(event, '', false)}${svFifaEsc(text || event.detail || 'Match event')}</span>`;
+    }).join('')}</div>`;
+  }
+
+  function svFifaOrderedStats(rows){
+    const list = Array.isArray(rows) ? rows.filter(row=>svFifaCleanText(row?.label) && (svFifaCleanText(row?.home) || svFifaCleanText(row?.away))) : [];
+    const order = [
+      /^(total)?shots$/i,
+      /shots on target|shotsongoal/i,
+      /possession/i,
+      /^passes$|total passes/i,
+      /pass accuracy|pass completion|accurate passes/i,
+      /^fouls$|fouls committed/i,
+      /yellow cards/i,
+      /red cards/i,
+      /offsides/i,
+      /corners|corner kicks/i
+    ];
+    const picked = [];
+    order.forEach(rx=>{
+      const row = list.find(item=>rx.test(svFifaCleanText(item?.label)) && !picked.includes(item));
+      if(row)picked.push(row);
+    });
+    list.forEach(row=>{
+      if(!picked.includes(row))picked.push(row);
+    });
+    return picked;
+  }
+
+  function svFifaScoresAreReal(match){
+    return (match?.homeScore === 0 || match?.homeScore) && (match?.awayScore === 0 || match?.awayScore);
+  }
+
+  function svFifaScoreTotal(match){
+    if(!svFifaScoresAreReal(match))return '';
+    return Number(match.homeScore) + Number(match.awayScore);
+  }
+
+  function svFifaGoalDifference(match){
+    if(!svFifaScoresAreReal(match))return '';
+    const diff = Math.abs(Number(match.homeScore) - Number(match.awayScore));
+    return diff === 0 ? 'Level' : String(diff);
+  }
+
+  function svFifaStatusInfo(match){
+    if(!match)return '';
+    const state = svFifaMatchStatus(match);
+    const time = svFifaMatchTime(match);
+    return [state.label, time && time !== state.label ? time : ''].filter(Boolean).join(' / ');
+  }
+
+  function svFifaInfoItemLimit(items){
+    return Math.min(5, items.length);
+  }
+
+  function svFifaDetailTabs(payload, loading){
+    const tabs = svFifaDetailTabList(payload, loading);
+    return tabs.map(([key,label])=>`<button class="fifa-detail-tab${svFifaLiveState.detailTab === key ? ' active' : ''}" type="button" data-fifa-detail-tab="${key}">${label}</button>`).join('');
+  }
+
+  function svFifaMergeDetailMatch(fallback, detailMatch){
+    const detail = detailMatch || {};
+    const base = fallback || {};
+    return {
+      ...base,
+      ...detail,
+      homeTeam:detail.homeTeam || base.homeTeam,
+      awayTeam:detail.awayTeam || base.awayTeam,
+      homeScore:detail.homeScore === 0 || detail.homeScore ? detail.homeScore : base.homeScore,
+      awayScore:detail.awayScore === 0 || detail.awayScore ? detail.awayScore : base.awayScore,
+      competition:detail.competition || base.competition,
+      stage:detail.stage || base.stage,
+      group:detail.group || base.group,
+      venue:detail.venue || base.venue,
+      startTime:detail.startTime || base.startTime,
+      kickoff:detail.kickoff || base.kickoff,
+      provider:base.provider || detail.provider,
+      leagueSlug:base.leagueSlug || detail.leagueSlug,
+      homeFlag:detail.homeFlag || base.homeFlag,
+      homeLogo:detail.homeLogo || base.homeLogo,
+      homeCountryCode:detail.homeCountryCode || base.homeCountryCode,
+      awayFlag:detail.awayFlag || base.awayFlag,
+      awayLogo:detail.awayLogo || base.awayLogo,
+      awayCountryCode:detail.awayCountryCode || base.awayCountryCode
+    };
+  }
+
+  function svFifaDetailMatch(){
+    return svFifaMergeDetailMatch(svFifaLiveState.detailMatch || {}, svFifaLiveState.detailPayload?.match || {});
+  }
+
+  function svRenderFifaDetailContent(loading){
+    const modal = svEnsureFifaDetailModal();
+    const content = modal.querySelector('#fifaDetailContent');
+    if(!content)return;
+    const payload = svFifaLiveState.detailPayload;
+    const match = svFifaDetailMatch();
+    const tabs = svFifaDetailTabList(payload, loading);
+    if(!tabs.some(([key])=>key === svFifaLiveState.detailTab))svFifaLiveState.detailTab = tabs[0]?.[0] || 'overview';
+    const status = svFifaMatchStatus(match);
+    const sourceName = payload?.provider?.active || payload?.source || '';
+    const source = sourceName ? `Source: ${sourceName}${payload?.stale ? ' (stale)' : ''}` : 'Loading real details';
+    const providerLimited = !loading && payload?.provider?.limited && (!payload?.capabilities?.lineups || !payload?.capabilities?.formations);
+    const messageText = !loading && !providerLimited ? (payload?.message || '') : '';
+    const message = messageText ? `<div class="fifa-detail-notice">${svFifaEsc(messageText)}</div>` : '';
+    const tabsHtml = tabs.length > 1
+      ? `<nav class="fifa-detail-tabs" aria-label="Match detail sections">${svFifaDetailTabs(payload, loading)}</nav>`
+      : '';
+    content.innerHTML = `
+      <header class="fifa-detail-header">
+        <div class="fifa-detail-meta-row">
+          <div class="fifa-card-label ${status.className}">${status.className === 'is-live' ? '<span class="fifa-live-dot"></span>' : ''}${svFifaEsc(status.label)}<span>${svFifaEsc(svFifaMatchTime(match))}</span></div>
+          <div class="fifa-detail-source">${svFifaEsc(source)}</div>
+          <button class="fifa-detail-close" type="button" data-fifa-detail-close aria-label="Close match details"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="fifa-detail-scoreboard" id="fifaDetailTitle">
+          <div class="fifa-detail-team fifa-detail-team-home">
+            ${svFifaTeamHtml(match, 'home', 'Home', true)}
+          </div>
+          <div class="fifa-detail-score" aria-label="Score">
+            <span>${svFifaEsc(svFifaScore(match.homeScore))}</span>
+            <b>-</b>
+            <span>${svFifaEsc(svFifaScore(match.awayScore))}</span>
+          </div>
+          <div class="fifa-detail-team fifa-detail-team-away">
+            ${svFifaTeamHtml(match, 'away', 'Away', true)}
+          </div>
+        </div>
+        ${svRenderFifaDetailScoreNotes(payload)}
+        ${svFifaDetailMetaChips(match, payload)}
+      </header>
+      ${tabsHtml}
+      ${message}
+      <div class="fifa-detail-body">
+        ${loading ? '<div class="fifa-detail-loading">Loading real match details...</div>' : svRenderFifaDetailTab(payload)}
+      </div>
+    `;
+  }
+
+  function svRenderFifaUnavailable(text){
+    return `<div class="fifa-detail-empty">${svFifaEsc(text || 'Unavailable from the current provider.')}</div>`;
+  }
+
+  function svRenderFifaDetailTab(payload){
+    const tab = svFifaLiveState.detailTab || 'overview';
+    if(tab === 'stats')return svRenderFifaDetailStats(payload);
+    if(tab === 'lineups')return svRenderFifaDetailLineups(payload);
+    if(tab === 'events')return svRenderFifaDetailEvents(payload);
+    if(tab === 'table')return svRenderFifaDetailTable(payload);
+    return svRenderFifaDetailOverview(payload);
+  }
+
+  function svRenderFifaDetailOverview(payload){
+    const match = svFifaDetailMatch();
+    const overview = payload?.overview || {};
+    const sourceName = payload?.provider?.active || payload?.source || '';
+    const coreRows = [
+      ['Status', svFifaStatusInfo(match)],
+      ['Source', sourceName],
+      ['Competition', match.competition],
+      ['Stage', match.stage || match.group || overview.round],
+      ['Venue', match.venue],
+      ['Kickoff', match.startTime ? svFifaFormatTime(match.startTime) : ''],
+      ['Round', overview.round]
+    ].map(([label,value])=>[label, svFifaCleanText(value) || 'N/A']);
+    const optionalRows = [
+      ['Referee', overview.referee],
+      ['Attendance', overview.attendance],
+      ['Weather', overview.weather],
+      ['Leg', overview.leg]
+    ].map(([label,value])=>[label, svFifaCleanText(value)]).filter(([,value])=>value);
+    const rows = [...coreRows, ...optionalRows];
+    if(!rows.length)return svRenderFifaUnavailable(payload?.message || 'Only the live score is available for this fixture right now.');
+    return `<div class="fifa-detail-grid">${rows.map(([label,value])=>`
+      <div class="fifa-detail-info">
+        <span>${svFifaEsc(label)}</span>
+        <strong>${svFifaEsc(value)}</strong>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  function svFifaStatNumber(value){
+    const text = svFifaCleanText(value).replace(/,/g,'');
+    if(!text)return null;
+    const n = Number(text.replace(/%$/,''));
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function svFifaDisplayStatValue(label, value){
+    const text = svFifaCleanText(value);
+    if(!text)return '';
+    const key = svFifaStatKey(label);
+    const percentLike = /possession|percent|percentage|accuracy|completion/.test(key) || text.endsWith('%');
+    const n = Number(text.replace(/,/g,'').replace(/%$/,''));
+    if(percentLike && Number.isFinite(n) && !text.endsWith('%')){
+      const percentValue = n <= 1 ? n * 100 : n;
+      return `${percentValue.toFixed(percentValue % 1 ? 1 : 0)}%`;
+    }
+    return text;
+  }
+
+  function svRenderFifaDetailStats(payload){
+    const stats = svFifaProviderStatRows(payload?.statistics, payload);
+    if(!stats.length)return svRenderFifaUnavailable('Match stats are not available from the current provider for this fixture.');
+    const match = svFifaDetailMatch();
+    return `<div class="fifa-stats-board">
+      <div class="fifa-stats-teams">
+        ${svFifaTeamHtml(match, 'home', 'Home', true)}
+        <span>Stats</span>
+        ${svFifaTeamHtml(match, 'away', 'Away', true)}
+      </div>
+      ${stats.map(row=>`
+        ${svRenderFifaStatRow(row)}
+      `).join('')}
+    </div>`;
+  }
+
+  function svRenderFifaStatRow(row){
+    const homeText = svFifaDisplayStatValue(row.label, row.home) || '-';
+    const awayText = svFifaDisplayStatValue(row.label, row.away) || '-';
+    const homeNum = svFifaStatNumber(row.home);
+    const awayNum = svFifaStatNumber(row.away);
+    const total = (homeNum || 0) + (awayNum || 0);
+    const canBar = homeNum !== null && awayNum !== null && total > 0;
+    const homePct = canBar ? Math.max(0, Math.min(100, (homeNum / total) * 100)) : 50;
+    const awayPct = canBar ? Math.max(0, Math.min(100, (awayNum / total) * 100)) : 50;
+    return `<div class="fifa-stat-row" data-fifa-stat-source="${svFifaEsc(row.source || 'provider')}">
+      <div class="fifa-stat-values">
+        <strong>${svFifaEsc(homeText)}</strong>
+        <span>${svFifaEsc(svFifaCleanText(row.label) || 'Stat')}</span>
+        <strong>${svFifaEsc(awayText)}</strong>
+      </div>
+      ${canBar ? `<div class="fifa-stat-bars" aria-hidden="true">
+        <i style="width:${homePct.toFixed(1)}%"></i>
+        <b style="width:${awayPct.toFixed(1)}%"></b>
+      </div>` : ''}
+    </div>`;
+  }
+
+  function svRenderFifaPlayerRows(players){
+    const rows = Array.isArray(players) ? players.filter(player=>svFifaCleanText(player?.name)) : [];
+    return rows.map(player=>`
+      <div class="fifa-player-row">
+        <b>${svFifaEsc(player.number || '')}</b>
+        <span>${svFifaEsc(player.name || '')}</span>
+        <em>${svFifaEsc(player.position || '')}</em>
+      </div>
+    `).join('');
+  }
+
+  function svRenderFifaTeamLineup(lineup, fallbackTeam){
+    const starters = Array.isArray(lineup?.players) ? lineup.players.filter(player=>svFifaCleanText(player?.name)) : [];
+    const subs = Array.isArray(lineup?.substitutes) ? lineup.substitutes.filter(player=>svFifaCleanText(player?.name)) : [];
+    const formation = svFifaCleanText(lineup?.formation);
+    const coach = svFifaCleanText(lineup?.coach);
+    return `<div class="fifa-lineup-team">
+      <div class="fifa-lineup-team-head">
+        <strong>${svFifaTeamHtml(lineup, '', fallbackTeam || 'Team')}</strong>
+        ${formation ? `<span class="fifa-lineup-formation">${svFifaEsc(formation)}</span>` : ''}
+      </div>
+      ${coach ? `<div class="fifa-lineup-coach">Coach: ${svFifaEsc(coach)}</div>` : ''}
+      ${starters.length ? `<div class="fifa-lineup-label">Starters</div>${svRenderFifaPlayerRows(starters)}` : ''}
+      ${subs.length ? `<div class="fifa-lineup-label">Substitutes</div>${svRenderFifaPlayerRows(subs)}` : ''}
+    </div>`;
+  }
+
+  function svRenderFifaDetailLineups(payload){
+    const match = svFifaDetailMatch();
+    const lineups = payload?.lineups || {};
+    const home = lineups.home || {};
+    const away = lineups.away || {};
+    const hasLineups = svFifaHasLineupRows(payload);
+    if(!hasLineups)return svRenderFifaUnavailable('Lineups are not available from the current provider for this fixture.');
+    return `<div class="fifa-lineups-grid">
+      ${svRenderFifaTeamLineup(home, match.homeTeam)}
+      ${svRenderFifaTeamLineup(away, match.awayTeam)}
+    </div>`;
+  }
+
+  function svRenderFifaDetailEvents(payload){
+    const events = Array.isArray(payload?.events)
+      ? payload.events.filter(event=>svFifaCleanText(event?.type) || svFifaCleanText(event?.player) || svFifaCleanText(event?.team) || svFifaCleanText(event?.detail))
+      : [];
+    if(!events.length)return svRenderFifaUnavailable('Match events are not available from the current provider for this fixture.');
+    return `<div class="fifa-event-list">${events.map(event=>{
+      const text = `${event.type || ''} ${event.detail || ''}`;
+      const isGoal = /goal/i.test(text);
+      const isCard = /card/i.test(text);
+      const icon = isGoal ? 'G' : (isCard ? '!' : '•');
+      return `
+        <div class="fifa-event-row ${isGoal ? 'is-goal' : ''}">
+          <time>${svFifaEsc(event.minute || '')}</time>
+          <div class="fifa-event-main">
+            <div class="fifa-event-title">
+              <i aria-hidden="true">${svFifaEsc(icon)}</i>
+              <strong>${svFifaEsc(event.type || 'Event')}</strong>
+            </div>
+            ${event.team ? `<span class="fifa-event-team">${svFifaFlagHtml(event, '', false)}${svFifaEsc(event.team)}</span>` : ''}
+            ${event.player ? `<span class="fifa-event-player">${svFifaEsc(event.player)}</span>` : ''}
+            ${event.detail ? `<p>${svFifaEsc(event.detail)}</p>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('')}</div>`;
+  }
+
+  function svRenderFifaDetailTable(payload){
+    const rows = Array.isArray(payload?.standings)
+      ? payload.standings.filter(row=>svFifaCleanText(row?.team) && svFifaStandingHasValues(row))
+      : [];
+    if(!rows.length)return svRenderFifaUnavailable('Standings are not available from the current provider for this fixture.');
+    return `<div class="fifa-detail-standings">
+      <div class="fifa-detail-standings-head"><span>Team</span><span>MP</span><span>GD</span><span>PTS</span></div>
+      ${rows.map(row=>`
+        <div class="fifa-detail-standings-row">
+          <span><b>${svFifaEsc(row.rank || '')}</b>${svFifaTeamHtml(row, '', row.team || 'Team')}</span>
+          <span>${svFifaEsc(row.played ?? '-')}</span>
+          <span>${svFifaEsc(row.goalDifference ?? '-')}</span>
+          <strong>${svFifaEsc(row.points ?? '-')}</strong>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  function svHandleFifaMatchClick(event){
+    const nav = event.target.closest('[data-fifa-strip-nav]');
+    if(nav){
+      svScrollFifaMatchStrip(Number(nav.dataset.fifaStripNav || 0));
+      return;
+    }
+    const card = event.target.closest('[data-fifa-match-key]');
+    if(!card)return;
+    const match = svFifaLiveState.matchesByKey.get(card.dataset.fifaMatchKey);
+    if(match)svOpenFifaMatchDetail(match, card);
+  }
+
+  function svHandleFifaMatchKeydown(event){
+    if(event.key !== 'Enter' && event.key !== ' ')return;
+    const card = event.target.closest('[data-fifa-match-key]');
+    if(!card)return;
+    event.preventDefault();
+    const match = svFifaLiveState.matchesByKey.get(card.dataset.fifaMatchKey);
+    if(match)svOpenFifaMatchDetail(match, card);
+  }
+
+  function svScrollFifaMatchStrip(direction){
+    const strip = document.getElementById('fifaMatchStrip');
+    if(!strip || !direction)return;
+    strip.dataset.svFifaUserMoved = '1';
+    if(window.matchMedia && window.matchMedia('(max-width: 759px)').matches){
+      const cards = Array.from(strip.querySelectorAll('.fifa-match-card[data-fifa-match-key]'));
+      if(cards.length){
+        const current = cards.reduce((best, card, index)=>{
+          const left = Math.max(0, card.offsetLeft - strip.offsetLeft);
+          const delta = Math.abs(left - strip.scrollLeft);
+          return delta < best.delta ? { index, delta } : best;
+        }, { index:0, delta:Infinity }).index;
+        const next = Math.max(0, Math.min(cards.length - 1, current + (direction > 0 ? 1 : -1)));
+        const target = Math.max(0, cards[next].offsetLeft - strip.offsetLeft);
+        strip.scrollTo({ left:target, behavior:'smooth' });
+        return;
+      }
+    }
+    const amount = Math.max(260, Math.round(strip.clientWidth * 0.72));
+    strip.scrollBy({ left: amount * direction, behavior:'smooth' });
+  }
+
+  function svFifaPositionMatchStrip(strip, startIndex){
+    if(!strip)return;
+    strip.dataset.svFifaCarouselStartIndex = String(startIndex || 0);
+    if(!startIndex || strip.dataset.svFifaUserMoved === '1')return;
+    requestAnimationFrame(()=>{
+      if(strip.dataset.svFifaUserMoved === '1')return;
+      const target = strip.querySelector('[data-fifa-carousel-start="1"]');
+      if(!target)return;
+      strip.scrollLeft = Math.max(0, target.offsetLeft - strip.offsetLeft - 8);
+    });
+  }
+
+  function svSetFifaPageTitle(){
+    const intro = document.getElementById('discoverIntro');
+    if(intro){
+      intro.classList.add('sv-fifa-intro-hidden');
+      intro.setAttribute('aria-hidden','true');
+    }
+  }
+
+  function svEnsureFifaLiveSection(){
+    const hero = document.getElementById('hero');
+    if(!hero)return null;
+    svSetFifaPageTitle();
+    hero.classList.add('sv-fifa-hero');
+    hero.setAttribute('aria-label','FIFA and football live updates');
+    if(hero.dataset.svFifaLive === '1'){
+      const existingRoot = document.getElementById('fifaLiveRoot');
+      if(existingRoot && existingRoot.dataset.svFifaBound !== '1'){
+        existingRoot.dataset.svFifaBound = '1';
+        existingRoot.addEventListener('click', svHandleFifaMatchClick);
+        existingRoot.addEventListener('keydown', svHandleFifaMatchKeydown);
+      }
+      return existingRoot;
+    }
+
+    hero.dataset.svFifaLive = '1';
+    hero.innerHTML = `
+      <section class="fifa-live-section is-loading" id="fifaLiveRoot" aria-live="polite">
+        <div class="fifa-live-top">
+          <div class="fifa-live-heading">
+            <h2>FIFA LIVE UPDATE</h2>
+          </div>
+          <div class="fifa-live-timer-slot" aria-live="polite">
+            <span class="fifa-feature-timer fifa-live-header-timer" data-fifa-feature-timer hidden></span>
+          </div>
+        </div>
+        <div class="fifa-live-layout">
+          <div class="fifa-featured-card" id="fifaFeaturedMatch"></div>
+          <aside class="fifa-table-card" id="fifaStandingsCard"></aside>
+        </div>
+        <div class="fifa-match-strip-wrap" id="fifaMatchStripWrap">
+          <button class="fifa-match-nav fifa-match-nav-prev" type="button" data-fifa-strip-nav="-1" aria-label="Previous football matches"><span aria-hidden="true">&lsaquo;</span></button>
+          <div class="fifa-match-strip" id="fifaMatchStrip"></div>
+          <button class="fifa-match-nav fifa-match-nav-next" type="button" data-fifa-strip-nav="1" aria-label="Next football matches"><span aria-hidden="true">&rsaquo;</span></button>
+        </div>
+        <div class="fifa-headline-strip" id="fifaHeadlineStrip"></div>
+      </section>
+    `;
+    const root = document.getElementById('fifaLiveRoot');
+    if(root && root.dataset.svFifaBound !== '1'){
+      root.dataset.svFifaBound = '1';
+      root.addEventListener('click', svHandleFifaMatchClick);
+      root.addEventListener('keydown', svHandleFifaMatchKeydown);
+    }
+    svRenderFifaLoading();
+    return root;
+  }
+
+  function svRenderFifaLoading(){
+    const root = document.getElementById('fifaLiveRoot');
+    if(!root || svFifaLiveState.payload)return;
+    root.classList.add('is-loading');
+    const featured = document.getElementById('fifaFeaturedMatch');
+    const standings = document.getElementById('fifaStandingsCard');
+    const strip = document.getElementById('fifaMatchStrip');
+    const stripWrap = document.getElementById('fifaMatchStripWrap');
+    const headlines = document.getElementById('fifaHeadlineStrip');
+    if(featured)featured.innerHTML = `
+      <div class="fifa-skeleton-line w40"></div>
+      <div class="fifa-skeleton-score"></div>
+      <div class="fifa-skeleton-line w70"></div>
+      <div class="fifa-skeleton-line w55"></div>
+    `;
+    if(standings)standings.innerHTML = `
+      <div class="fifa-skeleton-line w55"></div>
+      <div class="fifa-skeleton-row"></div>
+      <div class="fifa-skeleton-row"></div>
+      <div class="fifa-skeleton-row"></div>
+    `;
+    if(strip)strip.innerHTML = Array.from({length:4},()=>'<div class="fifa-match-card fifa-match-skeleton"><div></div><div></div><div></div></div>').join('');
+    if(stripWrap)stripWrap.hidden = false;
+    if(headlines){
+      headlines.innerHTML = '';
+      headlines.hidden = true;
+    }
+  }
+
+  function svFifaScore(score){
+    return score === 0 || score ? String(score) : '-';
+  }
+
+  function svFifaFormatTime(value){
+    if(!value)return 'TBD';
+    const date = new Date(value);
+    if(Number.isNaN(date.getTime()))return String(value);
+    return new Intl.DateTimeFormat(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }).format(date);
+  }
+
+  function svFifaFormatClock(value){
+    const date = new Date(value);
+    if(Number.isNaN(date.getTime()))return '';
+    return new Intl.DateTimeFormat(undefined, { hour:'numeric', minute:'2-digit' }).format(date);
+  }
+
+  function svFifaSameLocalDay(a, b){
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function svFifaDecimalHours(ms){
+    return (Math.max(0, Number(ms) || 0) / 3600000).toFixed(2);
+  }
+
+  function svFifaLiveMinuteValue(match){
+    const raw = svFifaCleanText(match?.minute || match?.clock || match?.displayClock || match?.time);
+    if(!raw)return null;
+    const added = raw.match(/(\d+)\s*\+\s*(\d+)/);
+    if(added)return Number(added[1]) + Number(added[2]);
+    const colon = raw.match(/(\d{1,3})\s*:\s*(\d{1,2})/);
+    if(colon)return Number(colon[1]);
+    const number = raw.match(/\d{1,3}/);
+    return number ? Number(number[0]) : null;
+  }
+
+  function svFifaFeaturedTimerText(match){
+    const status = String(match?.status || '').toUpperCase();
+    if(status === 'LIVE' || status === 'HT' || status === 'IN' || status === 'IN_PROGRESS'){
+      const startValue = match?.startTime || match?.kickoff;
+      const start = new Date(startValue || '');
+      if(!Number.isNaN(start.getTime()))return `${svFifaDecimalHours(Date.now() - start.getTime())} Live`;
+      const minutes = svFifaLiveMinuteValue(match);
+      if(Number.isFinite(minutes))return `${Math.max(0, minutes / 60).toFixed(2)} Live`;
+      return '--.-- Live';
+    }
+    if(status === 'FT' || status === 'FINAL' || status === 'STATUS_FINAL')return 'Final';
+    if(status === 'POSTPONED')return 'Postponed';
+    const startValue = match?.startTime || match?.kickoff;
+    const start = new Date(startValue || '');
+    if(Number.isNaN(start.getTime()))return '--.-- hours left';
+    return `${svFifaDecimalHours(start.getTime() - Date.now())} hours left`;
+  }
+
+  function svClearFifaCountdown(){
+    clearInterval(svFifaLiveState.countdownTimer);
+    svFifaLiveState.countdownTimer = null;
+    svFifaLiveState.countdownMatch = null;
+    svFifaLiveState.countdownMatchKey = '';
+    const el = document.querySelector('[data-fifa-feature-timer]');
+    if(el){
+      el.textContent = '';
+      el.hidden = true;
+    }
+  }
+
+  function svUpdateFifaCountdown(){
+    const el = document.querySelector('[data-fifa-feature-timer]');
+    if(!el || !svFifaLiveState.countdownMatch)return;
+    el.textContent = svFifaFeaturedTimerText(svFifaLiveState.countdownMatch);
+    el.hidden = false;
+  }
+
+  function svStartFifaCountdown(match, key){
+    svClearFifaCountdown();
+    if(!match || !key || document.hidden)return;
+    svFifaLiveState.countdownMatch = match;
+    svFifaLiveState.countdownMatchKey = key;
+    svUpdateFifaCountdown();
+    const status = String(match?.status || '').toUpperCase();
+    if(status === 'FT' || status === 'FINAL' || status === 'STATUS_FINAL' || status === 'POSTPONED')return;
+    svFifaLiveState.countdownTimer = setInterval(svUpdateFifaCountdown, 30000);
+  }
+
+  function svFifaRelativeTime(value){
+    const date = new Date(value || Date.now());
+    const diff = Math.max(0, Date.now() - date.getTime());
+    const minutes = Math.floor(diff / 60000);
+    if(minutes < 1)return 'Updated just now';
+    if(minutes < 60)return `Updated ${minutes}m ago`;
+    return `Updated ${Math.floor(minutes / 60)}h ago`;
+  }
+
+  function svFifaMatchTime(match){
+    const status = String(match?.status || '').toUpperCase();
+    if(status === 'LIVE' || status === 'IN' || status === 'IN_PROGRESS')return match?.minute || match?.clock || match?.displayClock || 'Live';
+    if(status === 'HT')return 'HT';
+    if(status === 'FT' || status === 'FINAL' || status === 'STATUS_FINAL')return svFifaFormatTime(match?.startTime || match?.kickoff) || 'FT';
+    if(status === 'POSTPONED')return 'Postponed';
+    return svFifaFormatTime(match?.startTime || match?.kickoff);
+  }
+
+  function svFifaMatchMeta(match){
+    return [match?.competition, match?.stage || match?.group, match?.venue].filter(Boolean).join(' / ') || 'Football update';
+  }
+
+  function svFifaMatchStatus(match){
+    const status = String(match?.status || (match?.live ? 'LIVE' : 'UPCOMING')).toUpperCase();
+    if(status === 'LIVE' || status === 'HT' || status === 'IN' || status === 'IN_PROGRESS')return { label:'LIVE', className:'is-live' };
+    if(status === 'FT' || status === 'FINAL' || status === 'STATUS_FINAL')return { label:'FINAL', className:'is-result', extraClass:'is-final' };
+    if(status === 'POSTPONED')return { label:'POSTPONED', className:'is-upcoming' };
+    return { label:'UPCOMING', className:'is-upcoming' };
+  }
+
+  function svFifaIsLiveMatch(match){
+    const status = String(match?.status || '').toUpperCase();
+    return status === 'LIVE' || status === 'HT' || status === 'IN' || status === 'IN_PROGRESS';
+  }
+
+  function svFifaFeaturedDetailFor(match){
+    const key = svFifaMatchKey(match);
+    return key && key === svFifaLiveState.featuredDetailKey ? svFifaLiveState.featuredDetailPayload : null;
+  }
+
+  function svFifaFeaturedEvent(detail){
+    const events = Array.isArray(detail?.events) ? detail.events : [];
+    return events.find(event=>/goal/i.test(`${event.type || ''} ${event.detail || ''}`)) || events[0] || null;
+  }
+
+  function svFifaStatKey(label){
+    return svFifaCleanText(label).toLowerCase().replace(/[^a-z0-9]+/g,'');
+  }
+
+  function svFifaFeaturedStatValue(row){
+    const home = svFifaDisplayStatValue(row?.label, row?.home);
+    const away = svFifaDisplayStatValue(row?.label, row?.away);
+    return home || away ? `${home || '-'} / ${away || '-'}` : '';
+  }
+
+  function svFifaCompactStats(detail, limit){
+    const stats = svFifaProviderStatRows(detail?.statistics, detail);
+    const wanted = [
+      /^(total)?shots$/i,
+      /shots on target|shotsongoal/i,
+      /possession/i,
+      /^passes$|total passes/i,
+      /accurate passes|pass completion|pass accuracy/i,
+      /fouls/i,
+      /yellow cards/i,
+      /red cards/i,
+      /offsides/i,
+      /corners|corner kicks/i
+    ];
+    const picked = [];
+    wanted.forEach(rx=>{
+      const row = stats.find(item=>rx.test(svFifaCleanText(item?.label)) && svFifaFeaturedStatValue(item) && !picked.includes(item));
+      if(row)picked.push(row);
+    });
+    stats.forEach(row=>{
+      if(picked.length >= (limit || 8))return;
+      if(svFifaFeaturedStatValue(row) && !picked.includes(row))picked.push(row);
+    });
+    return picked.slice(0, limit || 8);
+  }
+
+  function svFifaFeaturedInfoItems(match){
+    const detail = svFifaFeaturedDetailFor(match);
+    const items = [];
+    const add = (label, value, className, html, source)=>{
+      const cleanLabel = svFifaCleanText(label);
+      const cleanValue = html ? '' : svFifaCleanText(value);
+      if(!cleanLabel || (!cleanValue && !html))return;
+      if(items.some(item=>svFifaStatKey(item.label) === svFifaStatKey(cleanLabel)))return;
+      items.push({ label:cleanLabel, value:cleanValue, className:className || '', html:html || '', source:source || 'provider' });
+    };
+    const summarySource = svFifaValueSource(svFifaLiveState.payload);
+    const detailSource = detail ? svFifaValueSource(detail) : summarySource;
+    const overview = detail?.overview || {};
+    add('Status', svFifaStatusInfo(match), '', '', summarySource);
+    add('Kickoff', match?.startTime ? svFifaFormatTime(match.startTime) : '', '', '', summarySource);
+    add('Venue', match?.venue, '', '', summarySource);
+    add('Stage', match?.stage || match?.group || overview.round, '', '', summarySource);
+    add('Competition', match?.competition, '', '', '', summarySource);
+    add('Round', overview.round, '', '', detailSource);
+    if(detail){
+      svFifaCompactStats(detail, 5).forEach(row=>add(row.label, svFifaFeaturedStatValue(row), 'is-stat', '', row.source || detailSource));
+      const event = svFifaFeaturedEvent(detail);
+      if(event){
+        const eventText = [event.minute, event.player || event.team, event.type || event.detail].filter(Boolean).join(' - ');
+        const eventHtml = `${event.team ? svFifaFlagHtml(event, '', false) : ''}<span>${svFifaEsc(eventText || event.detail || 'Match event')}</span>`;
+        add(/goal/i.test(`${event.type || ''} ${event.detail || ''}`) ? 'Last goal' : 'Key event', '', 'is-event', eventHtml, svFifaValueSource(detail, event));
+      }
+    }
+    return items.slice(0, svFifaInfoItemLimit(items));
+  }
+
+  function svRenderFifaFeaturedExtras(match){
+    const items = svFifaFeaturedInfoItems(match);
+    if(!items.length)return '';
+    return `<div class="fifa-feature-grid">${items.map(item=>`
+      <div class="fifa-feature-info ${svFifaEsc(item.className)}" data-fifa-card-source="${svFifaEsc(item.source || 'provider')}">
+        <b>${svFifaEsc(item.label)}</b>
+        ${item.html ? `<strong>${item.html}</strong>` : `<strong>${svFifaEsc(item.value)}</strong>`}
+      </div>
+    `).join('')}</div>`;
+  }
+
+  function svFetchFifaFeaturedDetail(match){
+    const key = svFifaMatchKey(match);
+    if(!match || !key){
+      if(svFifaLiveState.featuredDetailController){
+        svFifaLiveState.featuredDetailController.abort();
+        svFifaLiveState.featuredDetailController = null;
+      }
+      svFifaLiveState.featuredDetailKey = '';
+      svFifaLiveState.featuredDetailPayload = null;
+      return;
+    }
+    if(svFifaLiveState.featuredDetailKey === key && svFifaLiveState.featuredDetailPayload)return;
+    if(svFifaLiveState.featuredDetailKey === key && svFifaLiveState.featuredDetailController)return;
+    if(svFifaLiveState.featuredDetailController)svFifaLiveState.featuredDetailController.abort();
+    svFifaLiveState.featuredDetailKey = key;
+    svFifaLiveState.featuredDetailPayload = null;
+    svFifaLiveState.featuredDetailController = new AbortController();
+    fetch(svFifaBuildDetailUrl(match), {
+      cache:'no-store',
+      headers:{ Accept:'application/json' },
+      signal:svFifaLiveState.featuredDetailController.signal
+    })
+      .then(response=>response.ok ? response.json() : Promise.reject(new Error('Featured match details failed')))
+      .then(data=>{
+        svFifaLiveState.featuredDetailPayload = data;
+        const featuredEl = document.getElementById('fifaFeaturedMatch');
+        if(featuredEl && svFifaLiveState.payload){
+          const merged = svFifaMergeDetailMatch(match, data?.match || {});
+          const isLiveFeatured = svFifaIsLiveMatch(merged);
+          featuredEl.classList.toggle('is-live-featured', isLiveFeatured);
+          featuredEl.classList.toggle('is-live', isLiveFeatured);
+          featuredEl.innerHTML = svFifaRenderMatch(merged, true, key);
+          svStartFifaCountdown(merged, key);
+        }
+      })
+      .catch(err=>{
+        if(err?.name !== 'AbortError')svFifaLiveState.featuredDetailPayload = null;
+      })
+      .finally(()=>{
+        svFifaLiveState.featuredDetailController = null;
+      });
+  }
+
+  function svFifaRenderEmpty(title, detail, featured){
+    return `<div class="${featured ? 'fifa-featured-empty' : 'fifa-match-card fifa-match-empty'}">
+      <div class="fifa-card-label">Real data</div>
+      <div class="fifa-empty-title">${svFifaEsc(title || 'No live matches right now')}</div>
+      <div class="fifa-match-meta">${svFifaEsc(detail || 'Waiting for the next real fixture update')}</div>
+    </div>`;
+  }
+
+  function svFifaRenderMatch(match, featured, key, options){
+    if(!match){
+      return svFifaRenderEmpty('No live matches right now', 'Waiting for the next real fixture update', featured);
+    }
+    const state = svFifaMatchStatus(match);
+    const stateClasses = `${state.className} ${state.extraClass || ''}`.trim();
+    const className = featured ? `fifa-featured-card-inner ${stateClasses}` : `fifa-match-card ${stateClasses}`;
+    const kind = options?.kind || (state.className === 'is-result' ? 'past' : 'forward');
+    const startAttr = options?.start ? ' data-fifa-carousel-start="1"' : '';
+    const cardAttrs = featured ? '' : ` data-fifa-card-kind="${svFifaEsc(kind)}"${startAttr}`;
+    const attrs = key ? ` role="button" tabindex="0" data-fifa-match-key="${svFifaEsc(key)}"${cardAttrs} aria-label="View details for ${svFifaEsc(match.homeTeam || 'home')} versus ${svFifaEsc(match.awayTeam || 'away')}"` : cardAttrs;
+    if(featured){
+      return `
+        <article class="${className} is-clickable"${attrs}>
+          <div class="fifa-feature-scoreboard">
+            <div class="fifa-feature-team fifa-feature-team-home">${svFifaTeamHtml(match, 'home', 'Home', true)}</div>
+            <div class="fifa-feature-score" aria-label="Featured match score">
+              <span>${svFifaEsc(svFifaScore(match.homeScore))}</span>
+              <b>-</b>
+              <span>${svFifaEsc(svFifaScore(match.awayScore))}</span>
+            </div>
+            <div class="fifa-feature-team fifa-feature-team-away">${svFifaTeamHtml(match, 'away', 'Away', true)}</div>
+          </div>
+          <div class="fifa-match-meta fifa-feature-meta">${svFifaEsc(svFifaMatchMeta(match))}</div>
+          ${svRenderFifaFeaturedExtras(match)}
+        </article>
+      `;
+    }
+    return `
+      <article class="${className} is-clickable"${attrs}>
+        <div class="fifa-card-label ${state.className}">
+          ${state.className === 'is-live' ? '<span class="fifa-live-dot"></span>' : ''}${svFifaEsc(state.label)}
+          <span>${svFifaEsc(svFifaMatchTime(match))}</span>
+        </div>
+        <div class="fifa-scoreboard">
+          <div class="fifa-team-line">
+            <span>${svFifaTeamHtml(match, 'home', 'Home', featured)}</span>
+            <strong>${svFifaEsc(svFifaScore(match.homeScore))}</strong>
+          </div>
+          <div class="fifa-team-line">
+            <span>${svFifaTeamHtml(match, 'away', 'Away', featured)}</span>
+            <strong>${svFifaEsc(svFifaScore(match.awayScore))}</strong>
+          </div>
+        </div>
+        <div class="fifa-match-meta">${svFifaEsc(svFifaMatchMeta(match))}</div>
+        ${featured ? svRenderFifaFeaturedExtras(match) : ''}
+        <div class="fifa-detail-cta">View details</div>
+      </article>
+    `;
+  }
+
+  function svFifaRenderStandings(rows){
+    const groupRows = (rows || []).slice(0, 6);
+    if(!groupRows.length)return '';
+    const groupName = groupRows[0]?.group || 'Group';
+    return `
+      <div class="fifa-table-title">${svFifaEsc(groupName)}</div>
+      <div class="fifa-table-head"><span>Team</span><span>MP</span><span>GD</span><span>PTS</span></div>
+      ${groupRows.map(row=>`
+        <div class="fifa-table-row">
+          <span><b>${svFifaEsc(row.rank || '')}</b>${svFifaTeamHtml(row, '', row.team || 'Team')}</span>
+          <span>${svFifaEsc(row.played ?? 0)}</span>
+          <span>${svFifaEsc(row.goalDifference ?? 0)}</span>
+          <strong>${svFifaEsc(row.points ?? 0)}</strong>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  function svFifaRenderHeadlines(headlines){
+    const items = (headlines || []).filter(item=>svFifaCleanText(typeof item === 'string' ? item : item?.title)).slice(0, 8);
+    if(!items.length)return '';
+    return items.map(item=>{
+      const title = typeof item === 'string' ? item : item?.title;
+      const url = typeof item === 'string' ? '' : svFifaHttpUrl(item?.url);
+      const source = typeof item === 'string' ? '' : svFifaCleanText(item?.source);
+      const publishedAt = typeof item === 'string' ? '' : svFifaCleanText(item?.publishedAt || item?.time);
+      const meta = [source, publishedAt ? svFifaFormatTime(publishedAt) : ''].filter(Boolean).join(' / ');
+      const body = `<b>UPDATE</b><span>${svFifaEsc(title)}</span>${meta ? `<em>${svFifaEsc(meta)}</em>` : ''}`;
+      return url
+        ? `<a class="fifa-headline-item" href="${svFifaEsc(url)}" target="_blank" rel="noopener noreferrer">${body}</a>`
+        : `<span class="fifa-headline-item">${body}</span>`;
+    }).filter(Boolean).join('');
+  }
+
+  function svRenderFifaNews(payload){
+    const headlinesEl = document.getElementById('fifaHeadlineStrip');
+    if(!headlinesEl)return;
+    const headlines = Array.isArray(payload?.headlines) ? payload.headlines : [];
+    const html = svFifaRenderHeadlines(headlines);
+    headlinesEl.innerHTML = html;
+    headlinesEl.hidden = !html;
+    const root = document.getElementById('fifaLiveRoot');
+    if(root)root.classList.toggle('has-news', !!html);
+  }
+
+  function svFetchFifaNews(background){
+    const now = Date.now();
+    if(svFifaLiveState.newsLoading)return;
+    if(background && svFifaLiveState.newsFetchedAt && now - svFifaLiveState.newsFetchedAt < SV_FIFA_NEWS_CLIENT_TTL){
+      svScheduleFifaNewsRefresh(SV_FIFA_NEWS_CLIENT_TTL - (now - svFifaLiveState.newsFetchedAt));
+      return;
+    }
+    if(!svFifaDiscoverVisible())return;
+    svFifaLiveState.newsLoading = true;
+    if(svFifaLiveState.newsController)svFifaLiveState.newsController.abort();
+    svFifaLiveState.newsController = new AbortController();
+    fetch('/api/fifa-live/news', {
+      cache:'no-store',
+      headers:{ Accept:'application/json' },
+      signal:svFifaLiveState.newsController.signal
+    })
+      .then(r=>r.ok ? r.json() : Promise.reject(new Error('FIFA news feed failed')))
+      .then(data=>{
+        const hasHeadlines = Array.isArray(data?.headlines) && data.headlines.length > 0;
+        const hasCachedHeadlines = Array.isArray(svFifaLiveState.newsPayload?.headlines) && svFifaLiveState.newsPayload.headlines.length > 0;
+        if(hasHeadlines)svFifaLiveState.newsPayload = data;
+        svFifaLiveState.newsFetchedAt = Date.now();
+        svRenderFifaNews(hasHeadlines || !hasCachedHeadlines ? data : svFifaLiveState.newsPayload);
+      })
+      .catch(err=>{
+        if(err?.name === 'AbortError')return;
+        svFifaLiveState.newsFetchedAt = Date.now();
+        svRenderFifaNews(svFifaLiveState.newsPayload);
+      })
+      .finally(()=>{
+        svFifaLiveState.newsLoading = false;
+        svFifaLiveState.newsController = null;
+        svScheduleFifaNewsRefresh();
+      });
+  }
+
+  function svScheduleFifaNewsRefresh(delay){
+    clearTimeout(svFifaLiveState.newsTimer);
+    svFifaLiveState.newsTimer = null;
+    if(!svFifaDiscoverVisible())return;
+    svFifaLiveState.newsTimer = setTimeout(()=>svFetchFifaNews(true), Math.max(30000, delay || SV_FIFA_NEWS_CLIENT_TTL));
+  }
+
+  function svScheduleFifaPostRenderWork(featuredMatch, headlines){
+    clearTimeout(svFifaLiveState.postRenderTimer);
+    svFifaLiveState.postRenderTimer = null;
+    if(!svFifaDiscoverVisible())return;
+    svFifaLiveState.postRenderTimer = setTimeout(()=>{
+      svFifaLiveState.postRenderTimer = null;
+      if(!svFifaDiscoverVisible())return;
+      svFetchFifaFeaturedDetail(featuredMatch);
+      const headlinesEl = document.getElementById('fifaHeadlineStrip');
+      if(headlinesEl){
+        if(Array.isArray(headlines) && headlines.length)svRenderFifaNews(svFifaLiveState.newsPayload || { headlines });
+        svFetchFifaNews(true);
+      }
+    }, 900);
+  }
+
+  function svRenderFifaLive(payload, errorMessage){
+    const root = svEnsureFifaLiveSection();
+    if(!root)return;
+    const liveMatches = Array.isArray(payload?.liveMatches) ? payload.liveMatches : [];
+    const upcomingMatches = Array.isArray(payload?.upcomingMatches) ? payload.upcomingMatches : [];
+    const recentResults = Array.isArray(payload?.recentResults) ? payload.recentResults : [];
+    const standings = Array.isArray(payload?.standings) ? payload.standings : [];
+    const headlines = Array.isArray(payload?.headlines) ? payload.headlines : [];
+    const carousel = svFifaCarouselMatches(payload);
+    const matchList = carousel.matches;
+    const featuredMatch = liveMatches[0] || upcomingMatches[0] || recentResults[0] || null;
+    svSetMobileLiveMatchState(liveMatches.some(match=>svFifaIsLiveMatch(match)));
+    svFifaLiveState.matchesByKey.clear();
+    matchList.forEach(match=>{
+      const key = svFifaMatchKey(match);
+      if(key)svFifaLiveState.matchesByKey.set(key, match);
+    });
+    if(featuredMatch){
+      const key = svFifaMatchKey(featuredMatch);
+      if(key)svFifaLiveState.matchesByKey.set(key, featuredMatch);
+    }
+    const hasRealData = !!(matchList.length || standings.length || headlines.length);
+    const statusEl = document.getElementById('fifaLiveStatus');
+    const updatedEl = document.getElementById('fifaLiveUpdated');
+    const featuredEl = document.getElementById('fifaFeaturedMatch');
+    const standingsEl = document.getElementById('fifaStandingsCard');
+    const stripEl = document.getElementById('fifaMatchStrip');
+    const stripWrapEl = document.getElementById('fifaMatchStripWrap');
+    const headlinesEl = document.getElementById('fifaHeadlineStrip');
+    const signature = svFifaPayloadSignature(payload);
+
+    root.classList.remove('is-loading');
+    root.classList.toggle('is-stale', !!payload?.stale || !!errorMessage);
+    root.classList.toggle('is-error', (!payload?.ok && !hasRealData) || (!!errorMessage && !hasRealData));
+    root.classList.toggle('is-empty', !hasRealData);
+    root.classList.toggle('has-standings', standings.length > 0);
+    root.dataset.svFifaPastCount = String(carousel.pastCount || 0);
+    root.dataset.svFifaForwardCount = String(carousel.forwardCount || 0);
+    if(statusEl){
+      statusEl.textContent = '';
+      statusEl.hidden = true;
+      statusEl.setAttribute('aria-hidden','true');
+    }
+    if(updatedEl)updatedEl.textContent = payload?.generatedAt ? svFifaRelativeTime(payload.generatedAt) : 'Waiting for real data';
+    if(!errorMessage && (root.dataset.svFifaFastSignature === signature || svFifaLiveState.renderSignature === signature)){
+      svFifaLiveState.renderSignature = signature;
+      root.dataset.svFifaRenderedSignature = signature;
+      if(featuredMatch)svStartFifaCountdown(featuredMatch, svFifaMatchKey(featuredMatch));
+      else svClearFifaCountdown();
+      if(stripEl)svFifaPositionMatchStrip(stripEl, carousel.startIndex);
+      svScheduleFifaPostRenderWork(featuredMatch, headlines);
+      return;
+    }
+    if(featuredEl){
+      const emptyTitle = (!payload?.ok && !hasRealData) ? 'Live data unavailable' : 'No live matches right now';
+      const emptyDetail = payload?.message || 'Waiting for the next real fixture update';
+      const isLiveFeatured = !!featuredMatch && svFifaIsLiveMatch(featuredMatch);
+      featuredEl.classList.toggle('is-live-featured', isLiveFeatured);
+      featuredEl.classList.toggle('is-live', isLiveFeatured);
+      featuredEl.innerHTML = featuredMatch ? svFifaRenderMatch(featuredMatch, true, svFifaMatchKey(featuredMatch)) : svFifaRenderEmpty(emptyTitle, emptyDetail, true);
+    }
+    if(featuredMatch)svStartFifaCountdown(featuredMatch, svFifaMatchKey(featuredMatch));
+    else svClearFifaCountdown();
+    if(standingsEl){
+      standingsEl.innerHTML = svFifaRenderStandings(standings);
+      standingsEl.hidden = !standings.length;
+    }
+    if(stripEl){
+      stripEl.innerHTML = matchList.map((match, index)=>svFifaRenderMatch(match, false, svFifaMatchKey(match), {
+        kind:index < carousel.startIndex ? 'past' : 'forward',
+        start:index === carousel.startIndex
+      })).join('');
+      stripEl.hidden = !matchList.length;
+      svFifaPositionMatchStrip(stripEl, carousel.startIndex);
+    }
+    if(stripWrapEl)stripWrapEl.hidden = !matchList.length;
+    if(headlinesEl){
+      if(!headlinesEl.innerHTML)headlinesEl.hidden = true;
+    }
+    svFifaLiveState.renderSignature = signature;
+    root.dataset.svFifaRenderedSignature = signature;
+    svScheduleFifaPostRenderWork(featuredMatch, headlines);
+  }
+
+  function svFifaDiscoverVisible(){
+    if(document.hidden)return false;
+    const root = document.getElementById('fifaLiveRoot');
+    const hero = document.getElementById('hero');
+    if(!root || !hero)return true;
+    try{
+      if(typeof currentTab !== 'undefined' && currentTab !== 'discover')return false;
+    }catch(_err){}
+    return hero.offsetParent !== null || root.offsetParent !== null;
+  }
+
+  function svScheduleFifaLiveRefresh(){
+    clearTimeout(svFifaLiveState.timer);
+    if(!svFifaDiscoverVisible())return;
+    const hasLive = Array.isArray(svFifaLiveState.payload?.liveMatches) && svFifaLiveState.payload.liveMatches.length > 0;
+    svFifaLiveState.timer = setTimeout(()=>svFetchFifaLive(true), hasLive ? 30000 : 180000);
+  }
+
+  function svFetchFifaLive(background){
+    const root = svEnsureFifaLiveSection();
+    if(!root || !svFifaDiscoverVisible())return;
+    if(svFifaLiveState.loading)return;
+    if(!background && !svFifaLiveState.payload)svRenderFifaLoading();
+    svFifaLiveState.loading = true;
+    const earlyRequest = svFifaTakeEarlyPromise();
+    let request;
+    if(earlyRequest){
+      request = earlyRequest;
+    }else{
+      if(svFifaLiveState.controller)svFifaLiveState.controller.abort();
+      svFifaLiveState.controller = new AbortController();
+      request = fetch('/api/fifa-live', {
+        cache:'no-store',
+        headers:{ Accept:'application/json' },
+        signal:svFifaLiveState.controller.signal
+      }).then(r=>r.ok ? r.json() : Promise.reject(new Error('FIFA live feed failed')));
+    }
+    request
+      .then(data=>{
+        svFifaLiveState.payload = data;
+        svFifaWriteCachedPayload(data);
+        svRenderFifaLive(data);
+      })
+      .catch(err=>{
+        if(err?.name === 'AbortError')return;
+        const fallback = svFifaLiveState.payload
+          ? { ...svFifaLiveState.payload, stale:true, message:svFifaLiveState.payload.message || 'Showing the last real football update' }
+          : svFifaClientFallbackPayload(err.message);
+        svFifaLiveState.payload = fallback;
+        svRenderFifaLive(fallback, err.message);
+      })
+      .finally(()=>{
+        svFifaLiveState.loading = false;
+        svFifaLiveState.controller = null;
+        svScheduleFifaLiveRefresh();
+      });
+  }
+
+  function svHandleFifaVisibility(){
+    if(document.hidden){
+      clearTimeout(svFifaLiveState.timer);
+      clearTimeout(svFifaLiveState.newsTimer);
+      svFifaLiveState.newsTimer = null;
+      svClearFifaCountdown();
+      if(svFifaLiveState.controller)svFifaLiveState.controller.abort();
+      if(svFifaLiveState.newsController)svFifaLiveState.newsController.abort();
+      return;
+    }
+    if(svFifaDiscoverVisible()){
+      if(svFifaLiveState.payload)svRenderFifaLive(svFifaLiveState.payload);
+      svFetchFifaLive(true);
+      svFetchFifaNews(true);
+    }
+  }
+
+  function svStartFifaLiveSection(){
+    heroMovies = [];
+    svEnsureFifaLiveSection();
+    if(!svFifaLiveState.started){
+      svFifaLiveState.started = true;
+      document.addEventListener('visibilitychange', svHandleFifaVisibility);
+    }
+    if(!svFifaLiveState.payload){
+      const cached = svFifaReadEarlyPayload() || svFifaReadCachedPayload();
+      if(cached)svFifaLiveState.payload = cached;
+    }
+    if(svFifaLiveState.payload){
+      svRenderFifaLive(svFifaLiveState.payload);
+      svFetchFifaLive(true);
+    }else{
+      svFetchFifaLive(false);
+    }
+    return true;
+  }
+
+  window.svStartFifaLiveSection = svStartFifaLiveSection;
+
   function svRenderHeroCards(items){
     const cardsEl = document.getElementById('heroCards');
     if(!cardsEl)return false;
@@ -740,16 +2574,11 @@
   }
 
   function svRenderHeroFromFeed(data){
-    return svRenderHeroCards(svHeroItemsFromFeed(data));
+    return svStartFifaLiveSection();
   }
 
   buildHero = function(){
-    svFetchHomeFeed(SV_EXCLUSIVE_HERO_LIMIT)
-      .then(data=>{
-        if(data && svRenderHeroFromFeed(data))return;
-        svRenderHeroCards(svFallbackHeroItems());
-      })
-      .catch(()=>svRenderHeroCards(svFallbackHeroItems()));
+    svStartFifaLiveSection();
   };
 
   buildRows = function(){
@@ -885,6 +2714,97 @@
         document.getElementById('sectionLoadWrap').style.display = svSectionState.page + 1 < (data.pages || svSectionState.pages) ? 'flex' : 'none';
       });
   };
+
+  function svFindLiveSportsCategory(){
+    let list = [];
+    try{
+      if(typeof channels !== 'undefined' && Array.isArray(channels))list = channels;
+    }catch(_){}
+    const categories = Array.from(new Set(list.map(ch=>svFifaCleanText(ch?.category)).filter(Boolean)));
+    return categories.find(cat=>/^sports?$/i.test(cat)) || categories.find(cat=>/sports?/i.test(cat)) || '';
+  }
+
+  function svHighlightLiveSportsChannel(){
+    let sportsIndex = -1;
+    try{
+      if(typeof channels !== 'undefined' && Array.isArray(channels)){
+        sportsIndex = channels.findIndex(ch=>/sports?|t\s*sports|star sports|sony sports/i.test(`${ch?.category || ''} ${ch?.name || ''}`));
+      }
+    }catch(_){}
+    const cards = Array.from(document.querySelectorAll('#liveGrid .channel-card'));
+    const target = sportsIndex >= 0 ? cards[sportsIndex] : cards.find(card=>/sports?|t\s*sports|star sports|sony sports/i.test(card.getAttribute('aria-label') || card.textContent || ''));
+    if(!target)return false;
+    target.classList.add('sv-live-match-target');
+    target.scrollIntoView({ behavior:'smooth', block:'center', inline:'nearest' });
+    setTimeout(()=>target.classList.remove('sv-live-match-target'), 1800);
+    return true;
+  }
+
+  function svEnsureLiveMatchChannels(){
+    try{
+      if(Array.isArray(channels) && channels.length)return Promise.resolve(channels);
+    }catch(_){}
+    if(svLiveMatchChannelsPromise)return svLiveMatchChannelsPromise;
+    svLiveMatchChannelsPromise = fetch('/api/channels', { cache:'no-store' })
+      .then(response=>response.ok ? response.json() : Promise.reject(new Error('channels unavailable')))
+      .then(list=>{
+        try{ channels = Array.isArray(list) ? list : []; }catch(_){}
+        if(typeof buildLiveTV === 'function')buildLiveTV();
+        if(typeof buildLiveHomeRow === 'function')buildLiveHomeRow();
+        return Array.isArray(list) ? list : [];
+      })
+      .finally(()=>{ svLiveMatchChannelsPromise = null; });
+    return svLiveMatchChannelsPromise;
+  }
+
+  function svFindLiveMatchChannel(list){
+    const items = Array.isArray(list) ? list : [];
+    return items.find(ch=>String(ch?.id || '').toLowerCase() === SV_LIVE_MATCH_CHANNEL_ID)
+      || items.find(ch=>/t\s*sports/i.test(String(ch?.name || '')));
+  }
+
+  function openLiveMatchChannel(event){
+    if(event)event.preventDefault();
+    svEnsureLiveMatchChannels()
+      .then(list=>{
+        const channel = svFindLiveMatchChannel(list);
+        if(!channel)throw new Error('T Sports channel unavailable');
+        if(typeof openLiveChannel !== 'function')throw new Error('Live player is still loading');
+        openLiveChannel(channel.id || SV_LIVE_MATCH_CHANNEL_ID, channel.name || 'T Sports');
+      })
+      .catch(err=>{
+        if(typeof showToast === 'function')showToast(err?.message || 'Could not start live match');
+      });
+  }
+
+  function svInstallLiveMatchNav(){
+    const nav = document.querySelector('.nav-links');
+    const navRight = document.querySelector('.nav-right');
+    const liveTvBtn = document.getElementById('livetvNavBtn');
+    if(!nav || !navRight || !liveTvBtn)return;
+    const link = document.getElementById('liveMatchNavBtn') || Array.from(nav.querySelectorAll('a')).find(el=>/continue watching/i.test(el.textContent || '') || /continueRow/.test(el.getAttribute('onclick') || ''));
+    if(!link)return;
+    link.id = 'liveMatchNavBtn';
+    link.classList.add('live-match-nav-pill');
+    link.textContent = 'LIVE MATCH';
+    link.setAttribute('href', '#');
+    link.setAttribute('role', 'button');
+    link.setAttribute('aria-label','Play T Sports live match in StreamVault');
+    link.removeAttribute('target');
+    link.removeAttribute('rel');
+    link.removeAttribute('onclick');
+    link.removeEventListener('click', openLiveMatchChannel);
+    link.dataset.svLiveMatchNav = 'internal';
+    link.addEventListener('click', openLiveMatchChannel);
+    if(link.parentElement !== navRight || liveTvBtn.nextElementSibling !== link){
+      navRight.insertBefore(link, liveTvBtn.nextElementSibling);
+    }
+  }
+
+  window.openLiveMatchChannel = openLiveMatchChannel;
+  window.svOpenLiveMatchNav = openLiveMatchChannel;
+  svInstallLiveMatchNav();
+  document.addEventListener('DOMContentLoaded', svInstallLiveMatchNav, { once:true });
 
   if(!window._svSwitchWrapped){
     window._svSwitchWrapped = true;

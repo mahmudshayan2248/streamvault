@@ -1,0 +1,74 @@
+﻿=== MOVIES CONTRACT FIXTURE REPORT ===
+DATE=2026-06-10 12:01:44
+WORK_BRANCH=haskell-movies-contract-fixture-20260610-120142
+BASE_BRANCH=haskell-movies-api-audit-clean-20260610-115824
+MASTER_LEFT_AT=0f9bec0dd6c87fab550968fea1bb9507c98e59cd
+HEAD=e1726cc5ed2a6e1661e17052def02532e432a290
+MASTER_NOT_TOUCHED=YES
+
+
+============================================================
+RUN: build movies fixture
+CMD: node tools\movies-parity-v1\build-movies-fixture.js
+============================================================
+MOVIES_CATALOG_TOTAL=22171
+MOVIES_FIXTURE_ROWS=120
+MOVIES_FIXTURE_BUILD_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: test movies fixture schema
+CMD: node tools\movies-parity-v1\test-movies-fixture-schema.js
+============================================================
+MOVIES_SCHEMA_ROWS=120
+MOVIES_SCHEMA_BAD=0
+MOVIES_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details fixture schema
+CMD: node tools\details-parity-v1\validate-details-fixture-schema.js
+============================================================
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details route contract
+CMD: node tools\details-parity-v1\test-details-route-contract.js
+============================================================
+ROUTE_CONTRACT_ROWS=120
+ROUTE_CONTRACT_MOVIES=80
+ROUTE_CONTRACT_SERIES=40
+ROUTE_CONTRACT_BAD=0
+DETAILS_ROUTE_CONTRACT_PASS
+EXIT_CODE=0
+
+============================================================
+RUN: details response snapshot
+CMD: node tools\details-parity-v1\test-details-response-snapshot.js
+============================================================
+RESPONSE_SNAPSHOT_ROWS=120
+RESPONSE_SNAPSHOT_BAD=0
+DETAILS_RESPONSE_SNAPSHOT_PASS
+EXIT_CODE=0
+
+=== CABAL BUILD ALL SAFE CAPTURE ===
+cabal : Configuration is affected by the following files:
+At line:159 char:1
++ cabal build all *> $cabalTmp
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Configuration i...ollowing files::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+- cabal.project
+Up to date
+EXIT_CODE=0
+
+=== FINAL STATUS BEFORE COMMIT ===
+?? tools/movies-parity-v1/build-movies-fixture.js
+?? tools/movies-parity-v1/cabal-build-movies-fixture-20260610-120142.txt
+?? tools/movies-parity-v1/movies-contract-fixture-report-20260610-120142.txt
+?? tools/movies-parity-v1/movies-contract-fixture.json
+?? tools/movies-parity-v1/test-movies-fixture-schema.js

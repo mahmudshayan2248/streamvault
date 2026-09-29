@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "source": "base-haskell-search-shadow-reader",
+  "query": "the",
+  "limit": 12,
+  "count": 12,
+  "estimatedTitleFields": 25602,
+  "items": ["The Hunt for Gollum (2009)", "From the Ashes (Jaras Enzar) (2024)", "The Internship (2026)", "The Dutchman (2025)", "28 Years Later-The Bone Temple (2026)", "Peaky Blinders-The Immortal Man (2026)", "The Bluff (2026)", "The Rip (2026)", "The Strangers-Chapter 3 (2026)", "The Wrecking Crew (2026)", "Wuthering Heights (2026)", "Bhabiji Ghar Par Hain-Fun on the Run (2026)"]
+}

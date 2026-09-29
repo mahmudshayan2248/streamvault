@@ -1,0 +1,3 @@
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\search-parity-v1\SearchShadowReader.hs, tools\search-parity-v1\.build-search-shadow-reader-20260610-222610\Main.o )
+[2 of 2] Linking tools\\search-parity-v1\\.build-search-shadow-reader-20260610-222610\\SearchShadowReader.exe

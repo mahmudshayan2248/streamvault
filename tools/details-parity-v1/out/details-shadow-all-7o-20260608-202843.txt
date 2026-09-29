@@ -1,0 +1,95 @@
+﻿STDOUT:
+
+> streamvault@1.0.0 details:shadow:all
+> npm run details:shadow:audit && npm run details:shadow:schema && npm run details:shadow:schema:negative && npm run details:shadow:fixture:determinism && npm run details:shadow:fixture:coverage && npm run details:shadow:fixture:coverage:negative && npm run details:shadow:fixture:gaps && npm run details:shadow:suite
+
+
+> streamvault@1.0.0 details:shadow:audit
+> node tools/details-parity-v1/audit-details-fixtures.js
+
+
+Fixture: tools\details-parity-v1\out\haskell-details-fixtures.json
+Rows: 0
+
+Fixture: tools\details-parity-v1\expanded-details-fixture.json
+Rows: 120
+
+AUDIT_TOTAL=120
+AUDIT_BAD=0
+AUDIT_DUPLICATE=0
+DETAILS_FIXTURE_AUDIT_PASS
+
+> streamvault@1.0.0 details:shadow:schema
+> node tools/details-parity-v1/validate-details-fixture-schema.js
+
+SCHEMA_TOTAL=120
+SCHEMA_BAD=0
+DETAILS_FIXTURE_SCHEMA_PASS
+
+> streamvault@1.0.0 details:shadow:schema:negative
+> node tools/details-parity-v1/test-details-fixture-schema-negative.js
+
+SCHEMA_TOTAL=1
+SCHEMA_BAD=3
+NEGATIVE_SCHEMA_PASS
+
+> streamvault@1.0.0 details:shadow:fixture:determinism
+> node tools/details-parity-v1/test-details-fixture-builder-determinism.js
+
+WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+WROTE C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\expanded-details-fixture.json 120
+FIXTURE_BUILDER_DETERMINISM_PASS
+
+> streamvault@1.0.0 details:shadow:fixture:coverage
+> node tools/details-parity-v1/test-details-fixture-coverage.js
+
+COVERAGE_ROWS=120
+COVERAGE_MOVIES=80
+COVERAGE_TV=40
+COVERAGE_POSTERS=116
+COVERAGE_OVERVIEWS=115
+DETAILS_FIXTURE_COVERAGE_PASS
+
+> streamvault@1.0.0 details:shadow:fixture:coverage:negative
+> node tools/details-parity-v1/test-details-fixture-coverage-negative.js
+
+COVERAGE_ROWS=60
+COVERAGE_MOVIES=60
+COVERAGE_TV=0
+COVERAGE_POSTERS=0
+COVERAGE_OVERVIEWS=0
+NEGATIVE_COVERAGE_PASS
+
+> streamvault@1.0.0 details:shadow:fixture:gaps
+> node tools/details-parity-v1/audit-details-fixture-gaps.js
+
+GAP_ROWS=120
+GAP_MISSING_POSTER=4
+GAP_MISSING_BACKDROP=11
+GAP_MISSING_OVERVIEW=5
+GAP_MISSING_RATING=23
+GAP_MISSING_GENRE=120
+GAP_MISSING_RUNTIME=120
+GAP_MISSING_LANGUAGE=120
+GAP_MISSING_DIRECTOR=120
+GAP_MISSING_PRODUCTIONCOMPANIES=120
+GAP_ITEMS_WITH_ANY_MISSING=120
+GAP_REPORT=C:\Users\Mac Mini\Desktop\Website Host\Streaming_Website\streamvault\tools\details-parity-v1\out\details-7l-fixture-gap-audit-2026-06-08T14-28-54-502Z.tsv
+DETAILS_FIXTURE_GAP_AUDIT_PASS
+
+> streamvault@1.0.0 details:shadow:suite
+> node tools/details-parity-v1/test-native-details-shadow.js
+
+SUITE_ROWS=120
+SUITE_BAD=0
+SUITE_DUPLICATE=0
+SUITE_PASS
+
+STDERR:
+C:\Users\MACMIN~1\AppData\Local\Temp\sv-details-schema-negative-epo4wp\bad-fixture.json[0]: invalid key
+C:\Users\MACMIN~1\AppData\Local\Temp\sv-details-schema-negative-epo4wp\bad-fixture.json[0]: invalid title/name
+C:\Users\MACMIN~1\AppData\Local\Temp\sv-details-schema-negative-epo4wp\bad-fixture.json[0]: hit row missing year
+SCHEMA_FAIL: invalid fixture schema
+DETAILS_FIXTURE_COVERAGE_FAIL
+
+EXIT_CODE=0

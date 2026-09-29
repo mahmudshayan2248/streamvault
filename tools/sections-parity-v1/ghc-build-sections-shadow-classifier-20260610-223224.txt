@@ -1,0 +1,3 @@
+Loaded package environment from C:\Users\Mac Mini\AppData\Roaming\ghc\x86_64-mingw32-9.6.7\environments\default
+[1 of 2] Compiling Main             ( tools\sections-parity-v1\SectionsShadowClassifier.hs, tools\sections-parity-v1\.build-sections-shadow-classifier-20260610-223224\Main.o )
+[2 of 2] Linking tools\\sections-parity-v1\\.build-sections-shadow-classifier-20260610-223224\\SectionsShadowClassifier.exe

@@ -1,17 +1,605 @@
 [
-  { "id": "tsports",      "name": "T Sports",                     "category": "Sports",         "color": "#c8001a", "textColor": "#fff", "url": "http://172.22.1.2:3255/TSportsHD/index.m3u8" },
-  { "id": "starsports1",  "name": "Star Sports 1",                "category": "Sports",         "color": "#003087", "textColor": "#fff", "url": "http://172.22.1.2:3255/StarSports1/index.m3u8" },
-  { "id": "sonyten1",     "name": "Sony Ten Sports",              "category": "Sports",         "color": "#d35400", "textColor": "#fff", "url": "http://172.22.1.2:3255/SonyTenSports1/tracks-v1a1/mono.m3u8" },
-  { "id": "jamuna",       "name": "Jamuna TV",                    "category": "News",           "color": "#1a3a6e", "textColor": "#fff", "url": "http://172.22.1.2:3255/JAMUNATV/index.m3u8" },
-  { "id": "shomoy",       "name": "Shomoy TV",                    "category": "News",           "color": "#4a235a", "textColor": "#fff", "url": "http://172.22.1.2:3255/somyyt/index.m3u8" },
-  { "id": "channel24",    "name": "Channel 24",                   "category": "News",           "color": "#e63000", "textColor": "#fff", "url": "http://172.22.1.2:3255/CH24/index.m3u8" },
-  { "id": "channel9",     "name": "Channel 9",                    "category": "News",           "color": "#006633", "textColor": "#fff", "url": "http://172.22.1.2:3255/ch9_nk/index.m3u8" },
-  { "id": "independent",  "name": "Independent TV",               "category": "News",           "color": "#003366", "textColor": "#fff", "url": "http://172.22.1.2:3255/indopendettv/index.m3u8" },
-  { "id": "cnn",          "name": "CNN",                          "category": "News",           "color": "#cc0000", "textColor": "#fff", "url": "http://172.22.1.2:3255/cnn/index.m3u8" },
-  { "id": "aljazeera",    "name": "Al Jazeera",                   "category": "News",           "color": "#4a235a", "textColor": "#fff", "url": "http://172.22.1.2:3255/Aljazeera/index.m3u8" },
-  { "id": "sonyaath",     "name": "Sony Aath",                    "category": "Entertainment",  "color": "#0057a8", "textColor": "#fff", "url": "http://172.22.1.2:3255/SonyAath/index.m3u8" },
-  { "id": "sonyentertain","name": "Sony Entertainment Television","category": "Entertainment",  "color": "#c0392b", "textColor": "#fff", "url": "http://172.22.1.2:3255/SonyEntertainmentTelevisionHD/tracks-v1a1/mono.m3u8" },
-  { "id": "starjalsha",   "name": "Star Jalsha",                  "category": "Entertainment",  "color": "#e91e8c", "textColor": "#fff", "url": "http://172.22.1.2:3255/starjolsha/index.m3u8" },
-  { "id": "moviesnow",    "name": "Movies Now",                   "category": "Movies",         "color": "#1a1a2e", "textColor": "#fff", "url": "http://172.22.1.2:3255/MOVIES-NOW-HD/index.m3u8" },
-  { "id": "cartoon",      "name": "Cartoon Network",              "category": "Kids",           "color": "#7b2d8b", "textColor": "#fff", "url": "http://172.22.1.2:3255/CartoonNetwork/index.m3u8" }
+  {
+    "id": "starsports2",
+    "name": "Star Sports 2",
+    "category": "Sports",
+    "color": "#003087",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/StarSports2/tracks-v1a1/mono.m3u8",
+    "logo": "/assets/channel-logos/starsports2.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "tsports",
+    "name": "T Sports",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/TSportsHD_nk_bdix/tracks-v1a1/mono.m3u8",
+    "fallbackUrls": [
+      "http://172.22.1.2:3255/TSportsHD_sf_bdix/tracks-v1a1/mono.m3u8",
+      "http://172.22.1.2:3255/TSportsHD_sf_nix/tracks-v1a1/mono.m3u8",
+      "http://172.22.1.2:3255/TSportsHD_rc_bdix/tracks-v1a1/mono.m3u8",
+      "http://172.22.1.2:3255/TSportsHD_rc_nix/tracks-v1a1/mono.m3u8",
+      "http://172.22.1.2:3255/TSportsHD_nk_nix/tracks-v1a1/mono.m3u8"
+    ],
+    "logo": "/assets/channel-logos/tsports.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "starsports1",
+    "name": "Star Sports 1",
+    "category": "Sports",
+    "color": "#003087",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/StarSports1/tracks-v1a1/mono.m3u8",
+    "fallbackUrls": [
+      "http://172.22.1.2:3255/StarSportss1/tracks-v1a1/mono.m3u8"
+    ],
+    "logo": "/assets/channel-logos/starsports1.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sonyten1",
+    "name": "Sony Ten Sports",
+    "category": "Sports",
+    "color": "#d35400",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/SonyTenSports2/tracks-v1a1/mono.m3u8",
+    "fallbackUrls": [
+      "http://172.22.1.2:3255/SONY-SPORTS.5HD/tracks-v1a1/mono.m3u8",
+      "http://172.22.1.2:3255/SONY-SPORTS3/tracks-v1a1/mono.m3u8",
+      "http://172.22.1.2:3255/SonyTenSports1/tracks-v1a1/mono.m3u8"
+    ],
+    "logo": "/assets/channel-logos/sonyten1-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "jamuna",
+    "name": "Jamuna TV",
+    "category": "News",
+    "color": "#1a3a6e",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/JAMUNATV/tracks-v1a1/mono.m3u8",
+    "logo": "/assets/channel-logos/jamuna.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "shomoy",
+    "name": "Shomoy TV",
+    "category": "News",
+    "color": "#4a235a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/somyyt/index.m3u8",
+    "logo": "/assets/channel-logos/shomoy.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "channel24",
+    "name": "Channel 24",
+    "category": "News",
+    "color": "#e63000",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/CH24/index.m3u8",
+    "logo": "/assets/channel-logos/channel24-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "channel9",
+    "name": "Channel 9",
+    "category": "News",
+    "color": "#006633",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/ch9_nk/index.m3u8",
+    "logo": "/assets/channel-logos/channel9.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "independent",
+    "name": "Independent TV",
+    "category": "News",
+    "color": "#003366",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/indopendettv/index.m3u8",
+    "logo": "/assets/channel-logos/independent.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "cnn",
+    "name": "CNN",
+    "category": "News",
+    "color": "#cc0000",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/cnn/index.m3u8",
+    "logo": "/assets/channel-logos/cnn.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "aljazeera",
+    "name": "Al Jazeera",
+    "category": "News",
+    "color": "#4a235a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/Aljazeera/index.m3u8",
+    "logo": "/assets/channel-logos/aljazeera-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sonyaath",
+    "name": "Sony Aath",
+    "category": "Entertainment",
+    "color": "#0057a8",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/SonyAath/index.m3u8",
+    "logo": "/assets/channel-logos/sonyaath-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sonyentertain",
+    "name": "Sony Entertainment Television",
+    "category": "Entertainment",
+    "color": "#c0392b",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/SonyEntertainmentTelevisionHD/tracks-v1a1/mono.m3u8",
+    "logo": "/assets/channel-logos/sonyentertain-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "starjalsha",
+    "name": "Star Jalsha",
+    "category": "Entertainment",
+    "color": "#e91e8c",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/starjolsha/index.m3u8",
+    "logo": "/assets/channel-logos/starjalsha.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "moviesnow",
+    "name": "Movies Now",
+    "category": "Movies",
+    "color": "#1a1a2e",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/MOVIES-NOW-HD/index.m3u8",
+    "logo": "/assets/channel-logos/moviesnow.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "cartoon",
+    "name": "Cartoon Network",
+    "category": "Kids",
+    "color": "#7b2d8b",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/CartoonNetwork/index.m3u8",
+    "logo": "/assets/channel-logos/cartoon.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "andflix-hd",
+    "name": "&Flix HD",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/AND-FLIX-HD/index.m3u8",
+    "logo": "/assets/channel-logos/andflix-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "andprive-hd",
+    "name": "&Prive HD",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/AND-PRIVE-HD/index.m3u8",
+    "logo": "/assets/channel-logos/andprive-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "a-sports-hd",
+    "name": "A Sports HD",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/A-SPORTS-HD/tracks-v1a1/mono.m3u8",
+    "logo": "/assets/channel-logos/a-sports-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "bein-sports",
+    "name": "beIN Sports",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/beinspots/tracks-v1a1/mono.m3u8",
+    "fallbackUrls": [
+      "http://172.22.1.2:3255/bein1/tracks-v1a1/mono.m3u8"
+    ],
+    "logo": "/assets/channel-logos/bein-sports.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "bein-sports-1",
+    "name": "beIN Sports 1",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/bein1/index.m3u8",
+    "logo": "/assets/channel-logos/bein-sports-1.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "channel-i",
+    "name": "Channel i",
+    "category": "Entertainment",
+    "color": "#1f6feb",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/chnnel-i/index.m3u8",
+    "logo": "/assets/channel-logos/channel-i.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "colors-cineplex-hd",
+    "name": "Colors Cineplex HD",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/COLORS-CINEPLEX-HD/index.m3u8",
+    "logo": "/assets/channel-logos/colors-cineplex-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "desh-tv",
+    "name": "Desh TV",
+    "category": "Entertainment",
+    "color": "#1f6feb",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/DeshTV/index.m3u8",
+    "logo": "/assets/channel-logos/desh-tv.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "duronto-tv",
+    "name": "Duronto TV",
+    "category": "Kids",
+    "color": "#ff8a00",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/Duronto/index.m3u8",
+    "logo": "/assets/channel-logos/duronto-tv.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "dw-news-hd",
+    "name": "DW News HD",
+    "category": "News",
+    "color": "#1455d9",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/DW-NEWS-HD/index.m3u8",
+    "logo": "/assets/channel-logos/dw-news-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "ekattor-tv",
+    "name": "Ekattor TV",
+    "category": "News",
+    "color": "#1455d9",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/ekattor_nk/index.m3u8",
+    "logo": "/assets/channel-logos/ekattor-tv.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "ekhon-tv",
+    "name": "Ekhon TV",
+    "category": "News",
+    "color": "#1455d9",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/EKHONTV/index.m3u8",
+    "logo": "/assets/channel-logos/ekhon-tv.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "etv-bal-bharat",
+    "name": "ETV Bal Bharat",
+    "category": "Kids",
+    "color": "#ff8a00",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/ETV-BAL-BHARAT/index.m3u8",
+    "logo": "/assets/channel-logos/etv-bal-bharat.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "eurosport-hd",
+    "name": "Eurosport HD",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/EurosportHD/index.m3u8",
+    "logo": "/assets/channel-logos/eurosport-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "geo-news-hd",
+    "name": "Geo News HD",
+    "category": "News",
+    "color": "#1455d9",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/GEO-NEWS-HD/index.m3u8",
+    "logo": "/assets/channel-logos/geo-news-hd.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "hungama",
+    "name": "Hungama",
+    "category": "Kids",
+    "color": "#ff8a00",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/HUNGAMA/index.m3u8",
+    "logo": "/assets/channel-logos/hungama.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "india-today",
+    "name": "India Today",
+    "category": "News",
+    "color": "#1455d9",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/indiatoday/index.m3u8",
+    "logo": "/assets/channel-logos/india-today.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "jalsha-movies-hd",
+    "name": "Jalsha Movies HD",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/JALSHA-MOVIES-HD/index.m3u8",
+    "logo": "/assets/channel-logos/jalsha-movies-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "lotus-tv-hd",
+    "name": "Lotus TV HD",
+    "category": "Entertainment",
+    "color": "#1f6feb",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/Lotus-TV-HD/index.m3u8",
+    "logo": "/assets/channel-logos/lotus-tv-hd.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "madina-live",
+    "name": "Madina Live",
+    "category": "Religion",
+    "color": "#16a34a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/MedinawithLive1MedinawithLive/index.m3u8",
+    "logo": "/assets/channel-logos/madina-live.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "makkah-live",
+    "name": "Makkah Live",
+    "category": "Religion",
+    "color": "#16a34a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/MakkahLive/index.m3u8",
+    "logo": "/assets/channel-logos/makkah-live.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "mn-hd",
+    "name": "MN+ HD",
+    "category": "Movies",
+    "color": "#1f6feb",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/MN-PLUS-HD/index.m3u8",
+    "logo": "/assets/channel-logos/mn-hd.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "nagorik-tv",
+    "name": "Nagorik TV",
+    "category": "Entertainment",
+    "color": "#1f6feb",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/nagorik_r/index.m3u8",
+    "logo": "/assets/channel-logos/nagorik-tv.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "news-24",
+    "name": "News 24",
+    "category": "News",
+    "color": "#1455d9",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/NEWS24LIVE/index.m3u8",
+    "logo": "/assets/channel-logos/news-24-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "nick",
+    "name": "Nick",
+    "category": "Kids",
+    "color": "#ff8a00",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/NICK/index.m3u8",
+    "logo": "/assets/channel-logos/nick.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "nick-jr",
+    "name": "Nick Jr",
+    "category": "Kids",
+    "color": "#ff8a00",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/NICK-JR/index.m3u8",
+    "logo": "/assets/channel-logos/nick-jr.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "ntv",
+    "name": "NTV",
+    "category": "Entertainment",
+    "color": "#1f6feb",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/NTVLive1/index.m3u8",
+    "logo": "/assets/channel-logos/ntv.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "peace-tv-bangla-hd",
+    "name": "Peace TV Bangla HD",
+    "category": "Religion",
+    "color": "#16a34a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/PEACE-TV-BANGLA-HD/index.m3u8",
+    "logo": "/assets/channel-logos/peace-tv-bangla-hd.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "pogo",
+    "name": "POGO",
+    "category": "Kids",
+    "color": "#ff8a00",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/POGO/index.m3u8",
+    "logo": "/assets/channel-logos/pogo.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "ptv-sports",
+    "name": "PTV Sports",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/ptv/index.m3u8",
+    "logo": "/assets/channel-logos/ptv-sports.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "ptv-sports-bdix",
+    "name": "PTV Sports BDIX",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/ptv_bdix/index.m3u8",
+    "logo": "/assets/channel-logos/ptv-sports-bdix.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "ptv-sports-nix",
+    "name": "PTV Sports NIX",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/ptv_nix/index.m3u8",
+    "logo": "/assets/channel-logos/ptv-sports-nix.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "somoy-tv-bdix",
+    "name": "Somoy TV BDIX",
+    "category": "News",
+    "color": "#1455d9",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/somy_rc_bdix/index.m3u8",
+    "logo": "/assets/channel-logos/somoy-tv-bdix.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sony-max",
+    "name": "Sony Max",
+    "category": "Entertainment",
+    "color": "#1f6feb",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/SonyMAX/index.m3u8",
+    "logo": "/assets/channel-logos/sony-max.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sony-sports-3",
+    "name": "Sony Sports 3",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/SONY-SPORTS3/index.m3u8",
+    "logo": "/assets/channel-logos/sony-sports-3-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sony-sports-4",
+    "name": "Sony Sports 4",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/SONY-SPORTS4/index.m3u8",
+    "logo": "/assets/channel-logos/sony-sports-4-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sony-sports-5-hd",
+    "name": "Sony Sports 5 HD",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/SONY-SPORTS.5HD/index.m3u8",
+    "logo": "/assets/channel-logos/sony-sports-5-hd-logo.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sony-ten-sports-2",
+    "name": "Sony Ten Sports 2",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/SonyTenSports2/index.m3u8",
+    "logo": "/assets/channel-logos/sony-ten-sports-2-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sportzfy-1",
+    "name": "Sportzfy 1",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/sportzfy1/index.m3u8",
+    "logo": "/assets/channel-logos/sportzfy-1.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sportzfy-bdix",
+    "name": "Sportzfy BDIX",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/spotyfyz_bdix/index.m3u8",
+    "logo": "/assets/channel-logos/sportzfy-bdix.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "sportzfy-nix",
+    "name": "Sportzfy NIX",
+    "category": "Sports",
+    "color": "#c8001a",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/spotyfyz_nix/index.m3u8",
+    "logo": "/assets/channel-logos/sportzfy-nix.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "star-gold",
+    "name": "Star Gold",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/Star-Gold/index.m3u8",
+    "logo": "/assets/channel-logos/star-gold.webp?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "star-gold-select-hd",
+    "name": "Star Gold Select HD",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/STAR-GOLD-SEL-HD/index.m3u8",
+    "logo": "/assets/channel-logos/star-gold-select-hd.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "star-movies",
+    "name": "Star Movies",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/Star-Movies/index.m3u8",
+    "logo": "/assets/channel-logos/star-movies-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "star-movies-select-hd",
+    "name": "Star Movies Select HD",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/STAR-MOVIES-SEL-HD/index.m3u8",
+    "logo": "/assets/channel-logos/star-movies-select-hd.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "super-hungama",
+    "name": "Super Hungama",
+    "category": "Kids",
+    "color": "#ff8a00",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/SUPER-HUNGAMA/index.m3u8",
+    "logo": "/assets/channel-logos/super-hungama.jpg?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "zee-bangla-cinema-alt",
+    "name": "Zee Bangla Cinema Alt",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/ZEE-BANGLA-CINEMA/index.m3u8",
+    "logo": "/assets/channel-logos/zee-bangla-cinema-alt.webp?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "zee-cinema-hd",
+    "name": "Zee Cinema HD",
+    "category": "Movies",
+    "color": "#7c3aed",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/ZeeCinemaHD/index.m3u8",
+    "logo": "/assets/channel-logos/zee-cinema-hd.png?v=20260619-live-match-insite1"
+  },
+  {
+    "id": "zing-music",
+    "name": "Zing Music",
+    "category": "Music",
+    "color": "#db2777",
+    "textColor": "#fff",
+    "url": "http://172.22.1.2:3255/ZING-MUSIC/index.m3u8",
+    "logo": "/assets/channel-logos/zing-music.png?v=20260619-live-match-insite1"
+  }
 ]

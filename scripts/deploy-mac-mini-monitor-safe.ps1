@@ -7,6 +7,7 @@ $server = Join-Path $repo 'server.js'
 $route = Join-Path $repo 'routes\system-stats.js'
 $logDir = Join-Path $repo 'logs'
 $log = Join-Path $logDir ('mac-monitor-startup-' + $stamp + '.log')
+$startup = 'C:\Users\Mac Mini\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\StreamVault Node Server.cmd'
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 
 function Stop-Safe($message) {
@@ -68,8 +69,11 @@ function Restore-Files {
 
 function Start-StreamVault {
   New-Item -ItemType Directory -Force $logDir | Out-Null
-  $cmd = 'cd /d "' + $repo + '" && npm start >> "' + $log + '" 2>&1'
-  Start-Process 'cmd.exe' -ArgumentList '/c', $cmd -WorkingDirectory $repo -WindowStyle Hidden | Out-Null
+  if (-not (Test-Path $startup)) {
+    throw 'Normal StreamVault Startup script was not found.'
+  }
+  $cmd = 'call "' + $startup + '" >> "' + $log + '" 2>&1'
+  Start-Process 'cmd.exe' -ArgumentList '/d','/c',$cmd -WorkingDirectory $repo -WindowStyle Hidden | Out-Null
 }
 
 function Wait-Monitor {
@@ -92,6 +96,7 @@ Set-Location $repo
 & git rev-parse --is-inside-work-tree *> $null
 if ($LASTEXITCODE -ne 0) { Stop-Safe 'StreamVault folder is not a Git repository.' }
 if (-not (Test-Path $server)) { Stop-Safe 'server.js not found.' }
+if (-not (Test-Path $startup)) { Stop-Safe 'Normal StreamVault Startup script was not found. Nothing was changed.' }
 
 Write-Host '1/7 Backing up current production files...' -ForegroundColor Cyan
 New-Item -ItemType Directory -Force $backup | Out-Null

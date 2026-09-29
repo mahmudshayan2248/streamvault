@@ -141,7 +141,7 @@ $startupLog = Start-SV
 
 $stats = $null
 $lastError = ''
-for ($i=0; $i -lt 15; $i++) {
+for ($i=0; $i -lt 45; $i++) {
   Start-Sleep 2
   try {
     $headers = @{}
@@ -166,7 +166,7 @@ if (-not $stats -or -not $stats.ok) {
   $rollbackLog = Start-SV
 
   $rollbackOk = $false
-  for ($j=0; $j -lt 15; $j++) {
+  for ($j=0; $j -lt 45; $j++) {
     Start-Sleep 2
     if (Test-LocalStreamVault) {
       $rollbackOk = $true

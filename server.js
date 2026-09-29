@@ -8355,7 +8355,7 @@ app.get('/api/movies', (req, res) => {
   try {
     const limit = Math.max(0, parseInt(req.query.limit || '0', 10) || 0);
     const hasSearch = String(req.query.q || '').trim().length >= 2;
-    if (limit && !hasSearch && String(req.query.page || '') === '') {
+    if (limit && !hasSearch && (String(req.query.page || '') === '' || Number(req.query.page) === 0)) {
       const localRaw = Array.isArray(_movieList) ? _movieList : [];
       const localMovies = localRaw
         .filter(m => m && !isCartoonOrAnime(m))
@@ -9172,7 +9172,7 @@ app.get('/api/series', (req, res) => {
         .filter(show => show && !isCartoonOrAnime(show))
         .slice(0, limit);
       const remaining = Math.max(0, limit - localItems.length);
-      const ftpItems = remaining ? getCachedSeries()
+      const ftpItems = remaining ? ftpCatalog.series
         .filter(show => show && !isCartoonOrAnime(show))
         .slice(0, remaining)
         .map((show, i) => ({ ...show, id:show.id || `ftp_series_${i}`, type:'series', isFtp:true })) : [];

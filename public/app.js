@@ -2944,7 +2944,18 @@ function esc(s=''){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 function show(id){const el=document.getElementById(id);if(el){el.style.display='';setTimeout(()=>svUpdateCarouselControls(el),50);}}
 function hide(id){const el=document.getElementById(id);if(el)el.style.display='none';}
 function fmtTime(s){if(!s||isNaN(s))return'0:00';s=Math.floor(s);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${m}:${String(sec).padStart(2,'0')}`;}
-function scrollToRow(id){goHome();setTimeout(()=>{const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},60);}
+function scrollToRow(id){
+  // Keep section headings visible below the fixed floating navigation bar.
+  if(currentTab!=='discover') goHome();
+  setTimeout(()=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const nav=document.getElementById('nav');
+    const navBottom=nav ? nav.getBoundingClientRect().bottom : 0;
+    const targetTop=window.scrollY+el.getBoundingClientRect().top-navBottom-20;
+    window.scrollTo({top:Math.max(0,targetTop),behavior:'smooth'});
+  },60);
+}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
 
 window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('solid',scrollY>60);},{passive:true});

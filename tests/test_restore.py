@@ -25,7 +25,7 @@ tools=TEST_ROOT/'bin';tools.mkdir()
 if name.endswith('.zip'):zipfile.ZipFile(io.BytesIO(data)).extractall(tools)
 else:
  with tarfile.open(fileobj=io.BytesIO(data)) as tf:tf.extractall(tools,filter='data')
-age=next(tools.rglob('age.exe' if sys.platform=='win32' else 'age'));keygen=next(tools.rglob('age-keygen.exe' if sys.platform=='win32' else 'age-keygen'))
+age=next(p for p in tools.rglob('age.exe' if sys.platform=='win32' else 'age') if p.is_file());keygen=next(p for p in tools.rglob('age-keygen.exe' if sys.platform=='win32' else 'age-keygen') if p.is_file())
 if sys.platform!='win32':age.chmod(0o755);keygen.chmod(0o755)
 record('official age distribution SHA-256')
 identity=TEST_ROOT/'fixture-identity.txt';run([keygen,'-o',identity]);recipient=run([keygen,'-y',identity]).strip()

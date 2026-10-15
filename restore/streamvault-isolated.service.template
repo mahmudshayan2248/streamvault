@@ -1,0 +1,19 @@
+[Unit]
+Description=StreamVault isolated recovery instance
+After=network.target
+
+[Service]
+Type=simple
+User=REPLACE_WITH_DEDICATED_USER
+WorkingDirectory=/REPLACE_WITH_ISOLATED_BACKEND
+Environment=PORT=13000
+EnvironmentFile=/REPLACE_WITH_PRIVATE_CONFIG
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/REPLACE_WITH_PERSISTENT_DIRECTORY
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+services:
+  frontend:
+    build:
+      context: ${SV_DOCKER_CONTEXT:?Set SV_DOCKER_CONTEXT to an isolated directory containing frontend/}
+      dockerfile: ${SV_FRONTEND_DOCKERFILE:?Set absolute Dockerfile.frontend path}
+    ports:
+      - "127.0.0.1:${SV_FRONTEND_PORT:-18080}:3100"
+    restart: "no"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true

@@ -1,0 +1,34 @@
+# Template only. Current Windows backend/database/persistent captures are missing.
+# Do not run this until STATUS.md and MANIFEST.json mark those components captured.
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: sv_restore_streamvault
+      MARIADB_USER: streamvault
+      MARIADB_PASSWORD_FILE: /run/secrets/database_password
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/database_root_password
+    secrets: [database_password, database_root_password]
+    volumes: [db-data:/var/lib/mysql]
+    ports: ["127.0.0.1:13306:3306"]
+    restart: "no"
+  backend:
+    build:
+      context: ${SV_BACKEND_CONTEXT:?Requires verified backend capture}
+      dockerfile: ${SV_BACKEND_DOCKERFILE:?Requires verified backend Dockerfile}
+    env_file: ["${SV_PRIVATE_ENV:?Requires decrypted current private configuration}"]
+    environment:
+      DB_HOST: db
+      DB_NAME: sv_restore_streamvault
+      PORT: 3000
+    ports: ["127.0.0.1:13000:3000"]
+    volumes: ["${SV_PERSISTENT_DIR:?Requires captured persistent data}:/data"]
+    depends_on: [db]
+    restart: "no"
+secrets:
+  database_password:
+    file: ${SV_DB_PASSWORD_FILE:?Set separate secret file}
+  database_root_password:
+    file: ${SV_DB_ROOT_PASSWORD_FILE:?Set separate root secret file}
+volumes:
+  db-data:

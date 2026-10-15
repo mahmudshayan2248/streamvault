@@ -2,6 +2,7 @@ FROM node:22-bookworm-slim
 WORKDIR /app
 # Build only from the decrypted, hash-verified frontend component.
 COPY frontend/ /app/
+RUN if [ -d node_modules/express ]; then node -e "require('express')"; else npm ci --omit=dev --ignore-scripts; fi
 ENV PORT=3100
 EXPOSE 3100
 USER node

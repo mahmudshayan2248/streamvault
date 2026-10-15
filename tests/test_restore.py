@@ -42,6 +42,13 @@ artifact={'path':'archives/frontend.tar.gz.age','bytes':cipher.stat().st_size,'s
 manifest={'snapshot_id':'SYNTHETIC-TEST-ONLY','status':'PARTIAL','artifacts':[artifact]}
 def write_manifest():(snap/'MANIFEST.json').write_text(json.dumps(manifest))
 write_manifest();engine=snap/'restore/restore.js';target=TEST_ROOT/'restored'
+transfer_bytes=cipher.read_bytes();transfer_parts=[]
+(snap/'transfers').mkdir()
+for i,start in enumerate(range(0,len(transfer_bytes),127)):
+ p=snap/'transfers'/('payload.part'+str(i));p.write_bytes(transfer_bytes[start:start+127]);transfer_parts.append({'path':str(p.relative_to(snap)).replace('\\','/'),'bytes':p.stat().st_size,'sha256':digest(p)})
+(snap/'TRANSFER-MANIFEST.json').write_text(json.dumps({'transfers':[{'path':artifact['path'],'bytes':artifact['bytes'],'sha256':artifact['sha256'],'parts':transfer_parts}]}))
+cipher.unlink();run(['node',snap/'restore/assemble.js','--snapshot',snap,'--dry-run']);assert not cipher.exists();run(['node',snap/'restore/assemble.js','--snapshot',snap,'--apply']);assert digest(cipher)==artifact['sha256'];run(['node',snap/'restore/assemble.js','--snapshot',snap,'--apply']);record('dry-run, exact reassembly and idempotent transfer resume')
+vendor=snap/'tools/age'/(sys.platform+'-'+arch);vendor.mkdir(parents=True);shutil.copy2(age,vendor/age.name)
 args=['node',engine,'--snapshot',snap,'--component','frontend','--target',target,'--private-key',identity,'--age-binary',age]
 text=run(args+['--dry-run']);assert 'DRY-RUN'in text and not target.exists();record('dry-run performs no target writes')
 run(args+['--apply']);assert (target/'frontend/index.html').read_bytes()==body;record('authenticated decrypt, extract and per-file SHA-256')
@@ -55,8 +62,10 @@ malicious=TEST_ROOT/'malicious.tar.gz';make_tar(malicious,True);malicious_out=TE
 run([sys.executable,snap/'restore/safe-extract.py',malicious,malicious_out],ok=False);assert not (TEST_ROOT/'escape.txt').exists();record('archive path traversal rejected')
 if sys.platform=='win32':
  run(['pwsh','-NoProfile','-File',ROOT/'RESTORE-WINDOWS.ps1','-Snapshot',snap,'-Target',TEST_ROOT/'windows-plan','-DryRun']);record('PowerShell wrapper dry-run')
+ run(['pwsh','-NoProfile','-File',ROOT/'RESTORE-WINDOWS.ps1','-Snapshot',snap,'-Target',TEST_ROOT/'windows-apply','-PrivateKey',identity,'-Apply']);record('PowerShell wrapper isolated apply')
 else:
  for n in ['RESTORE-LINUX.sh','RESTORE-MACOS.sh']:run(['bash','-n',ROOT/n])
  run(['bash',ROOT/'RESTORE-MACOS.sh' if sys.platform=='darwin' else ROOT/'RESTORE-LINUX.sh','--snapshot',snap,'--target',TEST_ROOT/'shell-plan','--dry-run']);record('Bash wrapper dry-run and syntax')
+ run(['bash',ROOT/'RESTORE-MACOS.sh' if sys.platform=='darwin' else ROOT/'RESTORE-LINUX.sh','--snapshot',snap,'--target',TEST_ROOT/'shell-apply','--private-key',identity,'--apply']);record('Bash wrapper isolated apply')
 report['node']=run(['node','--version']).strip();report['result']='PASS';report['not_tested']=['production backend/database restore','production runtime service registration','production UI/playback','Windows symlink privileges']
 (ROOT/'restore-tooling-report.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2))

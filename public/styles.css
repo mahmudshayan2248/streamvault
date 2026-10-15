@@ -3463,3 +3463,33 @@ nav.solid,
     height:36px;
   }
 }
+
+
+/* Floating navigation: reserve an unobstructed header viewport and scroll landing zone. */
+:root{--sv-nav-clearance:calc(var(--nav-h) + var(--si) + 32px)}
+html{scroll-padding-top:var(--sv-nav-clearance)}
+body::before{
+  content:"";
+  position:fixed;
+  top:0;left:0;right:0;
+  height:var(--sv-nav-clearance);
+  background:var(--bg,#000);
+  z-index:499;
+  pointer-events:none;
+}
+#discoverIntro,
+#hero,
+#mainSection > .row,
+#moviesSection,
+#seriesSection,
+#liveSection,
+#mobileMp4Section,
+#librarySection,
+#searchSection,
+#downloadsSection,
+#sectionPage{
+  scroll-margin-top:var(--sv-nav-clearance);
+}
+@media(max-width:759px){
+  :root{--sv-nav-clearance:calc(56px + var(--si) + 32px)}
+}

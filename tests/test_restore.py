@@ -1,5 +1,5 @@
 """Cross-platform recovery-tool tests; fixtures are synthetic, never production data."""
-import pathlib,tempfile,subprocess,os,sys,json,hashlib,tarfile,io,urllib.request,zipfile,platform,shutil
+import pathlib,tempfile,subprocess,os,sys,json,hashlib,tarfile,io,urllib.request,zipfile,platform,shutil,socket,time
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 TEST_ROOT=pathlib.Path(tempfile.mkdtemp(prefix='streamvault-recovery-ci-'))
 report={'scope':'Synthetic isolated restore tooling only; NOT a production clean restore','platform':platform.platform(),'python':sys.version,'checks':[]}
@@ -31,10 +31,12 @@ record('official age distribution SHA-256')
 identity=TEST_ROOT/'fixture-identity.txt';run([keygen,'-o',identity]);recipient=run([keygen,'-y',identity]).strip()
 snap=TEST_ROOT/'snapshot';(snap/'archives').mkdir(parents=True);shutil.copytree(ROOT/'restore',snap/'restore')
 payload=TEST_ROOT/'payload.tar.gz';body=b'StreamVault synthetic restore fixture\n'
-members={'files':[{'path':'frontend/index.html','sha256':hashlib.sha256(body).hexdigest()}]}
+server_path='hbuilds/versions/SYNTHETIC/nodejs/hostinger/frontend-server.js'
+server_body=b"require('http').createServer((req,res)=>res.end('synthetic fixture')).listen(Number(process.env.PORT));\n"
+members={'active_root':'/hbuilds/versions/SYNTHETIC','files':[{'path':'frontend/index.html','sha256':hashlib.sha256(body).hexdigest()},{'path':server_path,'sha256':hashlib.sha256(server_body).hexdigest()}]}
 def make_tar(p,evil=False):
  with tarfile.open(p,'w:gz') as tf:
-  for n,b in [('frontend/index.html',body),('CAPTURE-MEMBERS.json',json.dumps(members).encode())]+([('../escape.txt',b'bad')] if evil else []):
+  for n,b in [('frontend/index.html',body),(server_path,server_body),('CAPTURE-MEMBERS.json',json.dumps(members).encode())]+([('../escape.txt',b'bad')] if evil else []):
    info=tarfile.TarInfo(n);info.size=len(b);info.mode=0o640;tf.addfile(info,io.BytesIO(b))
 make_tar(payload)
 cipher=snap/'archives/frontend.tar.gz.age';run([age,'-e','-r',recipient,'-o',cipher,payload])
@@ -52,6 +54,19 @@ vendor=snap/'tools/age'/(sys.platform+'-'+arch);vendor.mkdir(parents=True);shuti
 args=['node',engine,'--snapshot',snap,'--component','frontend','--target',target,'--private-key',identity,'--age-binary',age]
 text=run(args+['--dry-run']);assert 'DRY-RUN'in text and not target.exists();record('dry-run performs no target writes')
 run(args+['--apply']);assert (target/'frontend/index.html').read_bytes()==body;record('authenticated decrypt, extract and per-file SHA-256')
+sock=socket.socket();sock.bind(('127.0.0.1',0));port=sock.getsockname()[1];sock.close()
+launcher=['node',snap/'restore/serve-frontend.js','--target',target,'--port',str(port)]
+assert 'DRY-RUN'in run(launcher+['--dry-run'])
+with (TEST_ROOT/'server.log').open('w') as log:
+ process=subprocess.Popen([str(x) for x in launcher+['--apply']],stdout=log,stderr=log)
+ try:
+  for attempt in range(80):
+   try:
+    assert urllib.request.urlopen('http://127.0.0.1:'+str(port),timeout=1).read()==b'synthetic fixture';break
+   except OSError:time.sleep(0.1)
+  else:raise AssertionError('Synthetic loopback server failed to start')
+ finally:process.terminate();process.wait(timeout=10)
+record('isolated launcher dry-run and loopback-only server startup')
 run(args+['--apply']);record('idempotent repeat does not overwrite')
 (target/'frontend/index.html').write_bytes(b'corrupted');run(args+['--apply'],ok=False);record('repeat detects restored-file corruption')
 existing=TEST_ROOT/'existing';existing.mkdir();(existing/'keep').write_text('keep')

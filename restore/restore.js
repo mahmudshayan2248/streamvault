@@ -29,7 +29,8 @@ function main(){
   }
   throw Error('Target already exists; choose a new isolated directory');
  }
- const python=executable('python3')?'python3':executable('python')?'python':null;
+ const supportedPython=cmd=>executable(cmd,['-c','import sys;sys.exit(0 if sys.version_info >= (3,12) else 1)']);
+ const python=supportedPython('python3')?'python3':supportedPython('python')?'python':null;
  const vendorAge=path.join(root,'tools','age',process.platform+'-'+({x64:'amd64',arm64:'arm64'}[process.arch]||process.arch),'age'+(process.platform==='win32'?'.exe':''));
  const age=a['age-binary']||(fs.existsSync(vendorAge)?vendorAge:'age');
  console.log(JSON.stringify({mode:a.apply?'APPLY':'DRY-RUN',component,target,platform:process.platform,python,age,artifacts:selected.map(f=>f.path),actions:['authenticate and decrypt age archive','validate member paths and symlink targets','extract into a new private directory','verify restored file hashes','write restore marker'],production_changes:false},null,2));

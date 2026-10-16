@@ -1,0 +1,67 @@
+{
+  "scope": "Synthetic isolated restore tooling only; NOT a production clean restore",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "python": "3.12.10 (v3.12.10:0cc81280367, Apr  8 2025, 08:46:59) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "checks": [
+    {
+      "test": "official age distribution SHA-256",
+      "pass": true
+    },
+    {
+      "test": "dry-run, exact reassembly and idempotent transfer resume",
+      "pass": true
+    },
+    {
+      "test": "dry-run performs no target writes",
+      "pass": true
+    },
+    {
+      "test": "authenticated decrypt, extract and per-file SHA-256",
+      "pass": true
+    },
+    {
+      "test": "isolated launcher dry-run and loopback-only server startup",
+      "pass": true
+    },
+    {
+      "test": "idempotent repeat does not overwrite",
+      "pass": true
+    },
+    {
+      "test": "repeat detects restored-file corruption",
+      "pass": true
+    },
+    {
+      "test": "existing directory protected",
+      "pass": true
+    },
+    {
+      "test": "conflicting apply and dry-run rejected",
+      "pass": true
+    },
+    {
+      "test": "missing backend is never reconstructed from source reference",
+      "pass": true
+    },
+    {
+      "test": "archive path traversal rejected",
+      "pass": true
+    },
+    {
+      "test": "Bash wrapper dry-run and syntax",
+      "pass": true
+    },
+    {
+      "test": "Bash wrapper isolated apply",
+      "pass": true
+    }
+  ],
+  "node": "v22.23.3",
+  "result": "PASS",
+  "not_tested": [
+    "production backend/database restore",
+    "production runtime service registration",
+    "production UI/playback",
+    "Windows symlink privileges"
+  ]
+}

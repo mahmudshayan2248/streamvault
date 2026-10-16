@@ -1,0 +1,213 @@
+{
+  "scope": "Actual captured Hostinger application clean restore on macOS, Node22; not a Windows backend/database/service restore",
+  "started_utc": "2026-10-16T19:13:20.683614+00:00",
+  "node": "v22.23.3",
+  "checks": [
+    {
+      "test": "real-restore-dry-run",
+      "pass": true
+    },
+    {
+      "test": "dry-run creates no target",
+      "pass": true
+    },
+    {
+      "test": "real-restore-apply",
+      "pass": true
+    },
+    {
+      "test": "every restored regular file matches captured SHA-256",
+      "pass": true
+    },
+    {
+      "test": "captured dependency and active-build symlinks preserved",
+      "pass": true
+    },
+    {
+      "test": "real-restore-repeat",
+      "pass": true
+    },
+    {
+      "test": "real-server-dry-run",
+      "pass": true
+    },
+    {
+      "test": "captured Passenger frontend starts using captured offline dependencies and serves exact origin HTML",
+      "pass": true
+    },
+    {
+      "test": "all 31 captured public assets served with exact origin SHA-256",
+      "pass": true
+    },
+    {
+      "test": "SPA navigation fallback returns exact captured HTML",
+      "pass": true
+    },
+    {
+      "test": "frontend/API boundary preserved (local /api/version 404)",
+      "pass": true
+    }
+  ],
+  "files_verified": 7373,
+  "asset_checks": [
+    {
+      "path": "app-v3.js",
+      "sha256": "89a34c2179e056f508deab0e2bf5bffd9cbc1be0d3d46aaf2737e2502bd78650",
+      "matches_origin": true
+    },
+    {
+      "path": "assets/sv-favicon.svg",
+      "sha256": "0975765b2bfc4d71de3db7eeb7f32e65a3260e62fcb8502e8cd433aa2410005a",
+      "matches_origin": true
+    },
+    {
+      "path": "assets/sv-icon-192.png",
+      "sha256": "2b5c983bb20c92688f586400683229647bcb90c57fd44d2898d0c4c7bbe057db",
+      "matches_origin": true
+    },
+    {
+      "path": "boot.js",
+      "sha256": "58dea5bfa12fc305cd4d494f3fbf1e1987242696d4b750cf494b372249648f2d",
+      "matches_origin": true
+    },
+    {
+      "path": "detail-fast-path-v1.js",
+      "sha256": "326a85cfa799f754dff07ea7f30bc2d605c13152f84327bba59aa1552e0acecc",
+      "matches_origin": true
+    },
+    {
+      "path": "details-exact-v5.js",
+      "sha256": "3f6a1bad0e43a2797b60df5486d8c753c6f0c25d0cf1f76c09cc127d310adc30",
+      "matches_origin": true
+    },
+    {
+      "path": "downloads.js",
+      "sha256": "47805f345b9bfcd9d554b23dd79abc77a4ee3346fdce4e7d46e64fc89328e2de",
+      "matches_origin": true
+    },
+    {
+      "path": "fifa-fast.js",
+      "sha256": "adf1861190ed8771040411c9d73b619017b837700384d6c6ada77920361dc1ae",
+      "matches_origin": true
+    },
+    {
+      "path": "frontend-playback-session.js",
+      "sha256": "517185bfada0158d0679784b98aa155ec0bcff1010f796d77aa6d42964983e7e",
+      "matches_origin": true
+    },
+    {
+      "path": "frontend-player-ui.js",
+      "sha256": "b316ae8e296d1249b0aae2dc76b09fd7ee99d0f39567a2051a71215d39f3ba9f",
+      "matches_origin": true
+    },
+    {
+      "path": "home-snapshot-76d0639-20260717.js",
+      "sha256": "1fc4583919db6c8f4a089d4b0e459d9e4dddc16e4bbe7d5614f0c0910495cda1",
+      "matches_origin": true
+    },
+    {
+      "path": "home.js",
+      "sha256": "516c8f40bc15e3ccd02dcb1ec52d94e6d62048e492065de82e979325da470038",
+      "matches_origin": true
+    },
+    {
+      "path": "hostinger-poster-fix.js",
+      "sha256": "f63e1f8504b854e2616000174af244b7bce391c3f0b29d2bbe2fc4612de771dc",
+      "matches_origin": true
+    },
+    {
+      "path": "live-fast.js",
+      "sha256": "c8291233164edf03ad9c474b6367713666e6ae964fe451e76995af6f16223bbf",
+      "matches_origin": true
+    },
+    {
+      "path": "livetv.js",
+      "sha256": "471376200573fad3b745ea9dd32dd9d59a2edd7cd51fe004ee668bc894d319a8",
+      "matches_origin": true
+    },
+    {
+      "path": "manifest.webmanifest",
+      "sha256": "51bc33159ac8f8c01157bb01fcabdfeece2c9f799b2f8fe675e15004272668a5",
+      "matches_origin": true
+    },
+    {
+      "path": "media-popup-polish-v8.js",
+      "sha256": "eb8a2c373c328fea59f5e1a480b45d09857d8566f9ae94583b59045dc89230c0",
+      "matches_origin": true
+    },
+    {
+      "path": "modal-hd-artwork-v2.css",
+      "sha256": "41fc7a2ba5ff8d774f07f567f20b0d9a8136d6cd9758b15dea842a58f24011c1",
+      "matches_origin": true
+    },
+    {
+      "path": "movie-play-button-v10.js",
+      "sha256": "46d05f770ad4fc6506b6fc730336b0cb0ed5939ffddd30e3d4f27490755c2e3a",
+      "matches_origin": true
+    },
+    {
+      "path": "offline-ui.js",
+      "sha256": "c848ebda6b926773990817eb89bb6902b263581ff61d0ab9bcfcefad47d74cd8",
+      "matches_origin": true
+    },
+    {
+      "path": "player-runtime-v2.js",
+      "sha256": "d1711489fe58c03369e981dbc5ab5aa6bc9f81f1637326caa6693f8f9542491b",
+      "matches_origin": true
+    },
+    {
+      "path": "player-session.js",
+      "sha256": "3bf5872c595df24932a6e5e94072d240d38323bf08f7aacc8ea160b567204ff8",
+      "matches_origin": true
+    },
+    {
+      "path": "player-vlc-v1.css",
+      "sha256": "7b54ab84cca001541084b9ddee5e4128d0972ecd0d161295f9f56de6bce26572",
+      "matches_origin": true
+    },
+    {
+      "path": "player-vlc-v1.js",
+      "sha256": "743c3aed5eb8580d006603bd2cf559bb0c6a94dfd27c79a5d21c987285ed37a2",
+      "matches_origin": true
+    },
+    {
+      "path": "runtime-config.js",
+      "sha256": "b846232c14e30177d29448d07be4c620811204d03c6c42d3775c071eecf9d8f1",
+      "matches_origin": true
+    },
+    {
+      "path": "search-full-catalog-v2.js",
+      "sha256": "a677853ca5e52acc00b9fe5ef5827b6e2b50651b69a0bce98f41ba9f5bb319ae",
+      "matches_origin": true
+    },
+    {
+      "path": "search.js",
+      "sha256": "642ae5c90019053d6daeff04cc7621b86f329fe175f2d87c88595daa431ba731",
+      "matches_origin": true
+    },
+    {
+      "path": "series-instant-prefetch-v9.js",
+      "sha256": "6042d71319b74c0bc20995a07fd11777385922da507408119183fa97e71a1a2b",
+      "matches_origin": true
+    },
+    {
+      "path": "series-modal-episodes-v7.js",
+      "sha256": "49f815107a9ab9a5382b1ccb9c7515ab43efe9a3216e5e875d515fd6a94e880c",
+      "matches_origin": true
+    },
+    {
+      "path": "software-download-title-ui-v1.js",
+      "sha256": "88ef3fbb0c2d2debf0714b6e810d4a5453b42dac29ab5e435f5777ed6ebb6d75",
+      "matches_origin": true
+    },
+    {
+      "path": "styles.css",
+      "sha256": "2bac7838b5024448c56953a51d5935aae11456dc3e92659884493250bde41aac",
+      "matches_origin": true
+    }
+  ],
+  "production_changes": false,
+  "offline_scope": "Archive decryption, extraction and local server HTTP tests use captured files and dependencies without npm installation or network fetching. No browser UI or backend restoration.",
+  "result": "PASS",
+  "completed_utc": "2026-10-16T19:13:57.787122+00:00"
+}

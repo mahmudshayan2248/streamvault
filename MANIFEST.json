@@ -1,0 +1,92 @@
+{
+  "format": 1,
+  "snapshot_id": "STREAMVAULT-GOLDEN-STAGE-2-2026-10-15",
+  "status": "PARTIAL",
+  "created_utc": "2026-10-16T19:13:20.512885+00:00",
+  "artifacts": [
+    {
+      "path": "archives/frontend-live.tar.gz.age",
+      "component": "frontend-assets",
+      "restore": false,
+      "bytes": 13841314,
+      "sha256": "9807d983c5d2ec419d26d87e3c36505b6efa585a7259d6caec7e899ba605a61d",
+      "plaintext_sha256": "8d2e77506e2f7148f85d238485673b0234da507fa79e38f4bdd08fe675c33689",
+      "encryption": "age v1 SSH Ed25519 recipient",
+      "decryption_sha256_verified": true,
+      "captured_files": 254,
+      "active_build": "01a13f59-ed1b-73ce-a5e7-1ac5aed7161b",
+      "archive_kind": "frontend"
+    },
+    {
+      "path": "archives/runtime-live.tar.gz.age",
+      "component": "frontend",
+      "restore": true,
+      "bytes": 265223267,
+      "sha256": "11e07ff841685ad4112479b23fe584b84f6197c5bfe1902d109b9e0756d52d1c",
+      "plaintext_sha256": "485079df47be5def73f6cda6921f54f0d3f593077b2a102d770759c5403a5fe9",
+      "encryption": "age v1 SSH Ed25519 recipient",
+      "decryption_sha256_verified": true,
+      "captured_files": 7373,
+      "active_build": "01a13f59-ed1b-73ce-a5e7-1ac5aed7161b",
+      "archive_kind": "runtime"
+    },
+    {
+      "path": "archives/github-source-reference.bundle.age",
+      "component": "github-reference",
+      "restore": false,
+      "bytes": 127526549,
+      "sha256": "bd527575f9c864c0bcf13c8478547867db9de85ca6392b5129c868e1504cea0b",
+      "plaintext_sha256": "3f15dc3cce37442294ae3194eff9b6fbdcb8d25929afc07442b10bb14ccb2103",
+      "encryption": "age v1 SSH Ed25519 recipient",
+      "decryption_sha256_verified": true,
+      "not_a_live_backend_backup": true
+    },
+    {
+      "path": "archives/private-config.tar.gz.age",
+      "component": "private-config",
+      "restore": false,
+      "bytes": 353483,
+      "sha256": "89e7a7803443f3ba8a1237fc7915b03ed1bc5e478bf21464b580c1af3db2fb06",
+      "plaintext_sha256": "e96209959421d561b1f61fd6f7d7e3c4f901bfd145fd836a701f183bd4a46293",
+      "encryption": "age v1 SSH Ed25519 recipient",
+      "decryption_sha256_verified": true
+    },
+    {
+      "path": "archives/observations.tar.gz.age",
+      "component": "private-observations",
+      "restore": false,
+      "bytes": 824316,
+      "sha256": "fdf8e8c9c10344a8acf21af33235b8ec11c383f102ab086837abb7552a765bf0",
+      "plaintext_sha256": "434d110e6b675fcefb3d76df9d174f803023105f8c92121d899e21c6cdc57f1c",
+      "encryption": "age v1 SSH Ed25519 recipient",
+      "decryption_sha256_verified": true,
+      "scope": "Read-only HTTP and origin observations; not persistent backend state"
+    }
+  ],
+  "missing_essential_components": [
+    "Current Windows backend filesystem and persistent state",
+    "Current database schema, records, indexes and consistent dump",
+    "Current Windows environment, FFmpeg/runtime versions, startup and scheduled tasks",
+    "Current Cloudflare tunnel credentials and zone/routing configuration",
+    "External Hostinger persistent poster cache"
+  ],
+  "encryption": {
+    "format": "age v1",
+    "recipient_fingerprint": "SHA256:PaUabO3vIdrkH8ojX37muA7Qrx0xfrzyWHMCsQtq82Q",
+    "identity_required_separately": true
+  },
+  "source_ref": "recovery/golden-stage-2-2026-10-15-universal-161706Z",
+  "live_backend_commit": "UNKNOWN; management unavailable",
+  "completion_percent": {
+    "frontend_asset_inventory": 100,
+    "hostinger_application_inventory": 100,
+    "current_windows_backend": 0,
+    "database": 0,
+    "backend_persistent_data": 0,
+    "current_windows_private_environment": 0,
+    "current_cloudflare_tunnel_configuration": 0,
+    "git_reference_history": 100,
+    "restore_tooling_platform_fixture_tests": 100
+  },
+  "percentage_note": "Percentages describe completion of each defined capture or test gate, not byte coverage of the entire service. No overall percentage is justified."
+}

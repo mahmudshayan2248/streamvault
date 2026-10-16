@@ -1,0 +1,45 @@
+{
+  "result": "PASS",
+  "archives": [
+    {
+      "path": "archives/frontend-live.tar.gz.age",
+      "bytes": 13841314,
+      "cipher_sha256": "9807d983c5d2ec419d26d87e3c36505b6efa585a7259d6caec7e899ba605a61d",
+      "authenticated_decryption_and_plaintext_sha256_verified": true,
+      "tar_members": 267,
+      "gzip_crc_and_tar_inventory": "PASS"
+    },
+    {
+      "path": "archives/runtime-live.tar.gz.age",
+      "bytes": 265223267,
+      "cipher_sha256": "11e07ff841685ad4112479b23fe584b84f6197c5bfe1902d109b9e0756d52d1c",
+      "authenticated_decryption_and_plaintext_sha256_verified": true,
+      "tar_members": 7777,
+      "gzip_crc_and_tar_inventory": "PASS"
+    },
+    {
+      "path": "archives/github-source-reference.bundle.age",
+      "bytes": 127526549,
+      "cipher_sha256": "bd527575f9c864c0bcf13c8478547867db9de85ca6392b5129c868e1504cea0b",
+      "authenticated_decryption_and_plaintext_sha256_verified": true,
+      "git_bundle_complete_history_verified": true
+    },
+    {
+      "path": "archives/private-config.tar.gz.age",
+      "bytes": 353483,
+      "cipher_sha256": "89e7a7803443f3ba8a1237fc7915b03ed1bc5e478bf21464b580c1af3db2fb06",
+      "authenticated_decryption_and_plaintext_sha256_verified": true,
+      "tar_members": 18,
+      "gzip_crc_and_tar_inventory": "PASS"
+    },
+    {
+      "path": "archives/observations.tar.gz.age",
+      "bytes": 824316,
+      "cipher_sha256": "fdf8e8c9c10344a8acf21af33235b8ec11c383f102ab086837abb7552a765bf0",
+      "authenticated_decryption_and_plaintext_sha256_verified": true,
+      "tar_members": 60,
+      "gzip_crc_and_tar_inventory": "PASS"
+    }
+  ],
+  "completed_utc": "2026-10-16T19:14:08.564215+00:00"
+}

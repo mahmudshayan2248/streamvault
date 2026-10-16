@@ -1,0 +1,41 @@
+{
+  "snapshot_id": "STREAMVAULT-GOLDEN-STAGE-2-2026-10-15",
+  "status": "PARTIAL",
+  "observed_utc": "2026-10-16T19:13:20.511697+00:00",
+  "frontend": {
+    "provider": "Hostinger Passenger",
+    "domain": "streamvault.fit",
+    "active_root": "/hbuilds/versions/01a13f59-ed1b-73ce-a5e7-1ac5aed7161b",
+    "current_link": "/hbuilds/current",
+    "startup": "nodejs/hostinger/frontend-server.js",
+    "node_binary": "/opt/alt/alt-nodejs22/root/bin/node",
+    "node_major": 22,
+    "exact_node_minor": "UNVERIFIED",
+    "poster_cache": "/home/ACCOUNT/streamvault-persistent/posters",
+    "poster_cache_captured": false
+  },
+  "backend": {
+    "public_origin": "https://backend.streamvault.fit",
+    "public_api_responding": true,
+    "management": "Existing SSH connection timed out. Initially Tailscale Running with peer offline; refresh after interruption reports local Tailscale Stopped, so peer metadata is cached.",
+    "current_files_captured": false,
+    "reported_version": "title-details-route-active",
+    "reported_build": "20260624-lite-ui-preview-cleanup2",
+    "reported_version_is_code_hash": false
+  },
+  "database": {
+    "provider": "Hostinger MariaDB/MySQL",
+    "current_capture": false,
+    "probe_result": "Existing historical credentials rejected from current client; no writes"
+  },
+  "cloudflare": {
+    "public_dns_observations": "inventory/public-dns.json",
+    "current_zone_export": false,
+    "current_tunnel_credentials_captured": false
+  },
+  "metadata_limits": [
+    "FTP preserves exposed POSIX mode, uid/gid, UTC mtime, directory tree and observed symlink target in tar. ACLs, xattrs and Windows ADS not available.",
+    "Hostinger runtime dependencies do not establish current Windows backend code or environment.",
+    "Git source bundle is reference history, not proof of deployed backend."
+  ]
+}

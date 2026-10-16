@@ -1,0 +1,12 @@
+{
+  "checked_utc": "2026-10-16T19:23:25.488233+00:00",
+  "stage1_manifest_sha256": "015e4a75a3c16768d8c1de5e90c60018d6b35d31347e8caee3aee605d3609dfb",
+  "stage1_expected_sha256_matches": true,
+  "stage1_read_only": true,
+  "protected_refs_unchanged": {
+    "refs/heads/recovery/golden-stage-2-2026-10-15-main": "7f7f6e1f71e30890caba3177f7d13bf27fed4a78",
+    "refs/heads/recovery/golden-stage-2-2026-10-15-hostinger": "949cc2133470b46645d7d6194315750c03ab0e4f",
+    "refs/heads/recovery/golden-stage-2-2026-10-15-index": "e874a08d17b4d33978c6772abb5e65a4cbf3c986"
+  },
+  "original_checkout": "No changes made by this mission; existing dirty tree preserved"
+}

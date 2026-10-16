@@ -1,0 +1,15 @@
+{
+  "status": "PARTIAL",
+  "scope": "Sanitized summary; original API bodies encrypted in private observations archive",
+  "frontend_asset_origin_matches": "31/31",
+  "public_frontend": "HTTP 200",
+  "backend_catalog_routes": "HTTP 200 after retries",
+  "hls_master_manifest": "HTTP 200; decoding unverified",
+  "movie_download_route": "HTTP 200 headers; complete download unverified",
+  "live_tv_primary_relay": "HTTP 404 - FAIL",
+  "external_download_link": "HTML landing page; download unverified",
+  "browser_layout_and_media_decoding": "BLOCKED - authorized Chrome profile unavailable",
+  "database_integrity": "NOT VERIFIED - no current dump",
+  "backend_files": "NOT CAPTURED - authorized management connection unavailable",
+  "full_service_restore": "BLOCKED - missing essential components"
+}

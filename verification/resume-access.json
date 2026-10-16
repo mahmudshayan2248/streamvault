@@ -1,0 +1,22 @@
+{
+  "checked_utc": "2026-10-16T19:04:35.859306+00:00",
+  "scope": "Read-only access refresh after interruption",
+  "tests": [
+    {
+      "test": "frontend",
+      "status": 200,
+      "sha256": "98dbf7f31f22baa0cfda85b56dc5b103e63413c4ba2dc37f447f117a1268e19d",
+      "pass": true
+    },
+    {
+      "test": "backend-version",
+      "status": 200,
+      "sha256": "db7cdb7cb74ea81497eebeedff457e598de2785444b1d91e9c12b779d6399586",
+      "pass": true,
+      "reported_version": "title-details-route-active",
+      "reported_build": "20260624-lite-ui-preview-cleanup2"
+    }
+  ],
+  "windows_management": "SSH timed out; current local Tailscale BackendState Stopped. Peer metadata is cached, not proof of current remote service status.",
+  "browser": "Required authorized Chrome extension profile still absent; no alternative profile used."
+}

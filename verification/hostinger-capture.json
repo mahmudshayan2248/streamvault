@@ -1,0 +1,22 @@
+{
+  "scope": "Current active Hostinger application tree and accessible routing/config",
+  "active_root": "/hbuilds/versions/01a13f59-ed1b-73ce-a5e7-1ac5aed7161b",
+  "file_count": 7373,
+  "total_file_bytes": 517319565,
+  "inventory_entries": 7772,
+  "unresolved_failures": 0,
+  "changed_paths": 0,
+  "active_link_stable": true,
+  "cached_file_transfer_receipts_verified": true,
+  "symlinks": 2,
+  "excluded_files": [],
+  "started_utc": "2026-10-16T19:03:23.362465+00:00",
+  "completed_utc": "2026-10-16T19:12:30.364828+00:00",
+  "metadata_limitations": [
+    "No ACL/xattr/Windows ADS over FTP",
+    "Synthetic archive parent directories are not a host filesystem image"
+  ],
+  "result": "PASS",
+  "operational_log_refreshes": 1,
+  "resumed_after_network_interruption": true
+}

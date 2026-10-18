@@ -7,9 +7,10 @@
     "capture:home": "node capture-home-snapshot.js",
     "start": "node frontend-server.js",
     "verify": "node verify-deployment.js",
-    "test": "node test-frontend-boundary.js",
+    "test": "node test-frontend-boundary.js && node test-autoplay-next.js",
     "test:home-equality": "node test-home-snapshot-equality.js",
-    "verify:release": "npm run build && npm test && npm run test:home-equality"
+    "verify:release": "npm run build && npm test && npm run test:home-equality",
+    "test:autoplay-next": "node test-autoplay-next.js"
   },
   "dependencies": {
     "express": "^5.1.0"

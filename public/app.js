@@ -2170,6 +2170,7 @@ async function loadFtpDuration(streamUrl){
 
 async function playMedia(id, name, year){
   svAutoplayCancelCountdown();
+  hideSeriesPlayerBar(); // discard stale episode context when switching to a local movie
   console.log('[Playback] play button clicked');
   console.log('[Playback] Local playback plan');
   const movie = movies.find(m => m.id === id) || {};
@@ -3505,6 +3506,7 @@ function svAutoplayRelated(item,kind){
   for(const suggested of candidates){
     const match=svAutoplayLibraryItem(suggested,kind);
     if(!match||same(item,match))continue;
+    if(svAutoplayTitleKey(item) && svAutoplayTitleKey(item)===svAutoplayTitleKey(match))continue;
     const key=svAutoplayKey(match,kind);
     if(seen.has(key))continue;
     seen.add(key);
@@ -3786,7 +3788,14 @@ function renderOnlineSections(prefix, details, type, item){
   const local = sourceItem ? localTitleDetails(sourceItem, type) : {};
   const finalDetails = details && details.ok ? details : local;
 
-  const similar = firstNonEmptyArray(finalDetails.similar, local.similar);
+  const suggested = firstNonEmptyArray(finalDetails.similar, local.similar);
+  // TMDB may suggest titles that aren't in the playable library. Ensure that
+  // the detail window visibly includes the local option autoplay will choose.
+  const availableOnScreen = suggested.some(raw=>{
+    const match=svAutoplayLibraryItem(raw,type);
+    return match && svAutoplayKey(match,type)!==svAutoplayKey(sourceItem,type);
+  });
+  const similar = availableOnScreen ? suggested : [...local.similar.slice(0,2), ...suggested];
   svAutoplayRememberSimilar(sourceItem, type, similar);
   renderMediaCards(prefix + 'SimilarTrack', similar);
 }

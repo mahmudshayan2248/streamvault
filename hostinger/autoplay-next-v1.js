@@ -26,12 +26,18 @@
   function resolveRelated(raw,kind){
     if(!raw)return null;
     const catalog = kind === 'tv' ? series : movies;
-    const rawId = String(raw.tmdbId || raw.id || '');
+    const rawTmdb = String(raw.tmdbId || '');
+    const rawId = raw.id == null ? '' : String(raw.id);
     const exact = catalog.find(item => playable(item) && (
-      (rawId && (String(item.tmdbId || item.id || '') === rawId)) ||
+      (rawTmdb && item.tmdbId != null && String(item.tmdbId) === rawTmdb) ||
+      (rawId && item.id != null && String(item.id) === rawId && title(raw) === title(item)) ||
       (title(raw) && title(item) === title(raw) && (!year(raw) || !year(item) || year(raw) === year(item)))
     ));
-    return exact || (playable(raw) ? raw : null);
+    // Generic TMDB IDs aren't stream IDs. Require an explicit playable source
+    // before trusting an unmatched external recommendation for autoplay.
+    const direct = !!raw.streamUrl || raw.hasStream === true || raw.streamAvailable === true
+      || (kind === 'tv' && Object.values(raw.seasons || {}).some(eps=>Array.isArray(eps) && eps.some(episodePlayable)));
+    return exact || (direct && playable(raw) ? raw : null);
   }
   function relatedTitle(item,kind){
     if(!item)return null;

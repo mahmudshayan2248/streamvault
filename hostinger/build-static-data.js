@@ -14,6 +14,7 @@ const REQUIRED_FRONTEND_FILES = [
   'frontend-player-ui.js',
   'frontend-playback-session.js',
   'app-v3.js',
+  'autoplay-next-v1.js',
   'details-exact-v5.js',
   'home.js',
   'downloads.js',

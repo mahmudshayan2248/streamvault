@@ -3175,6 +3175,7 @@ function renderMediaModalData(item, type, details={}){
     seen.add(key);
     return true;
   }).slice(0,16);
+  window.StreamVaultAutoNext?.rememberSimilar?.(item,type,playable);
   const relatedRoot=document.getElementById('modalRelated');
   relatedRoot.className='media-modal-section';
   relatedRoot.style.display=playable.length ? '' : 'none';
@@ -8635,6 +8636,7 @@ function renderOnlineSections(prefix, details, type, item){
     seen.add(key);
     return true;
   });
+  window.StreamVaultAutoNext?.rememberSimilar?.(sourceItem,type,playable);
   renderMediaCards(prefix + 'SimilarTrack', playable);
 }
 

@@ -8565,3 +8565,30 @@ body::before{
 @media(max-width:759px){
   :root{--sv-nav-clearance:calc(56px + var(--si) + 32px)}
 }
+
+
+/* Autoplay countdown is rendered outside the player controls and won't move the seek bar. */
+.sv-auto-next[hidden]{display:none!important}
+.sv-auto-next{
+ position:absolute;z-index:45;left:50%;bottom:clamp(120px,17vh,205px);
+ transform:translateX(-50%);width:min(590px,calc(100% - 30px));
+ min-height:88px;padding:12px 14px;display:flex;align-items:center;gap:13px;
+ background:rgba(16,16,21,.96);color:#fff;border:1px solid rgba(255,255,255,.2);
+ border-radius:14px;box-shadow:0 14px 48px rgba(0,0,0,.7);backdrop-filter:blur(16px);
+ pointer-events:auto;cursor:default
+}
+.sv-auto-next>img{width:49px;height:70px;flex-shrink:0;object-fit:cover;border-radius:7px}
+.sv-auto-next-copy{flex:1;min-width:0}
+.sv-auto-next-label{font-size:.68rem;font-weight:800;letter-spacing:1.2px;color:#ff5860;margin-bottom:7px}
+.sv-auto-next-title{font-size:.9rem;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sv-auto-next-actions{display:flex;gap:8px;flex-shrink:0}
+.sv-auto-next-actions button{font:600 .75rem 'DM Sans',sans-serif;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:9px 10px;min-height:36px;cursor:pointer}
+#svAutoNextPlay{background:#e50914;border-color:#e50914}
+@media(max-width:560px){
+ .sv-auto-next{gap:8px;padding:9px;bottom:clamp(102px,17vh,150px)}
+ .sv-auto-next>img{width:37px;height:53px}
+ .sv-auto-next-actions{flex-direction:column;gap:5px}
+ .sv-auto-next-actions button{min-height:29px;padding:6px 8px;font-size:.68rem}
+ .sv-auto-next-title{font-size:.8rem}
+ .sv-auto-next-label{font-size:.59rem;letter-spacing:.6px}
+}

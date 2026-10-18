@@ -659,6 +659,7 @@ function darken(hex){
 }
 
 function openLiveChannel(channelId, channelName){
+  svAutoplayCancelCountdown();
   isLiveMode=true;
   currentStreamId=null;
   vid._durationToken = (vid._durationToken || 0) + 1;
@@ -2168,6 +2169,8 @@ async function loadFtpDuration(streamUrl){
 }
 
 async function playMedia(id, name, year){
+  svAutoplayCancelCountdown();
+  hideSeriesPlayerBar(); // discard stale episode context when switching to a local movie
   console.log('[Playback] play button clicked');
   console.log('[Playback] Local playback plan');
   const movie = movies.find(m => m.id === id) || {};
@@ -2354,8 +2357,9 @@ function updatePlayIcons(paused){
 function hideUI(){clearTimeout(uiHideTimer);document.getElementById('playerUI').classList.add('hidden');document.getElementById('playerWrap').classList.remove('show-cursor');document.getElementById('playerWrap').classList.add('subtitles-low');uiVisible=false;}
 function showUI(){document.getElementById('playerUI').classList.remove('hidden');document.getElementById('playerWrap').classList.remove('subtitles-low');uiVisible=true;clearTimeout(uiHideTimer);scheduleHideUI();}
 function scheduleHideUI(){clearTimeout(uiHideTimer);if(vid.paused)return;uiHideTimer=setTimeout(hideUI,3500);}
-function togglePlay(){if(vid.paused){vid.play();popCenter('');}else{vid.pause();popCenter('');clearTimeout(uiHideTimer);}}
+function togglePlay(){if(_svAutoplayPending)svAutoplayCancelCountdown();if(vid.paused){vid.play();popCenter('');}else{vid.pause();popCenter('');clearTimeout(uiHideTimer);}}
 function seekBy(s){
+  if(_svAutoplayPending)svAutoplayCancelCountdown();
   if(isLiveMode)return;
   seekToTime(playbackTime()+s);
   flashSeek(s);showUI();
@@ -2486,6 +2490,7 @@ function ensureFtpTrackOptionsLoaded(){
 }
 
 async function playFtpMedia(streamUrl, name, year){
+  svAutoplayCancelCountdown();
   try {
     console.log('[Playback] play button clicked');
     const requestedStreamUrl = String(streamUrl || '').trim();
@@ -2701,6 +2706,7 @@ async function ftpSeekTo(seconds){
 
 
 function closePlayer(){
+  svAutoplayCancelCountdown();
   clearInterval(vid._pi);clearTimeout(uiHideTimer);
   vid.pause();
   vid._durationToken = (vid._durationToken || 0) + 1;
@@ -3429,6 +3435,193 @@ function localSimilarItems(item, type){
   return scored;
 }
 
+
+// ══════════════════ AUTOPLAY NEXT — VOD only ══════════════════
+// The "ended" event is the sole trigger: stalls, pause and fatal stream errors
+// never advance a title. The countdown is invalidated on navigation/source change.
+const SV_AUTOPLAY_DELAY_MS = 3000;
+let _svAutoplayTimer = null;
+let _svAutoplayTicker = null;
+let _svAutoplayGeneration = 0;
+let _svAutoplayPending = null;
+const _svDisplayedSimilar = new Map();
+
+function svAutoplayKey(item, kind){
+  const identity = kind === 'tv' ? (item?.id ?? item?.name) : movieIdentity(item);
+  return kind + ':' + String(identity ?? '').toLowerCase();
+}
+function svAutoplayRememberSimilar(item, kind, items){
+  if(item && Array.isArray(items))_svDisplayedSimilar.set(svAutoplayKey(item,kind), items.slice(0,16));
+}
+function svAutoplayEpisodeAfter(show, season, index){
+  if(!show?.seasons)return null;
+  const seasons=Object.keys(show.seasons).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);
+  const current=seasons.indexOf(Number(season));
+  if(current<0)return null;
+  const eps=show.seasons[seasons[current]]||[];
+  if(index+1<eps.length)return {season:seasons[current], index:index+1, episode:eps[index+1]};
+  for(const nextSeason of seasons.slice(current+1)){
+    const next=show.seasons[nextSeason]||[];
+    if(next.length)return {season:nextSeason,index:0,episode:next[0]};
+  }
+  return null;
+}
+function svAutoplayPlayable(item, kind){
+  if(!item)return false;
+  if(kind==='tv'){
+    return Object.values(item.seasons||{}).some(eps=>Array.isArray(eps)&&eps.some(ep=>ep.streamUrl || ep.streamId!==undefined&&ep.streamId!==null));
+  }
+  if(isMovieUnavailable(item))return false;
+  return !!item.streamUrl || (item.id!==undefined && item.id!==null && !item.isFtp && !String(item.id).startsWith('tmdb_'));
+}
+function svAutoplayTitleKey(item){
+  return cleanDisplayTitle(item?.name||item?.title||'').toLocaleLowerCase().replace(/[\s\p{P}\p{S}]+/gu,'');
+}
+function svAutoplayLibraryItem(raw,kind){
+  const catalog=kind==='tv'?series:movies;
+  if(!raw)return null;
+  const remoteId=String(parseTmdbIdFromItem(raw,kind)||raw.tmdbId||'');
+  const name=svAutoplayTitleKey(raw);
+  const year=String(raw.year||'').match(/(?:19|20)\d{2}/)?.[0]||'';
+  return catalog.find(candidate=>{
+    if(!svAutoplayPlayable(candidate,kind))return false;
+    const localId=String(parseTmdbIdFromItem(candidate,kind)||candidate.tmdbId||'');
+    if(remoteId&&localId&&remoteId===localId)return true;
+    if(!name||svAutoplayTitleKey(candidate)!==name)return false;
+    const candidateYear=String(candidate.year||'').match(/(?:19|20)\d{2}/)?.[0]||'';
+    return !year||!candidateYear||year===candidateYear;
+  })||null;
+}
+function svAutoplayRelated(item,kind){
+  if(!item)return null;
+  const catalog=kind==='tv'?series:movies;
+  const same=(a,b)=>kind==='tv' ? String(a?.id||a?.name)===String(b?.id||b?.name) : movieIdentity(a)===movieIdentity(b);
+  const displayed=_svDisplayedSimilar.get(svAutoplayKey(item,kind))||[];
+  const local=localSimilarItems(item,kind);
+  const candidates=[...displayed,...local];
+  // Use the same catalog/metadata recommendation model as the detail window.
+  // Prefer a title not already completed, then accept a completed one if needed.
+  const picks=[];
+  const seen=new Set();
+  for(const suggested of candidates){
+    const match=svAutoplayLibraryItem(suggested,kind);
+    if(!match||same(item,match))continue;
+    if(svAutoplayTitleKey(item) && svAutoplayTitleKey(item)===svAutoplayTitleKey(match))continue;
+    const key=svAutoplayKey(match,kind);
+    if(seen.has(key))continue;
+    seen.add(key);
+    picks.push(match);
+  }
+  const unwatched=picks.find(p=>kind==='tv' || (watchProgress[p.id]?.progress||0)<0.95);
+  if(unwatched)return unwatched;
+  if(picks.length)return picks[0];
+  // No matching recommendation in the loaded catalog: avoid an unrelated jump.
+  return null;
+}
+function svAutoplayCurrentMovie(){
+  if(_ftpStreamUrl){
+    const sameUrl=movies.find(m=>m.streamUrl && m.streamUrl===_ftpStreamUrl);
+    if(sameUrl)return sameUrl;
+  }
+  if(currentStreamId!==null && currentStreamId!==undefined){
+    return movies.find(m=>String(m.id)===String(currentStreamId))||null;
+  }
+  return null;
+}
+function svAutoplayTarget(){
+  if(isLiveMode || !document.getElementById('playerModal')?.classList.contains('open'))return null;
+  if(_playerShow && _playerSeason!=null && _playerEpIdx!=null){
+    const next=svAutoplayEpisodeAfter(_playerShow,_playerSeason,_playerEpIdx);
+    if(next){
+      const show=_playerShow;
+      const label=String(next.episode.epTitle||'').trim();
+      return {
+        title:show.name+' · S'+String(next.season).padStart(2,'0')+'E'+String(next.episode.episode??next.index+1).padStart(2,'0')+(label?' · '+label:''),
+        image:show.poster||show.backdrop,
+        play:()=>playSeriesEpisode(show.name,next.season,next.index)
+      };
+    }
+    const related=svAutoplayRelated(_playerShow,'tv');
+    if(!related)return null;
+    const seasons=Object.keys(related.seasons||{}).map(Number).sort((a,b)=>a-b);
+    const first=seasons.find(s=>(related.seasons[s]||[]).length);
+    if(first===undefined)return null;
+    return {title:related.name,image:related.poster||related.backdrop,play:()=>playSeriesEpisode(related.name,first,0)};
+  }
+  const current=svAutoplayCurrentMovie();
+  const related=svAutoplayRelated(current,'movie');
+  if(!related)return null;
+  return {
+    title:related.name,
+    image:related.poster||related.backdrop,
+    play:()=>{
+      hideSeriesPlayerBar();
+      if(related.streamUrl)playFtpMedia(related.streamUrl,related.name,related.year||'');
+      else playMedia(related.id,related.name,related.year||'');
+    }
+  };
+}
+function svAutoplayOverlay(){
+  let el=document.getElementById('svAutoplayNext');
+  if(el)return el;
+  const wrap=document.getElementById('playerWrap');
+  if(!wrap)return null;
+  el=document.createElement('div');
+  el.id='svAutoplayNext';
+  el.className='sv-autoplay-next';
+  el.hidden=true;
+  el.setAttribute('role','status');
+  el.setAttribute('aria-live','polite');
+  el.innerHTML='<img id="svAutoplayArt" alt="" hidden><div class="sv-autoplay-copy"><div class="sv-autoplay-eyebrow">UP NEXT IN <span id="svAutoplaySeconds">3</span>S</div><div class="sv-autoplay-name" id="svAutoplayName"></div></div><div class="sv-autoplay-actions"><button type="button" id="svAutoplayNow">Play now</button><button type="button" id="svAutoplayCancel">Cancel</button></div>';
+  wrap.appendChild(el);
+  el.querySelector('#svAutoplayNow').addEventListener('click',svAutoplayPlayNow);
+  el.querySelector('#svAutoplayCancel').addEventListener('click',svAutoplayCancelCountdown);
+  return el;
+}
+function svAutoplayCancelCountdown(){
+  _svAutoplayGeneration++;
+  clearTimeout(_svAutoplayTimer);clearInterval(_svAutoplayTicker);
+  _svAutoplayTimer=null;_svAutoplayTicker=null;_svAutoplayPending=null;
+  const overlay=document.getElementById('svAutoplayNext');
+  if(overlay)overlay.hidden=true;
+}
+function svAutoplayPlayNow(){
+  const pending=_svAutoplayPending;
+  if(!pending)return;
+  svAutoplayCancelCountdown();
+  if(isLiveMode || !document.getElementById('playerModal')?.classList.contains('open'))return;
+  pending.play();
+}
+function svAutoplayOnEnded(){
+  if(isLiveMode || !vid.ended)return;
+  // In a source-offset transcode, an early stream termination is not the end
+  // of the underlying movie. Protect against false auto-advances.
+  const duration=playerDuration(), position=playbackTime();
+  if(Number.isFinite(duration)&&duration>0 && Number.isFinite(position) &&
+     position < duration - Math.max(8,duration*0.015))return;
+  svAutoplayCancelCountdown();
+  const next=svAutoplayTarget();
+  if(!next)return;
+  const overlay=svAutoplayOverlay();
+  if(!overlay)return;
+  _svAutoplayPending=next;
+  const art=overlay.querySelector('#svAutoplayArt');
+  if(next.image && /^https?:\/\//i.test(next.image)){art.src=next.image;art.hidden=false;}
+  else {art.hidden=true;art.removeAttribute('src');}
+  overlay.querySelector('#svAutoplayName').textContent=next.title;
+  overlay.hidden=false;
+  showUI();
+  const generation=_svAutoplayGeneration;
+  const deadline=Date.now()+SV_AUTOPLAY_DELAY_MS;
+  const render=()=>{if(_svAutoplayGeneration===generation)overlay.querySelector('#svAutoplaySeconds').textContent=String(Math.max(1,Math.ceil((deadline-Date.now())/1000)));};
+  render();
+  _svAutoplayTicker=setInterval(render,200);
+  _svAutoplayTimer=setTimeout(()=>{
+    if(_svAutoplayGeneration!==generation || !vid.ended)return;
+    svAutoplayPlayNow();
+  },SV_AUTOPLAY_DELAY_MS);
+}
+
 function localDirectorItems(item, type){
   const director = String(item?.director || '').trim().toLowerCase();
   if(!director)return [];
@@ -3595,7 +3788,19 @@ function renderOnlineSections(prefix, details, type, item){
   const local = sourceItem ? localTitleDetails(sourceItem, type) : {};
   const finalDetails = details && details.ok ? details : local;
 
-  renderMediaCards(prefix + 'SimilarTrack', firstNonEmptyArray(finalDetails.similar, local.similar));
+  const suggested = firstNonEmptyArray(finalDetails.similar, local.similar);
+  // Link online TMDB suggestions to playable catalog entries where possible.
+  const resolved = suggested.map(raw=>svAutoplayLibraryItem(raw,type)||raw);
+  const visibleLimit = window.innerWidth < 760 ? 8 : 16;
+  const availableOnScreen = resolved.slice(0,visibleLimit).some(raw=>{
+    const match=svAutoplayLibraryItem(raw,type);
+    return match && svAutoplayKey(match,type)!==svAutoplayKey(sourceItem,type);
+  });
+  // When remote results are unavailable, prepend a playable local title to
+  // the same Similar section, so the automated choice is visible there.
+  const similar = availableOnScreen ? resolved : [...local.similar.slice(0,2), ...resolved];
+  svAutoplayRememberSimilar(sourceItem, type, similar.slice(0,visibleLimit));
+  renderMediaCards(prefix + 'SimilarTrack', similar);
 }
 
 function mergeTitleDetails(item, details){
@@ -4079,6 +4284,7 @@ vid._mdH = () => {
   vid._enH=()=>{
     updatePlayIcons(true);
     if(currentStreamId&&!_ftpStreamUrl){watchProgress[currentStreamId]={progress:0.99,updatedAt:Date.now()};try{localStorage.setItem('sv_progress',JSON.stringify(watchProgress));}catch(_){}}
+    svAutoplayOnEnded();
   };
   vid._waH=()=>document.getElementById('playerSpinner').classList.add('on');
   vid._plH=()=>document.getElementById('playerSpinner').classList.remove('on');

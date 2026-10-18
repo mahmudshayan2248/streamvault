@@ -3789,14 +3789,17 @@ function renderOnlineSections(prefix, details, type, item){
   const finalDetails = details && details.ok ? details : local;
 
   const suggested = firstNonEmptyArray(finalDetails.similar, local.similar);
-  // TMDB may suggest titles that aren't in the playable library. Ensure that
-  // the detail window visibly includes the local option autoplay will choose.
-  const availableOnScreen = suggested.some(raw=>{
+  // Link online TMDB suggestions to playable catalog entries where possible.
+  const resolved = suggested.map(raw=>svAutoplayLibraryItem(raw,type)||raw);
+  const visibleLimit = window.innerWidth < 760 ? 8 : 16;
+  const availableOnScreen = resolved.slice(0,visibleLimit).some(raw=>{
     const match=svAutoplayLibraryItem(raw,type);
     return match && svAutoplayKey(match,type)!==svAutoplayKey(sourceItem,type);
   });
-  const similar = availableOnScreen ? suggested : [...local.similar.slice(0,2), ...suggested];
-  svAutoplayRememberSimilar(sourceItem, type, similar);
+  // When remote results are unavailable, prepend a playable local title to
+  // the same Similar section, so the automated choice is visible there.
+  const similar = availableOnScreen ? resolved : [...local.similar.slice(0,2), ...resolved];
+  svAutoplayRememberSimilar(sourceItem, type, similar.slice(0,visibleLimit));
   renderMediaCards(prefix + 'SimilarTrack', similar);
 }
 

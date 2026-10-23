@@ -18,6 +18,7 @@
   <button id="back">−10 s</button><button id="forward">+10 s</button>
   <label>Quality <select id="quality"><option value="auto">Auto</option></select></label>
   <label>Audio <select id="audio"></select></label>
+  <label>Subtitles <select id="subtitles"><option value="-1">Off</option></select></label>
   <label>Speed <select id="speed"><option>1</option><option>1.25</option><option>1.5</option><option>2</option></select></label>
 </div>
 <output id="status">Preparing preview…</output>
@@ -29,15 +30,21 @@
   const status=document.getElementById('status');
   const quality=document.getElementById('quality');
   const audio=document.getElementById('audio');
+  const subtitles=document.getElementById('subtitles');
   const session=new PlayerSession({
     video,
     resolve:async (_source,{signal})=>{
-      const response=await fetch(origin+'/api/playback/preview',{signal,cache:'no-store'});
+      const response=await fetch(origin+'/api/playback/preview'+(new URLSearchParams(location.search).get('single')==='1'?'?single=1':''),{signal,cache:'no-store'});
       if(!response.ok) throw new Error('Adaptive preview backend unavailable');
       return response.json();
     },
     release:async capability=>{await fetch(origin+'/api/playback-hls/'+capability.cacheKey+'/release',{method:'POST'});},
     loadHls:async()=>window.Hls,
+    fetchText:async (url,signal)=>{
+      const response=await fetch(url,{signal});
+      if(!response.ok) throw new Error('Subtitle request failed');
+      return response.text();
+    },
     status:async (key,signal)=>{
       const response=await fetch(origin+'/api/playback/status',{signal});
       const data=await response.json();
@@ -58,7 +65,12 @@
       if(state.audioTracks.length!==audio.options.length){
         audio.innerHTML='';state.audioTracks.forEach((track,index)=>audio.add(new Option(track.title||`Audio ${index+1}`,String(index))));
       }
+      if(state.subtitleTracks.length+1!==subtitles.options.length){
+        subtitles.innerHTML='<option value="-1">Off</option>';
+        state.subtitleTracks.forEach((track,index)=>subtitles.add(new Option(track.title||`Subtitle ${index+1}`,String(index))));
+      }
       audio.value=String(state.audioIndex);
+      subtitles.value=String(state.subtitleIndex);
       quality.value=state.qualityHeight===null?'auto':String(levels.findIndex(level=>level.height===state.qualityHeight));
     }
   });
@@ -68,6 +80,7 @@
   document.getElementById('forward').onclick=()=>session.seekTo(session.getCurrentTime()+10);
   quality.onchange=()=>session.setQuality(quality.value==='auto'?'auto':`${session.hls?.levels?.[Number(quality.value)]?.height}p`);
   audio.onchange=()=>session.setAudio(Number(audio.value));
+  subtitles.onchange=()=>session.setSubtitle(Number(subtitles.value));
   document.getElementById('speed').onchange=event=>session.setSpeed(Number(event.target.value));
   window.addEventListener('beforeunload',()=>session.close());
 </script>

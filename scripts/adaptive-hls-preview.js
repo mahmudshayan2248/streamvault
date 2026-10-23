@@ -12,6 +12,10 @@ async function main() {
   const remote=process.env.SV_ADAPTIVE_PREVIEW_SOURCE_URL;
   if(Boolean(local)===Boolean(remote)) throw new Error('Set exactly one preview source');
   const cacheDir=process.env.SV_ADAPTIVE_PREVIEW_CACHE || path.join(os.tmpdir(),'streamvault-adaptive-preview-cache');
+  const subtitle=process.env.SV_ADAPTIVE_PREVIEW_SUBTITLE || '';
+  if(subtitle && (!fs.statSync(subtitle).isFile() || !/^\uFEFF?WEBVTT/.test(fs.readFileSync(subtitle,'utf8')))) {
+    throw new Error('Preview subtitle must be a WebVTT file');
+  }
   const port=Number(process.env.SV_ADAPTIVE_PREVIEW_PORT || 8766);
   if(!Number.isInteger(port)||port<1024||port>65535) throw new Error('Invalid preview port');
   let source,allowedRoots=[],allowedHosts=[];
@@ -47,17 +51,39 @@ async function main() {
     if(req.method==='OPTIONS') {res.writeHead(204,{'Access-Control-Allow-Origin':frontendOrigin,'Vary':'Origin','Access-Control-Allow-Methods':'GET, HEAD, POST, OPTIONS','Access-Control-Allow-Headers':'Range, Content-Type'});res.end();return;}
     const url=new URL(req.url,origin);
     if(url.pathname==='/api/playback/preview' && req.method==='GET') {
-      sendJson(res,200,{ok:true,id:'preview',title:'Adaptive preview',mode:'hls',strategy:'offline-adaptive',
-        duration:metadata.duration,windowStart:0,hlsUrl:`${origin}/api/adaptive-hls/${metadata.key}/master.m3u8`,
-        cacheKey:metadata.key,audioTracks:metadata.audioTracks,subtitleTracks:[],
+      const single=url.searchParams.get('single')==='1';
+      sendJson(res,200,{ok:true,id:'preview',title:'Adaptive preview',mode:'hls',strategy:single?'single-rendition-benchmark':'offline-adaptive',
+        duration:metadata.duration,windowStart:0,hlsUrl:`${origin}/api/adaptive-hls/${metadata.key}/${single?'single-master':'master'}.m3u8`,
+        cacheKey:metadata.key,audioTracks:metadata.audioTracks,
+        subtitleTracks:subtitle?[{index:0,title:'English captions',language:'en',supported:true,timeline:'global',
+          url:`${origin}/api/playback/preview/subtitles/0.vtt`}]:[],
         source:{canonicalId:`preview-${metadata.key}`,kind:source.remote?'remote':'local',fingerprint:source.fingerprint}});
       return;
     }
     if(url.pathname==='/api/playback/status' && req.method==='GET') {
-      sendJson(res,200,{ok:true,activeWorkers:0,sessions:[{key:metadata.key,state:'complete',strategy:'offline-adaptive',speed:0,
+      sendJson(res,200,{ok:true,activeWorkers:0,adaptiveCache:cache.snapshot(),sessions:[{key:metadata.key,state:'complete',strategy:'offline-adaptive',speed:0,
         windowStart:0,outTimeSeconds:metadata.duration,running:false}]});return;
     }
+    if(subtitle && url.pathname==='/api/playback/preview/subtitles/0.vtt' && req.method==='GET') {
+      const body=fs.readFileSync(subtitle);
+      res.writeHead(200,{'Content-Type':'text/vtt; charset=utf-8','Content-Length':body.length,
+        'Cache-Control':'private, max-age=60','Access-Control-Allow-Origin':frontendOrigin,'Vary':'Origin'});
+      res.end(body);return;
+    }
     if(url.pathname===`/api/playback-hls/${metadata.key}/release` && req.method==='POST') {res.writeHead(204,{'Access-Control-Allow-Origin':frontendOrigin,'Vary':'Origin'});res.end();return;}
+    if(url.pathname===`/api/adaptive-hls/${metadata.key}/single-master.m3u8` && req.method==='GET') {
+      const profile=metadata.profiles.at(-1).name;
+      const lines=fs.readFileSync(path.join(cache.completed(metadata.key).dir,'master.m3u8'),'utf8').trim().split(/\r?\n/);
+      const media=`${profile}/video/index.m3u8`;
+      const at=lines.indexOf(media);
+      if(at<1 || !lines[at-1].startsWith('#EXT-X-STREAM-INF:')) {res.writeHead(500);res.end();return;}
+      const selected=['#EXTM3U','#EXT-X-VERSION:7','#EXT-X-INDEPENDENT-SEGMENTS',
+        ...lines.filter(line=>line.startsWith('#EXT-X-MEDIA:') && line.includes(`GROUP-ID="audio-${profile}"`)),
+        lines[at-1],media].join('\n')+'\n';
+      res.writeHead(200,{'Content-Type':'application/vnd.apple.mpegurl','Content-Length':Buffer.byteLength(selected),
+        'Cache-Control':'no-store','Access-Control-Allow-Origin':frontendOrigin,'Vary':'Origin'});
+      res.end(selected);return;
+    }
     const match=/^\/api\/adaptive-hls\/([a-f0-9]{32})\/(.+)$/.exec(url.pathname);
     if(match && ['GET','HEAD'].includes(req.method)) {cache.serve(req,res,match[1],match[2]);return;}
     sendJson(res,404,{ok:false,error:'Not found'});

@@ -1,5 +1,7 @@
 # Desktop streaming repair: investigation and preview
 
+Continuation and current evidence: see `desktop-streaming-final-validation-20261023.md`.
+
 This branch starts from `origin/hostinger-frontend-only` at `1f33c04888ef9235c9b882cee2b30779cdb348b9`. On 2026-10-23, the deployed `app-v3.js`, `player-session.js`, `player-vlc-v1.js`, and `player-runtime-v2.js` matched that branch byte for byte. The original `/Users/shayan/streamvault` checkout is dirty and was not changed.
 
 The public backend returned a single `#EXT-X-STREAM-INF:BANDWIDTH=1887070` video variant for an existing HLS session. It offered no lower encoded bitrate. A Chrome preview of Extraction over an emulated 500 Kbps, 100 ms link advanced from 1407.5 to 1415.2 media seconds over about 40 wall seconds after an uncached seek. This is a simulated browser network, not a measurement of the user's mobile data. It demonstrates the single-variant stream cannot maintain real-time playback on that link; it does not isolate FTP, Tunnel, or Hostinger throughput. Read-only SSH to the Mac mini timed out, so deployed backend bytes and CPU headroom remain unverified.

@@ -1,0 +1,28 @@
+name: Desktop low-bandwidth preview checks
+
+on:
+  pull_request:
+    paths:
+      - 'server.js'
+      - 'lib/desktop-quality.js'
+      - 'public/desktop-stream-preview.js'
+      - 'public/index.html'
+      - 'tests/desktop-*.test.js'
+      - '.github/workflows/desktop-low-data-preview.yml'
+
+jobs:
+  desktop-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax
+        run: |
+          node --check server.js
+          node --check public/desktop-stream-preview.js
+          node --check lib/desktop-quality.js
+      - name: Run desktop preview tests
+        run: node --test tests/desktop-quality.test.js tests/desktop-hls-encode.test.js

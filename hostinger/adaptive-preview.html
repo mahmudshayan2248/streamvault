@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StreamVault adaptive desktop preview</title>
+<style>
+  body{font:16px system-ui;background:#101217;color:#f4f5f7;max-width:1100px;margin:2rem auto;padding:0 1rem}
+  video{width:100%;background:#000;max-height:70vh}
+  .row{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin:1rem 0}
+  button,select{font:inherit;padding:.45rem .7rem;background:#252b35;color:#fff;border:1px solid #58616e;border-radius:4px}
+  output{font-variant-numeric:tabular-nums;white-space:pre-wrap}
+</style>
+<h1>StreamVault adaptive desktop preview</h1>
+<p>Loopback-only pre-encoded media. Uses the production PlayerSession implementation from this branch.</p>
+<video id="previewVideo" playsinline controls preload="metadata"></video>
+<div class="row">
+  <button id="play">Play</button><button id="pause">Pause</button>
+  <button id="back">−10 s</button><button id="forward">+10 s</button>
+  <label>Quality <select id="quality"><option value="auto">Auto</option></select></label>
+  <label>Audio <select id="audio"></select></label>
+  <label>Speed <select id="speed"><option>1</option><option>1.25</option><option>1.5</option><option>2</option></select></label>
+</div>
+<output id="status">Preparing preview…</output>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js"></script>
+<script src="/player-session.js?v=20261023-desktop-adaptive-v1"></script>
+<script>
+  const origin='http://127.0.0.1:8766';
+  const video=document.getElementById('previewVideo');
+  const status=document.getElementById('status');
+  const quality=document.getElementById('quality');
+  const audio=document.getElementById('audio');
+  const session=new PlayerSession({
+    video,
+    resolve:async (_source,{signal})=>{
+      const response=await fetch(origin+'/api/playback/preview',{signal,cache:'no-store'});
+      if(!response.ok) throw new Error('Adaptive preview backend unavailable');
+      return response.json();
+    },
+    release:async capability=>{await fetch(origin+'/api/playback-hls/'+capability.cacheKey+'/release',{method:'POST'});},
+    loadHls:async()=>window.Hls,
+    status:async (key,signal)=>{
+      const response=await fetch(origin+'/api/playback/status',{signal});
+      const data=await response.json();
+      return data.sessions.find(item=>item.key===key);
+    },
+    onChange:state=>{
+      status.textContent=JSON.stringify({state:state.state,time:Number(state.globalCurrentTime.toFixed(2)),
+        bufferAhead:Number((state.health?.secondsAhead||0).toFixed(2)),throughput:state.health?.networkBitsPerSecond,
+        quality:session.hls?.currentLevel,manualQuality:session.hls?.manualLevel,
+        startupMs:session.metrics.readyAt&&session.metrics.startedAt?session.metrics.readyAt-session.metrics.startedAt:null,
+        errors:session.metrics.errors,stalls:session.metrics.stalls,paused:video.paused,
+        audioIndex:state.audioIndex,speed:state.speed,seeks:session.metrics.seeks},null,2);
+      const levels=session.hls?.levels||[];
+      if(levels.length+1!==quality.options.length){
+        quality.innerHTML='<option value="auto">Auto</option>';
+        levels.forEach((level,index)=>quality.add(new Option(`${level.height}p (${Math.round(level.bitrate/1000)} kbps)`,String(index))));
+      }
+      if(state.audioTracks.length!==audio.options.length){
+        audio.innerHTML='';state.audioTracks.forEach((track,index)=>audio.add(new Option(track.title||`Audio ${index+1}`,String(index))));
+      }
+      audio.value=String(state.audioIndex);
+      quality.value=state.qualityHeight===null?'auto':String(levels.findIndex(level=>level.height===state.qualityHeight));
+    }
+  });
+  document.getElementById('play').onclick=()=>session.active?session.play():session.start({id:'preview'});
+  document.getElementById('pause').onclick=()=>session.pause();
+  document.getElementById('back').onclick=()=>session.seekTo(session.getCurrentTime()-10);
+  document.getElementById('forward').onclick=()=>session.seekTo(session.getCurrentTime()+10);
+  quality.onchange=()=>session.setQuality(quality.value==='auto'?'auto':`${session.hls?.levels?.[Number(quality.value)]?.height}p`);
+  audio.onchange=()=>session.setAudio(Number(audio.value));
+  document.getElementById('speed').onchange=event=>session.setSpeed(Number(event.target.value));
+  window.addEventListener('beforeunload',()=>session.close());
+</script>
+</html>

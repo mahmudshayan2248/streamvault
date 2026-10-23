@@ -6,7 +6,7 @@ const os=require('node:os');
 const path=require('node:path');
 const http=require('node:http');
 const {spawnSync}=require('node:child_process');
-const {AdaptiveHlsCache,approvedInput,PROFILES,parsePlaylist}=require('../lib/adaptive-hls');
+const {AdaptiveHlsCache,approvedInput,PROFILES,parsePlaylist,normalizeMediaPlaylist}=require('../lib/adaptive-hls');
 
 function run(bin,args) {
   const result=spawnSync(bin,args,{encoding:'utf8',timeout:90000});
@@ -23,6 +23,54 @@ test('source boundaries reject unapproved local and remote inputs',()=>{
     assert.throws(()=>approvedInput({input:'http://127.0.0.1/private',fingerprint:'x',remote:true,authorized:true},[],['example.com']),/not approved/);
     assert.throws(()=>approvedInput({input:'https://user:pass@example.com/file',fingerprint:'x',remote:true,authorized:true},[],['example.com']),/not approved/);
     assert.equal(PROFILES.length,4);
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('completed cache evicts oldest idle package, preserves an active reader and persists access order',()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'sv-adaptive-evict-'));
+  try {
+    const cache=new AdaptiveHlsCache({cacheDir:root,maxCacheBytes:350,minFreeBytes:0});
+    const keys=['a'.repeat(32),'b'.repeat(32),'c'.repeat(32)];
+    keys.forEach((key,index)=>{
+      const dir=path.join(root,key);
+      fs.mkdirSync(dir);
+      fs.writeFileSync(path.join(dir,'master.m3u8'),'#EXTM3U\n'.padEnd(180,'x'));
+      fs.writeFileSync(path.join(dir,'complete.json'),JSON.stringify({version:'desktop-adaptive-fmp4-v2',key,
+        duration:60,profiles:[{name:'360p'}],audioTracks:[],files:['master.m3u8']}));
+      const time=new Date(Date.now()-(3-index)*3600000);
+      fs.utimesSync(path.join(dir,'complete.json'),time,time);
+    });
+    cache.activeReads.set(keys[0],1);
+    const first=cache.prune();
+    assert.deepEqual(first.removed,[keys[1],keys[2]]);
+    assert.ok(cache.completed(keys[0]));
+    cache.activeReads.delete(keys[0]);
+    cache.touch(keys[0],path.join(root,keys[0]));
+    assert.ok(fs.statSync(path.join(root,keys[0],'complete.json')).mtimeMs>Date.now()-60000);
+    cache.maxCacheBytes=100;
+    assert.deepEqual(cache.prune().removed,[],'recent playback is protected even when capacity is tight');
+    cache.idleEvictionMs=0;
+    cache.hold(keys[0]);
+    assert.deepEqual(cache.prune().removed,[],'an open capability protects a paused playback');
+    cache.release(keys[0]);
+    const restarted=new AdaptiveHlsCache({cacheDir:root,maxCacheBytes:100,minFreeBytes:0,idleEvictionMs:0});
+    assert.deepEqual(restarted.prune().removed,[keys[0]]);
+    assert.equal(restarted.completed(keys[0]),null);
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('Windows absolute FFmpeg playlist paths become safe relative HLS URLs',()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'sv-adaptive-playlist-'));
+  try {
+    const file=path.join(root,'index.m3u8');
+    fs.writeFileSync(file,'#EXTM3U\n#EXT-X-MAP:URI="C:\\cache\\360p\\video\\init.mp4"\n#EXTINF:4.0,\nC:\\cache\\360p\\video\\seg_000000.m4s\n#EXT-X-ENDLIST\n');
+    normalizeMediaPlaylist(file);
+    const text=fs.readFileSync(file,'utf8');
+    assert.match(text,/#EXT-X-MAP:URI="init\.mp4"/);
+    assert.match(text,/\nseg_000000\.m4s\n/);
+    assert.doesNotMatch(text,/C:\\/);
+    fs.writeFileSync(file,'#EXTM3U\n#EXT-X-MAP:URI="../secret"\n');
+    assert.throws(()=>normalizeMediaPlaylist(file),/Invalid HLS initialization URI/);
   } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
 
@@ -80,6 +128,8 @@ test('offline package has four real aligned renditions, alternate audio, cache r
   const suffix=await fetch(`http://127.0.0.1:${server.address().port}/`,{headers:{Range:'bytes=-32'}});
   assert.equal(suffix.status,206);
   assert.equal((await suffix.arrayBuffer()).byteLength,32);
+  assert.equal(cache.snapshot().assetHits,2);
+  assert.equal(cache.snapshot().hitRate,1);
   const invalid=await fetch(`http://127.0.0.1:${server.address().port}/`,{headers:{Range:'bytes=-0'}});
   assert.equal(invalid.status,416);
   assert.equal((await invalid.text()).length,0);

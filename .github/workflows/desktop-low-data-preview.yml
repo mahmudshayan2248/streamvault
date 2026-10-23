@@ -27,4 +27,4 @@ jobs:
           node --check public/desktop-stream-preview.js
           node --check lib/desktop-quality.js
       - name: Run desktop preview tests
-        run: node --test tests/desktop-quality.test.js tests/desktop-hls-encode.test.js
+        run: node --test tests/desktop-*.test.js

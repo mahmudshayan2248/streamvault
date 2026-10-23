@@ -75,6 +75,7 @@ test('offline package has four real aligned renditions, alternate audio, cache r
   const response=await fetch(`http://127.0.0.1:${server.address().port}/`,{headers:{Range:'bytes=0-99'}});
   assert.equal(response.status,206);
   assert.match(response.headers.get('content-range'),/^bytes 0-99\/\d+$/);
+  assert.match(response.headers.get('cache-control'),/^private,/);
   assert.equal((await response.arrayBuffer()).byteLength,100);
   const suffix=await fetch(`http://127.0.0.1:${server.address().port}/`,{headers:{Range:'bytes=-32'}});
   assert.equal(suffix.status,206);

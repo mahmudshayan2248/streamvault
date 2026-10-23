@@ -9,7 +9,6 @@
   const originalFtp = playFtpMedia;
   const originalSeek = seekToTime;
   const originalClose = closePlayer;
-  const originalSetAudio = setAudio;
   const video = vid;
   const list = document.querySelector('.player-bottom .controls-row');
   const spinner = document.getElementById('playerSpinner');
@@ -170,14 +169,6 @@
       return requestChange(active.quality,seconds);
     }
     return originalSeek(seconds);
-  };
-  setAudio = function(idx) {
-    if (active) {
-      // Fall back to known-good audio switching, never risk a broken language track.
-      active = pending = null;
-      selector.value = 'auto';
-    }
-    return originalSetAudio(idx);
   };
   closePlayer = function(...args) {
     reset();

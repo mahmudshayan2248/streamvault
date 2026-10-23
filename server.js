@@ -4,6 +4,7 @@ const path    = require('path');
 const https   = require('https');
 const http    = require('http');
 const crypto  = require('crypto');
+const { normalizeMobileQuality, mobileQualityProfile } = require('./lib/mobile-hls-quality');
 const { spawn } = require('child_process');
 
 const tracker         = require('./middleware/tracker');
@@ -1738,10 +1739,10 @@ app.get('/live/:channelId/segment', (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 const mobileHlsSessions = new Map();
 
-function hlsSessionKey(scope, source, startSec, audioKey = '') {
+function hlsSessionKey(scope, source, startSec, audioKey = '', quality = 'auto') {
   return crypto
     .createHash('sha1')
-    .update(`${MOBILE_HLS_PROFILE}|${scope}|${source}|${Math.floor(Number(startSec) || 0)}|${audioKey}`)
+    .update(`${MOBILE_HLS_PROFILE}|${scope}|${source}|${Math.floor(Number(startSec) || 0)}|${audioKey}${quality === 'auto' ? '' : '|quality:' + quality}`)
     .digest('hex')
     .slice(0, 24);
 }
@@ -1805,7 +1806,7 @@ function waitForHlsPlaylist(playlistPath, timeoutMs = 15000) {
   });
 }
 
-function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:a:0?', clientId = '' }) {
+function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:a:0?', clientId = '', quality = 'auto' }) {
   fs.mkdirSync(MOBILE_HLS_DIR, { recursive: true });
   const sessionDir = path.join(MOBILE_HLS_DIR, scope, key);
   const playlistPath = path.join(sessionDir, 'index.m3u8');
@@ -1821,9 +1822,12 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
   fs.rmSync(sessionDir, { recursive: true, force: true });
   fs.mkdirSync(sessionDir, { recursive: true });
 
+  const lowData = mobileQualityProfile(quality);
   const ffmpegArgs = ['-hide_banner', '-loglevel', 'warning', '-nostdin'];
   if (startSec > 0) ffmpegArgs.push('-ss', String(Math.floor(startSec)));
-  ffmpegArgs.push('-re');
+  // Preview profiles may read modestly ahead for a useful buffer; Auto retains -re.
+  if (lowData) ffmpegArgs.push('-readrate', '1.25');
+  else ffmpegArgs.push('-re');
   if (/^https?:\/\//i.test(input)) {
     ffmpegArgs.push(
       '-fflags', '+genpts',
@@ -1837,7 +1841,7 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
     '-map', '0:v:0',
     '-map', audioMap,
     '-sn', '-dn',
-    '-vf', `scale=w=min(${MOBILE_HLS_MAX_WIDTH}\\,iw):h=-2,fps=${MOBILE_HLS_MAX_FPS}`,
+    '-vf', `scale=w=min(${lowData?.width || MOBILE_HLS_MAX_WIDTH}\\,iw):h=-2,fps=${lowData?.fps || MOBILE_HLS_MAX_FPS}`,
     '-c:v', 'libx264',
     '-preset', 'ultrafast',
     '-tune', 'zerolatency',
@@ -1845,15 +1849,15 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
     '-filter_threads', '1',
     '-profile:v', 'baseline',
     '-level', '3.1',
-    '-crf', '32',
-    '-maxrate', MOBILE_HLS_VIDEO_MAXRATE,
-    '-bufsize', MOBILE_HLS_VIDEO_BUFSIZE,
+    '-crf', String(lowData?.crf || 32),
+    '-maxrate', lowData?.maxrate || MOBILE_HLS_VIDEO_MAXRATE,
+    '-bufsize', lowData?.bufsize || MOBILE_HLS_VIDEO_BUFSIZE,
     '-pix_fmt', 'yuv420p',
     '-g', '48',
     '-keyint_min', '48',
     '-sc_threshold', '0',
     '-c:a', 'aac',
-    '-b:a', MOBILE_HLS_AUDIO_BITRATE,
+    '-b:a', lowData?.audioBitrate || MOBILE_HLS_AUDIO_BITRATE,
     '-ar', '48000',
     '-ac', '2',
     '-f', 'hls',
@@ -1900,9 +1904,10 @@ app.get('/api/mobile-hls/local/:id/index.m3u8', (req, res) => {
   const filePath = entryPath(entry);
   if (!fs.existsSync(filePath)) return res.status(404).send('File missing');
   const startSec = parseFloat(req.query.start) || 0;
-  const key = hlsSessionKey('local', filePath, startSec);
+  const quality = normalizeMobileQuality(req.query.quality);
+  const key = hlsSessionKey('local', filePath, startSec, '', quality);
   const clientId = /^[a-zA-Z0-9_-]{8,80}$/.test(String(req.query.client || '')) ? String(req.query.client) : '';
-  const playlistPath = startMobileHlsSession({ scope: 'local', key, input: filePath, startSec, clientId });
+  const playlistPath = startMobileHlsSession({ scope: 'local', key, input: filePath, startSec, clientId, quality });
   sendMobileHlsPlaylist(res, 'local', key, playlistPath);
 });
 
@@ -2271,9 +2276,10 @@ app.get('/api/mobile-hls/ftp/index.m3u8', (req, res) => {
   const audioStreamIdx = parseInt(req.query.audioStream ?? '', 10);
   const audioIdx = Math.max(0, parseInt(req.query.audio || '0', 10) || 0);
   const audioMap = Number.isFinite(audioStreamIdx) && audioStreamIdx >= 0 ? `0:${audioStreamIdx}?` : `0:a:${audioIdx}?`;
-  const key = hlsSessionKey('ftp', srcUrl, startSec, audioMap);
+  const quality = normalizeMobileQuality(req.query.quality);
+  const key = hlsSessionKey('ftp', srcUrl, startSec, audioMap, quality);
   const clientId = /^[a-zA-Z0-9_-]{8,80}$/.test(String(req.query.client || '')) ? String(req.query.client) : '';
-  const playlistPath = startMobileHlsSession({ scope: 'ftp', key, input: srcUrl, startSec, audioMap, clientId });
+  const playlistPath = startMobileHlsSession({ scope: 'ftp', key, input: srcUrl, startSec, audioMap, clientId, quality });
   sendMobileHlsPlaylist(res, 'ftp', key, playlistPath);
 });
 

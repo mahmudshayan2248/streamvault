@@ -45,7 +45,9 @@ test('FFmpeg emits playable H.264/AAC HLS in both desktop low-data tiers', {skip
         '-v','error','-select_streams','v:0','-show_entries','stream=width',
         '-of','default=noprint_wrappers=1:nokey=1',path.join(dir,segments[0])
       ],{encoding:'utf8',timeout:3000});
-      assert.equal(Number(probe.stdout.trim()), profile.width);
+      const widths = probe.stdout.trim().split(/\s+/).map(Number).filter(Number.isFinite);
+      assert.equal(probe.status, 0, probe.stderr);
+      assert.ok(widths.includes(profile.width), `Expected width ${profile.width}; got ${JSON.stringify(widths)} from FFprobe`);
     }
   } finally { fs.rmSync(temp, {recursive:true, force:true}); }
 });

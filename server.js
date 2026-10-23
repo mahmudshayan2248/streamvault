@@ -4,6 +4,7 @@ const path    = require('path');
 const https   = require('https');
 const http    = require('http');
 const crypto  = require('crypto');
+const { getDesktopProfile, validStart, validAudio } = require('./lib/desktop-quality');
 const { spawn } = require('child_process');
 
 const tracker         = require('./middleware/tracker');
@@ -1738,10 +1739,10 @@ app.get('/live/:channelId/segment', (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 const mobileHlsSessions = new Map();
 
-function hlsSessionKey(scope, source, startSec, audioKey = '') {
+function hlsSessionKey(scope, source, startSec, audioKey = '', quality = '') {
   return crypto
     .createHash('sha1')
-    .update(`${MOBILE_HLS_PROFILE}|${scope}|${source}|${Math.floor(Number(startSec) || 0)}|${audioKey}`)
+    .update(`${MOBILE_HLS_PROFILE}|${scope}|${source}|${Math.floor(Number(startSec) || 0)}|${audioKey}${quality ? '|' + quality : ''}`)
     .digest('hex')
     .slice(0, 24);
 }
@@ -1766,6 +1767,12 @@ function stopMobileHlsSession(scope, key, reason = 'stopped') {
   try {
     if (!session.process.killed) session.process.kill('SIGKILL');
   } catch {}
+  // Preview segment caches are ephemeral; clear on stop (Windows may hold files until FFmpeg exits).
+  if (scope.startsWith('desktop-')) {
+    const remove = () => { try { fs.rmSync(session.dir, { recursive:true, force:true }); } catch (e) { console.warn('[Desktop HLS] cleanup:', e.message); } };
+    session.process.once('close', remove);
+    if (session.process.exitCode !== null) remove();
+  }
   return true;
 }
 
@@ -1805,7 +1812,7 @@ function waitForHlsPlaylist(playlistPath, timeoutMs = 15000) {
   });
 }
 
-function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:a:0?', clientId = '' }) {
+function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:a:0?', clientId = '', desktopProfile = null }) {
   fs.mkdirSync(MOBILE_HLS_DIR, { recursive: true });
   const sessionDir = path.join(MOBILE_HLS_DIR, scope, key);
   const playlistPath = path.join(sessionDir, 'index.m3u8');
@@ -1823,7 +1830,9 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
 
   const ffmpegArgs = ['-hide_banner', '-loglevel', 'warning', '-nostdin'];
   if (startSec > 0) ffmpegArgs.push('-ss', String(Math.floor(startSec)));
-  ffmpegArgs.push('-re');
+  // Preview desktop data-saver reads slightly ahead; existing mobile pipeline is unchanged.
+  if (desktopProfile) ffmpegArgs.push('-readrate', '1.25');
+  else ffmpegArgs.push('-re');
   if (/^https?:\/\//i.test(input)) {
     ffmpegArgs.push(
       '-fflags', '+genpts',
@@ -1837,7 +1846,7 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
     '-map', '0:v:0',
     '-map', audioMap,
     '-sn', '-dn',
-    '-vf', `scale=w=min(${MOBILE_HLS_MAX_WIDTH}\\,iw):h=-2,fps=${MOBILE_HLS_MAX_FPS}`,
+    '-vf', `scale=w=min(${desktopProfile?.width || MOBILE_HLS_MAX_WIDTH}\\,iw):h=-2,fps=${desktopProfile?.fps || MOBILE_HLS_MAX_FPS}`,
     '-c:v', 'libx264',
     '-preset', 'ultrafast',
     '-tune', 'zerolatency',
@@ -1845,15 +1854,15 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
     '-filter_threads', '1',
     '-profile:v', 'baseline',
     '-level', '3.1',
-    '-crf', '32',
-    '-maxrate', MOBILE_HLS_VIDEO_MAXRATE,
-    '-bufsize', MOBILE_HLS_VIDEO_BUFSIZE,
+    '-crf', String(desktopProfile?.crf || 32),
+    '-maxrate', desktopProfile?.videoRate || MOBILE_HLS_VIDEO_MAXRATE,
+    '-bufsize', desktopProfile?.bufferRate || MOBILE_HLS_VIDEO_BUFSIZE,
     '-pix_fmt', 'yuv420p',
     '-g', '48',
     '-keyint_min', '48',
     '-sc_threshold', '0',
     '-c:a', 'aac',
-    '-b:a', MOBILE_HLS_AUDIO_BITRATE,
+    '-b:a', desktopProfile?.audioRate || MOBILE_HLS_AUDIO_BITRATE,
     '-ar', '48000',
     '-ac', '2',
     '-f', 'hls',
@@ -1870,7 +1879,7 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
   process.on('close', code => {
     console.log(`[Mobile HLS] ended ${sessionId} code=${code}`);
     const current = mobileHlsSessions.get(sessionId);
-    if (current?.process === process) mobileHlsSessions.delete(sessionId);
+    if (current?.process === process && (code !== 0 || !scope.startsWith('desktop-'))) mobileHlsSessions.delete(sessionId);
   });
   process.on('error', err => console.error('[Mobile HLS] spawn error:', err.message));
   mobileHlsSessions.set(sessionId, { process, dir: sessionDir, createdAt: Date.now(), lastAccess: Date.now(), clientId });
@@ -1882,7 +1891,8 @@ function sendMobileHlsPlaylist(res, scope, key, playlistPath) {
   waitForHlsPlaylist(playlistPath)
     .then(content => {
       touchMobileHlsSession(scope, key);
-      const rewritten = content.replace(/^(seg_[^\r\n]+\.ts)$/gm, `/api/mobile-hls/${scope}/${key}/$1`);
+      const segmentBase = scope.startsWith('desktop-') ? `/api/desktop-hls/segment/${scope}/${key}/` : `/api/mobile-hls/${scope}/${key}/`;
+      const rewritten = content.replace(/^(seg_[^\r\n]+\.ts)$/gm, (_, file) => segmentBase + file);
       res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
       res.setHeader('Cache-Control', 'no-cache, no-store');
       res.send(rewritten);
@@ -1893,6 +1903,73 @@ function sendMobileHlsPlaylist(res, scope, key, playlistPath) {
     });
 }
 
+// Separate, strictly opt-in DESKTOP bitrate-limited HLS preview.
+// The ordinary /stream and /api/ftp endpoints are intentionally left alone.
+function desktopHlsQuery(req, res) {
+  const profile = getDesktopProfile(String(req.query.quality || ''));
+  const startSec = validStart(req.query.start);
+  const audioIdx = validAudio(req.query.audio);
+  if (!profile || startSec === null || audioIdx === null) {
+    res.status(400).json({ error: 'Valid quality (360p/480p), start and audio required' });
+    return null;
+  }
+  return { profile, startSec, audioIdx };
+}
+
+app.get('/api/desktop-hls/local/:id/index.m3u8', (req, res) => {
+  const q = desktopHlsQuery(req, res);
+  if (!q) return;
+  const idx = Number(req.params.id);
+  if (!Number.isSafeInteger(idx) || idx < 0 || !fileIndex[idx]) return res.sendStatus(404);
+  const filePath = entryPath(fileIndex[idx]);
+  if (!fs.existsSync(filePath)) return res.sendStatus(404);
+  const scope = 'desktop-local';
+  const key = hlsSessionKey(scope, filePath, q.startSec, String(q.audioIdx), req.query.quality);
+  const clientId = /^[a-zA-Z0-9_-]{8,80}$/.test(String(req.query.client || '')) ? String(req.query.client) : '';
+  const playlist = startMobileHlsSession({
+    scope, key, input: filePath, startSec: q.startSec,
+    audioMap: `0:a:${q.audioIdx}?`, clientId, desktopProfile: q.profile
+  });
+  sendMobileHlsPlaylist(res, scope, key, playlist);
+});
+
+app.get('/api/desktop-hls/ftp/index.m3u8', (req, res) => {
+  const q = desktopHlsQuery(req, res);
+  if (!q) return;
+  let remote;
+  try { remote = readRemoteUrlParam(req, ['url', 'streamUrl', 'movie', 'movieUrl', 'src']); }
+  catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
+  const source = remote.decodedUrl;
+  const streamIdx = req.query.audioStream == null ? null : validAudio(req.query.audioStream);
+  if (req.query.audioStream != null && streamIdx === null) return res.sendStatus(400);
+  const audioMap = streamIdx === null ? `0:a:${q.audioIdx}?` : `0:${streamIdx}?`;
+  const scope = 'desktop-ftp';
+  const key = hlsSessionKey(scope, source, q.startSec, audioMap, req.query.quality);
+  const clientId = /^[a-zA-Z0-9_-]{8,80}$/.test(String(req.query.client || '')) ? String(req.query.client) : '';
+  const playlist = startMobileHlsSession({
+    scope, key, input: source, startSec: q.startSec,
+    audioMap, clientId, desktopProfile: q.profile
+  });
+  sendMobileHlsPlaylist(res, scope, key, playlist);
+});
+
+app.get('/api/desktop-hls/segment/:scope/:key/:file', (req, res) => {
+  if (!/^(desktop-local|desktop-ftp)$/.test(req.params.scope) ||
+      !/^[a-f0-9]{24}$/.test(req.params.key) ||
+      !/^seg_\d+\.ts$/.test(req.params.file)) return res.sendStatus(404);
+  const session = touchMobileHlsSession(req.params.scope, req.params.key);
+  if (!session) return res.sendStatus(404);
+  const filePath = path.join(session.dir, req.params.file);
+  if (!fs.existsSync(filePath)) return res.sendStatus(404);
+  res.setHeader('Content-Type', 'video/mp2t');
+  res.setHeader('Cache-Control', 'public, max-age=300');
+  const stream = fs.createReadStream(filePath);
+  res.on('close', () => stream.destroy());
+  stream.on('error', () => { if (!res.headersSent) res.sendStatus(500); else res.destroy(); });
+  stream.pipe(res);
+});
+
+// Preserve the original /api/mobile-hls contract and behavior.
 app.get('/api/mobile-hls/local/:id/index.m3u8', (req, res) => {
   const idx = parseInt(req.params.id, 10);
   const entry = fileIndex[idx];

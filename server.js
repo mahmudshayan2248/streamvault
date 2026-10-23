@@ -1742,7 +1742,7 @@ const mobileHlsSessions = new Map();
 function hlsSessionKey(scope, source, startSec, audioKey = '', quality = '') {
   return crypto
     .createHash('sha1')
-    .update(`${MOBILE_HLS_PROFILE}|${scope}|${source}|${Math.floor(Number(startSec) || 0)}|${audioKey}|${quality}`)
+    .update(`${MOBILE_HLS_PROFILE}|${scope}|${source}|${Math.floor(Number(startSec) || 0)}|${audioKey}${quality ? '|' + quality : ''}`)
     .digest('hex')
     .slice(0, 24);
 }
@@ -1767,6 +1767,12 @@ function stopMobileHlsSession(scope, key, reason = 'stopped') {
   try {
     if (!session.process.killed) session.process.kill('SIGKILL');
   } catch {}
+  // Preview segment caches are ephemeral; clear on stop (Windows may hold files until FFmpeg exits).
+  if (scope.startsWith('desktop-')) {
+    const remove = () => { try { fs.rmSync(session.dir, { recursive:true, force:true }); } catch (e) { console.warn('[Desktop HLS] cleanup:', e.message); } };
+    session.process.once('close', remove);
+    if (session.process.exitCode !== null) remove();
+  }
   return true;
 }
 
@@ -1873,7 +1879,7 @@ function startMobileHlsSession({ scope, key, input, startSec = 0, audioMap = '0:
   process.on('close', code => {
     console.log(`[Mobile HLS] ended ${sessionId} code=${code}`);
     const current = mobileHlsSessions.get(sessionId);
-    if (current?.process === process) mobileHlsSessions.delete(sessionId);
+    if (current?.process === process && (code !== 0 || !scope.startsWith('desktop-'))) mobileHlsSessions.delete(sessionId);
   });
   process.on('error', err => console.error('[Mobile HLS] spawn error:', err.message));
   mobileHlsSessions.set(sessionId, { process, dir: sessionDir, createdAt: Date.now(), lastAccess: Date.now(), clientId });

@@ -98,7 +98,7 @@
         const job = pending;
         pending = null;
         if (job.token !== token || !sameSource(job.source,sourceKey())) continue;
-        let url = '', mode = 'hls', plan = null;
+        let url = '', mode = 'hls', plan = null, didInterrupt = false;
         const desiredPlay = playingIntent;
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 20000);
@@ -124,6 +124,7 @@
           video._mediaSourceSeekRequired = video._sourceSeekRequired;
           if (job.source.kind === 'ftp') _ftpNeedsTranscode = !!video._sourceSeekRequired;
           spinner?.classList.add('on');
+          didInterrupt = true;
           const attached = await attachPlayerSource(url, mode);
           if (!attached) throw new Error('Browser rejected replacement stream');
           if (job.quality === 'auto' && mode === 'direct' && job.seconds > 0) {
@@ -143,9 +144,27 @@
           }
         } catch (error) {
           if (job.token === token && sameSource(job.source,sourceKey())) {
-            // No route is swapped until playlist preflight succeeds.
             console.warn('[Desktop preview]', error.message);
-            showToast('Data Saver preview could not switch; original playback is available');
+            if (didInterrupt) {
+              // Never leave a broken HLS source installed after a failed switch.
+              try {
+                const fallback = await attachNormal(job.source, job.seconds);
+                if (job.token === token && !pending && sameSource(job.source,sourceKey())) {
+                  video._sourceOffset = fallback.mode === 'direct' ? 0 : job.seconds;
+                  video._sourceSeekRequired = planNeedsSourceSeek(fallback);
+                  video._mediaSourceSeekRequired = video._sourceSeekRequired;
+                  if (job.source.kind === 'ftp') _ftpNeedsTranscode = !!video._sourceSeekRequired;
+                  video._hlsNoticeOnFatal = true;
+                  await attachPlayerSource(fallback.src, fallback.mode || 'direct');
+                  active = null;
+                  selector.value = 'auto';
+                  if (desiredPlay) video.play().catch(() => {});
+                }
+              } catch (restoreError) {
+                console.warn('[Desktop preview] restore failed:', restoreError.message);
+              }
+            }
+            showToast('Data Saver preview failed; restoring original stream');
           }
         } finally {
           clearTimeout(timeout);
@@ -181,6 +200,9 @@
   });
   video.addEventListener('play', () => { if (!changing) playingIntent = true; });
   video.addEventListener('pause', () => { if (!changing) playingIntent = false; });
+  video.addEventListener('error', () => {
+    if (active && !changing && sameSource(active.source,sourceKey())) requestChange('auto',playbackTime());
+  });
   video.addEventListener('playing', clearStall);
   video.addEventListener('canplay', clearStall);
   video.addEventListener('waiting', () => {

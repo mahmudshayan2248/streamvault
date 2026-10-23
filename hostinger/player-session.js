@@ -142,18 +142,45 @@
 
   class RecoveryController {
     constructor(session) { this.session=session; this.reset(); }
-    reset() { this.networkAttempts=0; this.mediaAttempts=0; }
+    reset() {
+      clearTimeout(this.retryTimer);
+      this.retryTimer=null;
+      this.networkAttempts=0;
+      this.mediaAttempts=0;
+      this.generation=(this.generation || 0)+1;
+    }
+    fragmentLoaded() {
+      clearTimeout(this.retryTimer);
+      this.retryTimer=null;
+      this.networkAttempts=0;
+    }
+    retryNetwork(hls) {
+      if(!hls?.startLoad) return false;
+      if(this.retryTimer) return true;
+      if(this.networkAttempts >= 3) return false;
+      const attempt=this.networkAttempts++;
+      const delay=Math.min(4000,500*2**attempt)+Math.floor(Math.random()*250);
+      const generation=this.generation;
+      const sequence=this.session.sequence;
+      const seek=this.session.seekSequence;
+      this.retryTimer=setTimeout(()=>{
+        this.retryTimer=null;
+        if(generation !== this.generation || !this.session.active ||
+           sequence !== this.session.sequence || seek !== this.session.seekSequence ||
+           this.session.hls !== hls) return;
+        hls.startLoad(Math.max(0,this.session.masterClock.globalToLocal(this.session.getCurrentTime())));
+      },delay);
+      return true;
+    }
     recoverHls(data, hls) {
       if(!data?.fatal) return true;
       const type=String(data.type||'').toLowerCase();
-      if(type.includes('network') && this.networkAttempts++ < 2) { hls.startLoad?.(this.session.masterClock.globalToLocal(this.session.getCurrentTime())); return true; }
+      if(type.includes('network')) return this.retryNetwork(hls);
       if(type.includes('media') && this.mediaAttempts++ < 2) { hls.recoverMediaError?.(); return true; }
       return false;
     }
     recoverStall(hls) {
-      if(!hls || this.networkAttempts++ >= 2) return false;
-      hls.startLoad?.(this.session.masterClock.globalToLocal(this.session.getCurrentTime()));
-      return true;
+      return this.retryNetwork(hls);
     }
   }
 
@@ -236,6 +263,9 @@
         enableWorker:true, lowLatencyMode:false, startPosition:localTime,
         startFragPrefetch:true, backBufferLength:BUFFER_POLICY.BACK_BUFFER_SECONDS,
         maxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS, maxMaxBufferLength:BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS * 2, maxBufferSize:128*1024*1024,
+        // HLS.js can only switch when the master advertises real encoded variants.
+        startLevel:-1, abrEwmaDefaultEstimate:500000,
+        abrBandWidthFactor:0.75, abrBandWidthUpFactor:0.65,
         // Growing EVENT manifests describe VOD preparation, never a live edge.
         liveSyncDuration:1e9, liveMaxLatencyDuration:Infinity, maxLiveSyncPlaybackRate:1,
         manifestLoadingTimeOut:30000, levelLoadingTimeOut:30000, fragLoadingTimeOut:30000,
@@ -243,6 +273,7 @@
       const valid = () => s.active && s.adapter === this && this.hls === hls;
       hls.on(Hls.Events.FRAG_LOADED, (_event, data) => {
         if(!valid()) return;
+        s.recoveryController.fragmentLoaded();
         const stats = data.stats || data.frag?.stats;
         const ms = Math.max(0, number(stats?.loading?.end)-number(stats?.loading?.start));
         s.health.fragmentLoadMs = ms;
@@ -345,7 +376,6 @@
       this.lastSeekTarget = null;
       this.lastSeekWasBuffered = false;
       this.lastSeekLatencyMs = null;
-      this.lastBufferPumpAt = 0;
       this.lastStatusPollAt = 0;
     }
     emit() {
@@ -667,10 +697,6 @@
       if(ahead >= BUFFER_POLICY.TARGET_BUFFER_AHEAD_SECONDS) return;
       const now = Date.now();
       if(this.mode === 'COMPATIBILITY' && ahead < BUFFER_POLICY.MIN_BUFFER_AHEAD_SECONDS) {
-        if(this.hls?.startLoad && now-this.lastBufferPumpAt >= 8000) {
-          this.lastBufferPumpAt = now;
-          this.hls.startLoad(Math.max(0, number(this.video?.currentTime)));
-        }
         if(now-this.lastStatusPollAt >= 3000) {
           this.lastStatusPollAt = now;
           this.pollStatus();
@@ -794,7 +820,7 @@
         this.abortControllers.delete(controller);
       }
     }
-    fail(error) { if(!this.active) return; this.error = error.message; this.wantsPlay = false; this.video.pause(); this.transition(STATES.ERROR); }
+    fail(error) { if(!this.active) return; this.recoveryController.reset(); this.error = error.message; this.wantsPlay = false; this.video.pause(); this.transition(STATES.ERROR); }
   }
   return {PlayerSession, PlayerSessionStates:STATES, DirectTransport, CompatibilityTransport, MasterClock, SeekController, BufferManager, AVSynchronizer, RecoveryController, SeekGeometry, windowVtt};
 });

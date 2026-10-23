@@ -23,6 +23,7 @@
     "test:live-relay-v2:soak": "node scripts/live-relay-v2-soak.js",
     "test:audio-language": "node tests/audio-language.test.js",
     "test:frontend-playback-session": "node tests/frontend-playback-session.test.js",
+    "test:desktop-network-recovery": "node --test tests/player-session-network-recovery.test.js",
     "test:audio-playback-regression": "node tests/audio-playback-regression.test.js",
     "test:runtime-handler-paths": "node tests/runtime-handler-paths.test.js",
     "test:player-ui": "node tests/player-loading-encoding.test.js",

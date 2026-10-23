@@ -290,6 +290,7 @@
         s.appliedAudioIndex = data.id;
         s.emit();
       });
+      if(Hls.Events.LEVEL_SWITCHED) hls.on(Hls.Events.LEVEL_SWITCHED, () => { if(valid()) s.emit(); });
       await new Promise((resolve, reject) => {
         let settled = false;
         const finish = error => {
@@ -312,6 +313,8 @@
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           if(!valid()) return finish(aborted());
           if(hls.audioTracks[s.audioIndex]) hls.audioTrack = s.audioIndex;
+          s.applyQuality();
+          s.emit();
         });
         hls.on(Hls.Events.FRAG_BUFFERED, () => { if(valid()) finish(); });
         hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -367,6 +370,7 @@
       this.subtitleTracks = [];
       this.audioIndex = 0;
       this.subtitleIndex = -1;
+      this.qualityHeight = null;
       this.abortControllers = new Set();
       this.listeners = [];
       this.subtitleCache = new Map();
@@ -389,6 +393,9 @@
         globalCurrentTime:this.globalCurrentTime, windowStart:this.windowStart,
         audioTracks:this.audioTracks, subtitleTracks:this.subtitleTracks,
         audioIndex:this.audioIndex, subtitleIndex:this.subtitleIndex,
+        qualityHeight:this.qualityHeight,
+        qualityLevels:(this.hls?.levels||[]).map(level=>({height:level.height,bitrate:level.bitrate})),
+        currentQualityHeight:this.hls?.levels?.[this.hls.currentLevel]?.height||null,
         speed:this.speed, volume:this.volume, muted:this.muted, wantsPlay:this.wantsPlay,
         seeking:this.seeking, buffering:this.buffering, presentationClock:this.masterClock.presentationClock,
         sessionGeneration:this.sequence, seekGeneration:this.seekSequence,
@@ -524,6 +531,7 @@
       this.audioTracks = this.subtitleTracks = [];
       this.audioIndex = 0;
       this.subtitleIndex = -1;
+      this.qualityHeight = null;
       this.seeking = this.buffering = this.wantsPlay = false;
       this.error = null;
       this.transition(STATES.IDLE);
@@ -615,7 +623,8 @@
           this.masterClock.commitWindow(this.windowStart, local);
           this.seeking = false;
           this.lastSeekLatencyMs = Date.now()-startedAt;
-          if(bufferedSeek && this.wantsPlay) this.transition(STATES.PLAYING);
+          if(!this.wantsPlay) this.transition(STATES.PAUSED);
+          else if(bufferedSeek) this.transition(STATES.PLAYING);
           else this.emit();
         } else {
           let capability = this.capability;
@@ -722,6 +731,22 @@
     setSpeed(value) { this.speed = Math.min(4,Math.max(0.25,number(value)||1)); this.applyPreferences(); this.emit(); }
     setVolume(value) { this.volume = Math.min(1,Math.max(0,number(value))); this.muted = this.volume === 0; this.applyPreferences(); this.emit(); }
     setMuted(value) { this.muted = !!value; this.applyPreferences(); this.emit(); }
+    applyQuality() {
+      if(!this.hls?.levels?.length) return;
+      const index=this.qualityHeight===null ? -1 : this.hls.levels.findIndex(level=>level.height===this.qualityHeight);
+      // loadLevel changes the next downloaded fragments without flushing the current buffer.
+      this.hls.loadLevel=index;
+      if(index<0) this.qualityHeight=null;
+    }
+    setQuality(value) {
+      if(!this.hls?.levels?.length) return false;
+      const height=value==='auto' ? null : Number(String(value).replace(/p$/i,''));
+      if(height!==null && (!Number.isInteger(height)||!this.hls.levels.some(level=>level.height===height))) return false;
+      this.qualityHeight=height;
+      this.applyQuality();
+      this.emit();
+      return true;
+    }
     setAudio(index) {
       if(!Number.isInteger(index) || !this.audioTracks[index]) return false;
       this.audioIndex = index;

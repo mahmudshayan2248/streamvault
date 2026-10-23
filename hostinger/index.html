@@ -920,6 +920,16 @@
             </div>
           </div>
           <div class="ctrl-sep speed-sep"></div>
+          <div class="player-tool-wrap quality-tool" id="qualityTool" style="position:relative;flex-shrink:0;display:none">
+            <button class="ctrl" id="qualityBtn" onclick="openDropdown('qualityDD',this)" title="Video quality" aria-label="Video quality">
+              <span id="qualityLabel">Auto</span>
+            </button>
+            <div class="player-dropdown" id="qualityDD">
+              <div class="pd-header">Video Quality</div>
+              <div id="qualityList"></div>
+            </div>
+          </div>
+          <div class="ctrl-sep quality-sep" id="qualitySep" style="display:none"></div>
           <div class="player-tool-wrap speed-tool" style="position:relative;flex-shrink:0">
             <button class="ctrl" id="speedBtn" onclick="openDropdown('speedDD',this)" title="Speed">
               <svg viewBox="0 0 24 24"><path d="M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.27-10.44zM10.59 15.41a2 2 0 0 0 2.83 0l5.66-8.49-8.49 5.66a2 2 0 0 0 0 2.83z"/></svg>
@@ -967,7 +977,7 @@
 
 <script defer src="/frontend-player-ui.js?v=20260715-player-loading-ui-v1"></script>
 <script defer src="/frontend-playback-session.js?v=20260818-global-media-rules-v1"></script>
-<script defer src="/app-v3.js?v=20261018-autoplay-next1"></script>
+<script defer src="/app-v3.js?v=20261023-desktop-adaptive-v1"></script>
 <script defer src="/details-exact-v5.js?v=20260714-hostinger-playback-recovery-v1"></script>
 <script defer src="/home.js?v=20260717-current-home-snapshot-v1"></script>
 <script defer src="/downloads.js?v=20260713-hostinger-frontend-v3"></script>
@@ -986,8 +996,8 @@
   <script defer src="/offline-ui.js?v=20260722-real-request-recovery-v2"></script>
 <script defer src="/detail-fast-path-v1.js?v=20260818-detail-fast-v1"></script>
 <script src="/software-download-title-ui-v1.js?v=20260813-software-title-ui-v1"></script>
-<script defer src="/player-session.js?v=20261023-desktop-network-recovery-v1"></script>
-<script defer src="/player-vlc-v1.js?v=20260919-buffer-ahead-v1"></script>
+<script defer src="/player-session.js?v=20261023-desktop-adaptive-v1"></script>
+<script defer src="/player-vlc-v1.js?v=20261023-desktop-adaptive-v1"></script>
 <script defer src="/autoplay-next-v1.js?v=20261018-autoplay-next1"></script></body>
 </html>  
 

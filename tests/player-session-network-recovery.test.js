@@ -77,3 +77,24 @@ test('healthy low buffer does not restart an active HLS loader', t => {
   session.maintainForwardBuffer({secondsAhead:2});
   assert.equal(starts,0);
 });
+
+test('manual quality changes the next load without seeking or changing play state', () => {
+  const video={volume:1,muted:false,currentTime:42};
+  const session=new PlayerSession({video,resolve:async()=>{},loadHls:async()=>{}});
+  session.active=true;
+  session.wantsPlay=false;
+  session.mode='COMPATIBILITY';
+  session.hls={levels:[{height:360,bitrate:320000},{height:720,bitrate:1800000}],loadLevel:-1,currentLevel:0};
+  assert.equal(session.setQuality('720p'),true);
+  assert.equal(session.hls.loadLevel,1);
+  assert.equal(session.qualityHeight,720);
+  assert.equal(video.currentTime,42);
+  assert.equal(session.wantsPlay,false);
+  assert.equal(session.setQuality('1080p'),false);
+  assert.equal(session.hls.loadLevel,1);
+  session.hls={levels:[{height:360,bitrate:320000},{height:720,bitrate:1800000}],loadLevel:-1,currentLevel:0};
+  session.applyQuality();
+  assert.equal(session.hls.loadLevel,1,'manual selection survives HLS reattachment');
+  assert.equal(session.setQuality('auto'),true);
+  assert.equal(session.hls.loadLevel,-1);
+});

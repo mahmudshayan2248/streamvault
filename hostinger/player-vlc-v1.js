@@ -112,10 +112,17 @@
 
   const escape = value => String(value || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let menuKey = '';
+  let qualityKey = '';
   let lastSaved = 0;
   function render(state) {
     modal.dataset.playbackState = state.state;
-    if(!state.active) return;
+    if(!state.active) {
+      const tool=document.getElementById('qualityTool'),sep=document.getElementById('qualitySep');
+      if(tool)tool.style.display='none';
+      if(sep)sep.style.display='none';
+      qualityKey='';
+      return;
+    }
     const busy = ['RESOLVING','PREPARING','BUFFERING'].includes(state.state);
     document.getElementById('playerSpinner')?.classList.toggle('on', busy);
     const paused = !state.wantsPlay || ['ENDED','ERROR'].includes(state.state);
@@ -162,6 +169,22 @@
       updateAudioBtn();
       updateSubBtn();
       refreshPlayerControlVisibility();
+    }
+    const qualityTool=document.getElementById('qualityTool');
+    const qualitySep=document.getElementById('qualitySep');
+    const levels=state.qualityLevels||[];
+    const showQuality=state.mode==='COMPATIBILITY' && levels.length>1;
+    if(qualityTool)qualityTool.style.display=showQuality?'':'none';
+    if(qualitySep)qualitySep.style.display=showQuality?'':'none';
+    if(showQuality && qualityTool) {
+      const key=JSON.stringify([levels,state.qualityHeight,state.currentQualityHeight]);
+      if(key!==qualityKey) {
+        qualityKey=key;
+        const item=(label,selected,action)=>`<button type="button" class="pd-item${selected?' active':''}" onclick="${action}"><span>${escape(label)}</span><span class="check">✓</span></button>`;
+        document.getElementById('qualityList').innerHTML=item('Auto',state.qualityHeight===null,"setQuality('auto')")+
+          levels.map(level=>item(`${level.height}p`,state.qualityHeight===level.height,`setQuality('${level.height}p')`)).join('');
+        document.getElementById('qualityLabel').textContent=state.qualityHeight===null?'Auto':`${state.qualityHeight}p`;
+      }
     }
     currentSpeed = state.speed;
     updateSpeedBtn();

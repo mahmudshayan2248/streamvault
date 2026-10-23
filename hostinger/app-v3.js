@@ -6872,7 +6872,11 @@ async function loadQualityOptions(id){
   if(document.getElementById('qualLabel'))document.getElementById('qualLabel').textContent=currentQuality==='auto'?'Auto':currentQuality;
 }
 function setQuality(q){
-  if(window.playerSession && !isLiveMode) return;
+  if(window.playerSession?.active && !isLiveMode) {
+    if(!window.playerSession.setQuality(q))showToast('Quality option is unavailable for this stream.');
+    closeAllDropdowns();
+    return;
+  }
 
   if(q===currentQuality){closeAllDropdowns();return;}
   if(!isMobilePlaybackClient() && q !== 'auto'){

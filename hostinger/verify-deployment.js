@@ -145,7 +145,7 @@ for (const message of REQUIRED_MESSAGES) {
 }
 
 const activeSource = activeScripts.map(filename => fs.readFileSync(filename, 'utf8')).join('\n');
-if (!index.includes('/player-session.js?v=20260912-media-engine-v2') || !index.includes('/player-vlc-v1.js?v=20260912-media-engine-v2') || !index.includes('/player-vlc-v1.css?v=20260912-media-engine-v2')) {
+if (!index.includes('/player-session.js?v=20261024-startup-gap-v2') || !index.includes('/player-vlc-v1.js?v=20261023-desktop-adaptive-v1') || !index.includes('/player-vlc-v1.css?v=20260912-media-engine-v2')) {
   fail('index.html does not reference the PlayerSession release assets');
 }
 const playerView = read('player-vlc-v1.js');

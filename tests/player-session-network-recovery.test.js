@@ -98,3 +98,22 @@ test('manual quality changes the next load without seeking or changing play stat
   assert.equal(session.setQuality('auto'),true);
   assert.equal(session.hls.loadLevel,-1);
 });
+
+test('startup enters a small encoded video gap once the first segment is decodable', async () => {
+  const video={volume:1,muted:false,currentTime:0,readyState:4,
+    buffered:{length:1,start:()=>.083333,end:()=>4.01}};
+  const session=new PlayerSession({video,resolve:async()=>{},loadHls:async()=>{}});
+  session.active=true;
+  session.sequence=1;
+  session.seekSequence=1;
+  session.mode='COMPATIBILITY';
+  session.globalDuration=60;
+  const op={sequence:1,seek:1,signal:new AbortController().signal};
+  await session.waitForPresentation(0,op,100);
+  assert.equal(video.currentTime,.083333);
+  assert.ok(session.bufferManager.secondsAhead>3);
+  video.currentTime=0;
+  video.buffered={length:1,start:()=>.5,end:()=>4.5};
+  await session.waitForPresentation(0,op,0);
+  assert.equal(video.currentTime,0,'a larger unbuffered gap is never skipped');
+});

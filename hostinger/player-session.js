@@ -477,6 +477,15 @@
         const started=Date.now();
         const check=()=>{
           if(!this.current(op)) return reject(aborted());
+          // fMP4 video can begin a few frames after audio. At title start,
+          // move into that small encoded gap once the browser has decoded data.
+          // Otherwise zero never belongs to the buffered range and readiness
+          // falls through the six-second timeout despite a healthy first segment.
+          if(this.mode === 'COMPATIBILITY' && localTime <= .05 && this.video.readyState >= 2) {
+            const first=this.bufferManager.ranges(this.video)[0];
+            if(first && first.start > 0 && first.start <= .25 &&
+               number(this.video.currentTime) < first.start) this.video.currentTime=first.start;
+          }
           const buffer=this.bufferManager.sample(this.video,this.mode);
           const remaining=Math.max(0,this.globalDuration-this.masterClock.localToGlobal(localTime));
           const startupThreshold=this.bufferManager.startupThreshold(this.mode);

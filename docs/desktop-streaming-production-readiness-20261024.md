@@ -1,5 +1,7 @@
 # Desktop adaptive HLS production readiness, 2026-10-24–25
 
+The later [three-category test classification](desktop-streaming-test-classification-20261025.md) distinguishes completed, blocked, and failed checks. Its environment snapshot no longer contains the temporary per-second JSON files referenced below; the committed measurements remain the recorded results, not fresh replays.
+
 ## Release gate
 
 **NOT READY.** This is a local review candidate. No production file, process, setting, media file, or deployment was changed. The exact deployed backend was audited read-only. The prior [validation report](desktop-streaming-final-validation-20261023.md) records the architecture, cold encode benchmark, earlier short network runs, and staged rollback plan.

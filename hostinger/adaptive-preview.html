@@ -36,7 +36,17 @@
     resolve:async (_source,{signal})=>{
       const response=await fetch(origin+'/api/playback/preview'+(new URLSearchParams(location.search).get('single')==='1'?'?single=1':''),{signal,cache:'no-store'});
       if(!response.ok) throw new Error('Adaptive preview backend unavailable');
-      return response.json();
+      const capability=await response.json();
+      // The exact backend returns root-relative asset paths. The production
+      // frontend routes these through svNormalizeBackendUrls; this standalone
+      // preview must resolve them against its separate loopback backend too.
+      for(const key of ['hlsUrl','directUrl','originalUrl']) {
+        if(capability[key]) capability[key]=new URL(capability[key],origin).href;
+      }
+      for(const track of capability.subtitleTracks||[]) {
+        if(track.url) track.url=new URL(track.url,origin).href;
+      }
+      return capability;
     },
     release:async capability=>{await fetch(origin+'/api/playback-hls/'+capability.cacheKey+'/release',{method:'POST'});},
     loadHls:async()=>window.Hls,

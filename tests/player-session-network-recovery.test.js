@@ -114,6 +114,6 @@ test('startup enters a small encoded video gap once the first segment is decodab
   assert.ok(session.bufferManager.secondsAhead>3);
   video.currentTime=0;
   video.buffered={length:1,start:()=>.5,end:()=>4.5};
-  await session.waitForPresentation(0,op,0);
+  await assert.rejects(session.waitForPresentation(0,op,0),{code:'SEEK_NOT_READY'});
   assert.equal(video.currentTime,0,'a larger unbuffered gap is never skipped');
 });

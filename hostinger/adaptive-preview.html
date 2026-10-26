@@ -86,8 +86,8 @@
   });
   document.getElementById('play').onclick=()=>session.active?session.play():session.start({id:'preview'});
   document.getElementById('pause').onclick=()=>session.pause();
-  document.getElementById('back').onclick=()=>session.seekTo(session.getCurrentTime()-10);
-  document.getElementById('forward').onclick=()=>session.seekTo(session.getCurrentTime()+10);
+  document.getElementById('back').onclick=()=>session.seekBy(-10);
+  document.getElementById('forward').onclick=()=>session.seekBy(10);
   quality.onchange=()=>session.setQuality(quality.value==='auto'?'auto':`${session.hls?.levels?.[Number(quality.value)]?.height}p`);
   audio.onchange=()=>session.setAudio(Number(audio.value));
   subtitles.onchange=()=>session.setSubtitle(Number(subtitles.value));

@@ -191,7 +191,7 @@
     updateVolIcon();
     document.getElementById('volSlider').value = state.muted ? 0 : state.volume;
     if(state.error) showPlayerNotice(state.error);
-    if(!state.seeking && state.globalDuration && Date.now()-lastSaved > 2000) {
+    if(['PLAYING','PAUSED','BUFFERING'].includes(state.state) && !state.seeking && state.globalDuration && Date.now()-lastSaved > 2000) {
       lastSaved = Date.now();
       updateWatchProgress(state.canonicalMediaId,state.globalCurrentTime,state.globalDuration);
     }
@@ -215,7 +215,9 @@
       return session ? {...session,_activeWorkers:body.activeWorkers} : null;
     },
     fetchText:async (url,signal) => {
-      const response = await fetch(url,{signal,cache:'force-cache'});
+      // PlayerSession caches valid VTT. Do not replay a cached conversion error
+      // when the user retries after the upstream source becomes available.
+      const response = await fetch(url,{signal,cache:'no-store'});
       if(!response.ok) throw new Error('Subtitle track unavailable');
       return response.text();
     },
@@ -262,7 +264,7 @@
     }});
   }
   function close() {
-    if(session.canonicalMediaId && session.globalDuration) updateWatchProgress(session.canonicalMediaId,session.globalCurrentTime,session.globalDuration);
+    if(['PLAYING','PAUSED','BUFFERING'].includes(session.state) && !session.seeking && session.canonicalMediaId && session.globalDuration) updateWatchProgress(session.canonicalMediaId,session.globalCurrentTime,session.globalDuration);
     session.close();
     clearTimeout(uiHideTimer);
     stopPlayerUiClock();

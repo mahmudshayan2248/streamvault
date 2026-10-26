@@ -1182,7 +1182,13 @@ function mergeMovieList(incoming=[]){
 // ── Missing function stubs ──────────────────────────────────────────────
 function checkParentalLock(rating){ return true; }
 function trackView(id){}
-function updateWatchProgress(id, currentTime, duration){}
+function updateWatchProgress(id, currentTime, duration){
+  if(!id || ['__proto__','constructor','prototype'].includes(String(id)) ||
+     !Number.isFinite(currentTime) || !Number.isFinite(duration) || duration<=0 || currentTime<0)return;
+  if(!watchProgress || typeof watchProgress!=='object' || Array.isArray(watchProgress))watchProgress={};
+  watchProgress[id]={...watchProgress[id],progress:Math.min(1,currentTime/duration),updatedAt:Date.now()};
+  try{localStorage.setItem('sv_progress',JSON.stringify(watchProgress));}catch(_){}
+}
 let availableAudio = [];
 let currentAudioIdx = 0;
 const SV_STARTUP_AUDIO_TIMEOUT_MS = 9000;
@@ -6302,7 +6308,8 @@ function togglePlay(){
 if(ensureCentralPlaybackController()?.isLoading?.())return;if(vid.paused){vid._svPlaybackShouldPlay=true;svPlayVideo('manual toggle', {force:true}).catch(()=>{});popCenter('');}else{vid._svPlaybackShouldPlay=false;svAbortPendingPlayRequest('manual pause');vid.pause();popCenter('');clearTimeout(uiHideTimer);}}
 function seekBy(s){
   if(isLiveMode)return;
-  seekToTime(playbackTime()+s);
+  if(window.playerSession?.active) window.playerSession.seekBy(s);
+  else seekToTime(playbackTime()+s);
   flashSeek(s);showUI();
 }
 function flashSeek(s){const side=s<0?'Left':'Right';const el=document.getElementById('seekFlash'+side);el.classList.add('show');setTimeout(()=>el.classList.remove('show'),700);}
@@ -9219,8 +9226,12 @@ vid._mdH = () => {
       dragVisualPending=null;
       if(pending)visual(pending.p,pending.d);
     }
-    function commit(){
+    function commit(event){
       flushQueuedVisual();
+      // Mouse release can occur outside the track or before the queued move.
+      // Commit its actual coordinate through the same centralized seek path.
+      const point=event?.changedTouches?.[0]||event;
+      if(Number.isFinite(point?.clientX) && dur()) visual(getP(event),dur());
       suppressProgressClickUntil=Date.now()+450; progressDragging=false; pw.classList.remove('dragging');
       const d=dur(); if(!d){hideSeekPreview();return;}
       const t=Math.max(0,Math.min(d,dragT));
@@ -9231,13 +9242,13 @@ vid._mdH = () => {
       if(isLiveMode)return; const d=dur(); if(!d)return;
       e.preventDefault(); seekPreviewMetrics=null; progressDragging=true; pw.classList.add('dragging'); visual(getP(e),d);
     });
-    pw.addEventListener('mousemove',e=>{
+    document.addEventListener('mousemove',e=>{
       if(!progressDragging)return;
       const d=dur(); if(!d)return;
       const p=getP(e);
       queueVisual(p,d);
     });
-    document.addEventListener('mouseup',()=>{if(progressDragging)commit();});
+    document.addEventListener('mouseup',e=>{if(progressDragging)commit(e);});
     pw.addEventListener('touchstart',e=>{
       if(isLiveMode)return; const d=dur(); if(!d)return;
       e.preventDefault(); seekPreviewMetrics=null; progressDragging=true; pw.classList.add('dragging'); visual(getP(e),d);
@@ -9246,10 +9257,10 @@ vid._mdH = () => {
       if(!progressDragging)return; e.preventDefault();
       const d=dur(); if(!d)return; queueVisual(getP(e),d);
     },{passive:false});
-    pw.addEventListener('touchend',()=>{
+    pw.addEventListener('touchend',e=>{
       if(progressDragging){
         suppressProgressClickUntil=Date.now()+450;
-        commit();
+        commit(e);
         hideSeekPreview();
       }
     });

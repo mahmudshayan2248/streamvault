@@ -198,7 +198,7 @@
   if(window.__SV_SEARCH_AUTHORITY_LOADER_V3)return;
   window.__SV_SEARCH_AUTHORITY_LOADER_V3=true;
   const script=document.createElement('script');
-  script.src='/search-authority-v2.js?v=20260819-search-authority-v3';
+  script.src='/search-authority-v2.js?v=20261028-search-timeout-v4';
   script.defer=true;
   script.onerror=()=>{window.__SV_SEARCH_AUTHORITY_V3_LOAD_ERROR=true;};
   document.head.appendChild(script);

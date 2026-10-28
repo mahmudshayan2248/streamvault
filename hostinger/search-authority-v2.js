@@ -6,7 +6,7 @@
   if(window.__SV_SEARCH_AUTHORITY_V3)return;
   window.__SV_SEARCH_AUTHORITY_V3=true;
 
-  const VERSION='20260819-search-authority-v3';
+  const VERSION='20261028-search-timeout-v4';
   const DESKTOP_LIMIT=72;
   const MOBILE_LIMIT=36;
   const DEBOUNCE_MS=100;
@@ -90,11 +90,32 @@
   function cacheKey(query,page,limit){return `${query.toLowerCase()}|${page}|${limit}`;}
 
   async function fetchJson(path,signal,timeout=9000){
-    const options={cache:'no-store',signal,headers:{Accept:'application/json'}};
-    const fn=window.StreamVaultConfig?.fetchWithTimeout;
-    const response=fn?await fn(path,options,timeout):await fetch(path,options);
-    if(!response?.ok)throw new Error(`HTTP ${response?.status||0}`);
-    return normalizeItem(await response.json());
+    const request=new AbortController();
+    let timedOut=false;
+    const cancel=()=>request.abort(signal?.reason);
+    if(signal?.aborted)cancel();
+    else signal?.addEventListener?.('abort',cancel,{once:true});
+    const timer=setTimeout(()=>{timedOut=true;request.abort();},timeout);
+    try{
+      const response=await fetch(path,{cache:'no-store',signal:request.signal,headers:{Accept:'application/json'}});
+      if(!response?.ok)throw new Error(`HTTP ${response?.status||0}`);
+      return normalizeItem(await response.json());
+    }catch(error){
+      if(timedOut)throw new Error(`Search request timed out after ${timeout} ms`);
+      throw error;
+    }finally{
+      clearTimeout(timer);
+      signal?.removeEventListener?.('abort',cancel);
+    }
+  }
+  async function savedCatalogPage(query,limit,signal){
+    const data=await fetchJson('/boot-search-index.json',signal,5000);
+    const terms=String(query).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(/\s+/).filter(Boolean);
+    const matches=(Array.isArray(data?.items)?data.items:[]).filter(item=>{
+      const title=String(item?.name||item?.title||'').toLowerCase().replace(/[^a-z0-9]+/g,' ');
+      return terms.every(term=>title.includes(term));
+    });
+    return {items:matches.slice(0,limit),total:matches.length};
   }
   function listFrom(payload,keys){
     if(Array.isArray(payload))return payload;
@@ -144,8 +165,19 @@
     controller=new AbortController();
     loading=true;
     const {label}=target(mobile);if(label&&!append)label.textContent=`Searching everywhere for “${query}”…`;
+    let liveDone=false;
+    let previewShown=false;
+    const preview=page===0?savedCatalogPage(query,mobile?MOBILE_LIMIT:DESKTOP_LIMIT,controller.signal)
+      .then(data=>{
+        if(liveDone||my!==sequence||query!==activeQuery||!data.items.length)return;
+        previewShown=true;
+        renderItems(data.items,query,false,mobile,data.total);
+        const {label}=target(mobile);
+        if(label)label.textContent=`Saved catalog results for “${query}” · checking live search…`;
+      }).catch(()=>{}):Promise.resolve();
     try{
       const data=await fetchPage(query,page,mobile,controller.signal);
+      liveDone=true;
       if(my!==sequence||query!==activeQuery)return;
       const items=Array.isArray(data?.items)?data.items:[];
       activePage=Number.isFinite(Number(data?.page))?Number(data.page):page;
@@ -154,9 +186,16 @@
       window.__SV_SEARCH_LAST_RESPONSE=data;
       if(!items.length&&page===0)renderEmpty(query,mobile);else renderItems(items,query,append,mobile,data?.total);
     }catch(error){
+      liveDone=true;
       if(error?.name==='AbortError'||my!==sequence)return;
       console.error('[Search Authority v3] request failed',error);
-      if(page===0)renderError(query,mobile);
+      await preview;
+      if(page===0){
+        if(previewShown){
+          const {label}=target(mobile);
+          if(label)label.textContent=`Live search unavailable · showing saved catalog results for “${query}”`;
+        }else renderError(query,mobile);
+      }
     }finally{if(my===sequence)loading=false;}
   }
 

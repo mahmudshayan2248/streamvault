@@ -1,7 +1,7 @@
 (function configureStreamVault(global) {
   'use strict';
 
-  const BUILD_VERSION = '20260722-indexeddb-readiness-v2';
+  const BUILD_VERSION = '20261028-p0-backend-liveness1';
   const BACKEND_ORIGIN = 'https://backend.streamvault.fit';
   const SNAPSHOT_DB_NAME = 'streamvault-homepage';
   const SNAPSHOT_DB_VERSION = 1;
@@ -341,9 +341,9 @@
       });
   }
 
-  function checkBackendAvailability(timeoutMs = 900) {
+  function checkBackendAvailability(timeoutMs = 2500) {
     if (readinessRequest) return readinessRequest;
-    readinessRequest = fetchWithTimeout(BACKEND_ORIGIN + '/api/ready', {
+    readinessRequest = fetchWithTimeout(BACKEND_ORIGIN + '/api/version', {
       cache: 'no-store',
       headers: { Accept: 'application/json' }
     }, timeoutMs)
@@ -363,7 +363,7 @@
   function scheduleReadinessCheck() {
     global.clearTimeout(readinessTimer);
     const delay = backendStatus.reachable === true ? 10000 : 1000;
-    readinessTimer = global.setTimeout(() => { void checkBackendAvailability(900); }, delay);
+    readinessTimer = global.setTimeout(() => { void checkBackendAvailability(); }, delay);
     readinessTimer?.unref?.();
   }
 
@@ -463,7 +463,7 @@
   }
 
   async function showOfflineMessage(kind = 'action') {
-    const status = await checkBackendAvailability(900);
+    const status = await checkBackendAvailability();
     if (status.reachable) return null;
     const message = MESSAGES[kind] || MESSAGES.action;
     if (typeof global.showToast === 'function') global.showToast(message);
@@ -511,7 +511,7 @@
   global.__svBackendCheckPromise = checkBackendAvailability();
   scheduleReadinessCheck();
 
-  const checkNow = () => { void checkBackendAvailability(700); };
+  const checkNow = () => { void checkBackendAvailability(); };
   global.addEventListener('online', checkNow);
   global.addEventListener('focus', checkNow);
   global.addEventListener('pageshow', checkNow);

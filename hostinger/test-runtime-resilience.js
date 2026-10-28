@@ -107,7 +107,7 @@ function makeRuntime({ indexedDB, online = false, catalogReady = false, readyDel
     const url = new URL(typeof input === 'string' ? input : input.url, window.location.href);
     fetchCalls.push(url.href);
     if (url.pathname === '/channels.json') return { ok: true, status: 200, json: async () => channels };
-    if (url.pathname === '/api/ready') {
+    if (url.pathname === '/api/version') {
       readinessCalls += 1;
       if (readyDelay) await new Promise(resolve => setTimeout(resolve, readyDelay));
       if (!backendOnline) throw new TypeError('backend offline');

@@ -28,7 +28,7 @@ let nextBackendStatus = null;
 function payloadFor(url) {
   const pathname = new URL(String(url), 'https://streamvault.fit').pathname;
   if (pathname === '/channels.json') return channels;
-  if (pathname === '/api/ready') {
+  if (pathname === '/api/version') {
     return {
       ok: true,
       reachable: true,
@@ -50,7 +50,7 @@ async function fakeFetch(input) {
   fetchCalls.push(String(url));
   const parsed = new URL(String(url), 'https://streamvault.fit');
   const backendRequest = parsed.origin === 'https://backend.streamvault.fit';
-  if (parsed.pathname === '/api/ready' && !healthOnline) {
+  if (parsed.pathname === '/api/version' && !healthOnline) {
     throw new TypeError('backend network unavailable');
   }
   if (backendRequest && nextBackendFailure) {

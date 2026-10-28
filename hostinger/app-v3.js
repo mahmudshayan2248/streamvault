@@ -3484,7 +3484,6 @@ function svLaunchMediaModalMovie(movie){
   currentMediaModalItem=movie;
   currentMediaModalType='movie';
   svCaptureModernModalLaunch(movie,'movie');
-  svSuspendMediaModalForPlayback();
   return playMovieFromDetail();
 }
 
@@ -8818,8 +8817,11 @@ async function hydrateMoviePlayback(movie){
 async function playMovieFromDetail(){
   const movie = currentDetailMovie;
   if(!movie)return;
+  const fromMediaModal=document.getElementById('mediaModal')?.classList.contains('show');
   console.log('[Playback] play button clicked');
   await hydrateMoviePlayback(movie);
+  if(currentDetailMovie!==movie || (fromMediaModal &&
+      (currentMediaModalItem!==movie || !document.getElementById('mediaModal')?.classList.contains('show'))))return;
   if(isMovieUnavailable(movie) || (movie.isFtp && !movie.streamUrl)){
     showToast('This title is not ready to play yet');
     return;
@@ -8828,6 +8830,7 @@ async function playMovieFromDetail(){
   svRememberPlaybackReturnState('movie');
   svPushPlayerHistory();
   const playbackContext=svPlaybackContextForMovie(movie);
+  if(fromMediaModal)svSuspendMediaModalForPlayback();
   if(movie.streamUrl){
     playFtpMedia(movie.streamUrl, movie.name, movie.year || '',playbackContext);
   }else{
